@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 22:01:23 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/05 10:03:48 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/05 20:29:26 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,8 @@ class CgiHandler {
   virtual ~CgiHandler();
 
   pid_t getPid() const;
-  int getCgiInputFd() const;
-  int getCgiOutputFd() const;
+  int getInputFd() const;
+  int getOutputFd() const;
   int createCgiProcess(const std::string& path);
   int writeToCgi(char* buf, size_t size);
   int finishWriting();
