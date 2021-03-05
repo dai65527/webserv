@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/01 23:59:30 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/03 10:26:25 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/05 01:02:05 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ class LocationConfig {
  private:
   std::string location_;
   std::string root_;
-  uint allowed_method_;
+  uint32_t allowed_method_;
   std::list<std::string> index_;
   bool auto_index_;
   std::string upload_pass_;
@@ -30,26 +30,26 @@ class LocationConfig {
  public:
   LocationConfig();
   virtual ~LocationConfig();
-  LocationConfig(LocationConfig const &);
-  LocationConfig &operator=(LocationConfig const &);
+  LocationConfig(const LocationConfig& other);
+  LocationConfig& operator=(const LocationConfig& other);
 
-  std::string getLocation() const;
-  std::string getRoot() const;
+  const std::string& getLocation() const;
+  const std::string& getRoot() const;
   unsigned int getAllowedMethod() const;
-  std::list<std::string> getIndex() const;
+  const std::list<std::string>& getIndex() const;
   bool getAutoIndex() const;
-  std::string getUploadPass() const;
-  std::string getUploadStore() const;
-  std::list<std::string> getCgiExtension() const;
+  const std::string& getUploadPass() const;
+  const std::string& getUploadStore() const;
+  const std::list<std::string>& getCgiExtension() const;
 
-  void setLocation(std::string);
-  void setRoot(std::string);
-  void setAllowedMethod(std::string);
-  void setIndex(std::list<std::string>);
+  void setLocation(const std::string& location);
+  void setRoot(const std::string& root);
+  void setAllowedMethod(const std::string& allowed_method);
+  void addIndex(const std::string& index);
   void setAutoIndex(bool);
-  void setUploadPass(std::string);
-  void setUploadStore(std::string);
-  void setCgiExtension(std::list<std::string>);
+  void setUploadPass(const std::string& upload_pass);
+  void setUploadStore(const std::string& upload_store);
+  void setCgiExtension(const std::string& cgi_extension);
 };
 
 #endif /* LOCATIONCONFIG_HPP */
