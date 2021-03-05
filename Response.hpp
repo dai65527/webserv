@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 20:22:22 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/05 10:04:23 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/05 11:33:07 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,8 @@ class Response {
   virtual ~Response();
   int appendRawData(char* data);
   int createRawData(char* data);
-  size_t getRawResponse(char** keys) const;
+  const char* getRawReponse() const;
+  void incrementBytesAlreadySent(size_t bytes);
 };
 
 #endif /* RESPONSE_HPP */
