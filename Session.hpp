@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/05 09:52:27 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/05 20:37:31 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,14 +46,14 @@ class Session {
   const Response& getResponse() const;
   const CgiHandler& getCgiHandler() const;
   void setConfig(const std::list<LocationConfig>& config_list);
-  int setFdToSelect(fd_set rfds, fd_set wfds);
-  int checkSelectedAndExecute();
+  int setFdToSelect(fd_set* rfds, fd_set* wfds);
+  int checkSelectedAndExecute(fd_set* rfds, fd_set* wfds);
   void startCreateResponse();
   void closeConnection();
 
  private:
   int writeToFile();
-  int readToFromFile();
+  int readFromFile();
   int sendResponse();
 };
 
