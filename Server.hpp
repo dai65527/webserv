@@ -6,35 +6,44 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/01 23:36:35 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/03 10:28:41 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/05 00:49:57 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include "LocationConfig.hpp"
 #include <sys/socket.h>
+
 #include <map>
+#include <string>
 
-class Server
-{
-	private:
-		std::map<int, in_addr_t>	port_ip_;
-		std::list<std::string>		names_;
-		size_t										max_client_body_size_;
-		LocationConfig						default_location_config_;
+#include "LocationConfig.hpp"
 
-	public:
-		Server();
-		virtual	~Server();
-		Server(Server const &);
-		Server&	operator=(Server const &);
+class Server {
+ private:
+  std::map<int, in_addr_t> port_ip_;
+  std::list<std::string> names_;
+  size_t max_client_body_size_;
+  LocationConfig default_location_config_;
+  std::list<LocationConfig> location_configs_;
 
-		std::map<int, in_addr_t>&	getPortIp() const;
-		std::list<std::string>&		getNames() const;
-		size_t										getMaxClientBodySize() const;
-		LocationConfig&						getDefaultLocationConfig() const;
+ public:
+  Server();
+  virtual ~Server();
+  Server(const Server& other);
+  Server& operator=(const Server& other);
+
+  const std::map<int, in_addr_t>& getPortIp() const;
+  const std::list<std::string>& getNames() const;
+  const size_t getMaxClientBodySize() const;
+  const LocationConfig& getDefaultLocationConfig() const;
+  int addPortIpToMap(int port, std::string ip);
+  int addServerName(const std::list<std::string>& names);
+  void setDefaultLocationConfig(const LocationConfig& default_location_config);
+  int addToLocationConfig(const LocationConfig& location_config);
+  int configIsValid() const;
+  int isMatch(int port, in_addr_t ip, std::string server_name) const;
 };
 
 #endif /* SERVER_HPP */

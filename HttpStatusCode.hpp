@@ -6,14 +6,14 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 20:33:54 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/03 21:47:32 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/05 09:21:44 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTPSTATUSCODE_HPP
 #define HTTPSTATUSCODE_HPP
 
-typedef enum {
+enum HTTPStatusCode {
   HTTP_100 = 100, /* Continue */
   HTTP_101 = 101, /* Switching Protoclols */
 
@@ -50,6 +50,6 @@ typedef enum {
   HTTP_503 = 503, /* Service Unavailable */
   HTTP_504 = 504, /* Gateway Timeout */
   HTTP_505 = 505  /* HTTP Version Not Supported */
-} HTTPStatusCode;
+};
 
 #endif /* HTTPSTATUSCODE_HPP */

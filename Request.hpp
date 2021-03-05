@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/03 11:02:10 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/05 10:03:56 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,15 +31,15 @@ class Request {
   Request();
   virtual ~Request();
 
-  std::string getBuf() const;
-  std::string getMethod() const;
-  std::string getUri() const;
-  std::map<std::string, std::string> getHeaders() const;
-  std::string getBody() const;
+  const std::string& getBuf() const;
+  const std::string& getMethod() const;
+  const std::string& getUri() const;
+  const std::map<std::string, std::string>& getHeaders() const;
+  const std::string& getBody() const;
   int appendRawData(char*);
 
  private:
   int parseRequest();
-}
+};
 
 #endif /* REQUEST_HPP */
