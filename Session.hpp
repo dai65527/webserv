@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/05 20:37:31 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/08 01:30:35 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,12 +25,13 @@
 class Session {
  private:
   int sock_fd_;
+  int file_fd_;
   const LocationConfig* config_;
   SessionStatus status_;
   Request request_;
   Response response_;
   CgiHandler cgi_handler_;
-  pid_t cgi_pid;
+  pid_t cgi_pid_;
 
  public:
   Session();
@@ -40,6 +41,7 @@ class Session {
   Session& operator=(Session const& other);
 
   int getSockFd() const;
+  int getFileFd() const;
   const LocationConfig& getConfig() const;
   const SessionStatus& getStatus() const;
   const Request& getRequest() const;
