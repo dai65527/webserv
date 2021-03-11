@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/01 22:44:35 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/10 00:13:12 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/10 01:13:37 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,13 +24,14 @@
 
 class Webserv {
  private:
-  std::list<Session> sessions_;
-  std::list<Socket> sockets_;
-  std::list<Server> servers_;
-  int n_nad_;
+  std::list<Session*> sessions_;
+  std::list<Socket*> sockets_;
+  std::list<Server*> servers_;
+  int n_fd_;
   int max_fd_;
   fd_set rfds_;
   fd_set wfds_;
+  struct timeval tv_timeout_;
 
   Webserv(const Webserv& other);
   Webserv& operator=(const Webserv& other);

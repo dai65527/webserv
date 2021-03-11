@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/08 01:30:35 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/11 00:40:45 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ class Session {
  private:
   int sock_fd_;
   int file_fd_;
+  int retry_count_;
   const LocationConfig* config_;
   SessionStatus status_;
   Request request_;
@@ -54,6 +55,7 @@ class Session {
   void closeConnection();
 
  private:
+  int receiveRequest();
   int writeToFile();
   int readFromFile();
   int sendResponse();

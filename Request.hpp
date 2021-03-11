@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/05 10:03:56 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/11 01:06:56 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,9 @@
 
 #include <map>
 #include <string>
+
+#define BUFFER_SIZE 1024
+#define RETRY_TIME_MAX 10
 
 class Request {
  private:
@@ -36,7 +39,8 @@ class Request {
   const std::string& getUri() const;
   const std::map<std::string, std::string>& getHeaders() const;
   const std::string& getBody() const;
-  int appendRawData(char*);
+  int receive(int sock_fd, char* read_buf;
+  int appendRawData(char* raw_data);
 
  private:
   int parseRequest();

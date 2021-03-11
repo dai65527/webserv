@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/09 21:12:33 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/11 10:49:17 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 ** default constructor
 */
 
-Session::Session() : status_(SESSION_NOT_INIT), sock_fd_(0){};
+Session::Session() : status_(SESSION_NOT_INIT), sock_fd_(0), retry_count_(0) {};
 
 /*
 ** destructor
@@ -35,7 +35,7 @@ Session::~Session(){};
 */
 
 Session::Session(int sock_fd)
-    : status_(SESSION_FOR_CLIENT_RECV), sock_fd_(sock_fd){};
+    : status_(SESSION_FOR_CLIENT_RECV), sock_fd_(sock_fd), retry_count_(0) {};
 
 Session::Session(const Session& ref) { *this = ref; }
 
@@ -103,7 +103,7 @@ int Session::setFdToSelect(fd_set* rfds, fd_set* wfds) {
 
 int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
   if (FD_ISSET(sock_fd_, rfds)) {
-    if (request_.appendRa == -1) {
+    if (receiveRequest() == -1) {
       return (-1);
     } else {
       std::cout << "[webserv] received request data" << std::endl;
@@ -149,5 +149,61 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
   }
 }
 
-void Session::startCreateResponse() {}
+int  Session::receiveRequest() {
+	int ret;
+	char read_buf[BUFFER_SIZE];
+	ret = request_.receive(sock_fd_, read_buf)
+	if (ret == -1) {
+		if (retry_count_ == RETRY_TIME_MAX)
+			return -1;
+		retry_count_++;
+		return 0;
+	}
+	request_.appendRawData(read_buf);
+	retry_count_ = 0;
+  if (ret == 1 /* this will be resulted from content of request */) {
+    startCreateResponse();
+    return 1;
+  }
+	return 0;
+}
+
+void Session::startCreateResponse() {
+	if (!request_.getBuf().compare(0, 3, "cgi", 0, 3)) {
+    int http_status = cgi_handler_.createCgiProcess();  //
+    if (http_status != HTTP_200) {
+      std::cout << "[error] failed to create cgi process" << std::endl;
+      // response_buf_ = "cannot execute cgi";  // TODO: func create error response
+      _status = SESSION_FOR_CLIENT_SEND;
+			return ;
+    }
+		_status = SESSION_FOR_CGI_WRITE;
+		return ;
+
+    // create response from file
+  } else if (!request_.getBuf().compare(0, 4, "read", 0, 4)) {
+    file_fd_ = open("hello.txt", O_RDONLY);  // toriaezu
+    if (file_fd_ == -1) {
+      // response_buf_ = "404 not found"; //TODO:
+      return SESSION_FOR_CLIENT_SEND;
+    }
+    fcntl(file_fd_, F_SETFL, O_NONBLOCK);
+    return SESSION_FOR_FILE_READ;
+
+    // write to file
+  } else if (!request_.getBuf().compare(0, 4, "write", 0, 4)) {
+    file_fd_ = open("./test_req.txt", O_RDWR | O_CREAT, 0777);  // toriaezu
+    if (file_fd_ == -1) {
+      // response_buf_ = "503 forbidden";
+      return SESSION_FOR_CLIENT_SEND;
+    }
+    fcntl(file_fd_, F_SETFL, O_NONBLOCK);
+    return SESSION_FOR_FILE_WRITE;
+  }
+
+  response_buf_ = request_.getBuf();  // TODO: create function to make response
+  return SESSION_FOR_CLIENT_SEND;
+}
+}
+
 void Session::closeConnection() {}
