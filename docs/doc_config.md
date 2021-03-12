@@ -415,17 +415,17 @@ http://nginx.org/en/docs/http/ngx_http_auth_basic_module.html
 #### 文法
 
 ```
-base_auth: <string> | off
+base_auth <string> | off;
 ```
 
 #### 例
 
 ```
-base_auth: "Locked website"
-base_auth: off
+base_auth "Locked website";
+base_auth off;
 ```
 
-#### defauilt value
+#### default value
 off
 
 #### context
@@ -442,15 +442,15 @@ http://nginx.org/en/docs/http/ngx_http_auth_basic_module.html
 #### 文法
 
 ```
-base_auth_user_file: <path>
-base_auth_user_file: <path> <path2>
+base_auth_user_file <path>;
+base_auth_user_file <path> <path2>;
 ```
 
 #### 例
 
 ```
-base_auth_user_file: /usr/.htpasswd
-base_auth_user_file: /usr/.htpasswd /usr/share/.htpasswd
+base_auth_user_file: /usr/.htpasswd;
+base_auth_user_file: /usr/.htpasswd /usr/share/.htpasswd;
 ```
 
 #### defauilt value
@@ -464,6 +464,7 @@ main, server, location
 クライアントから送られてくるリクエストボディの最大サイズを設定する。
 単位はbyteで補助単位を（k, M, G）から選べる。大文字小文字は問わない。
 値を0に設定すると、ボディサイズをチェックしない。
+リクエストボディがこのサイズより大きい場合は413(Request Entity Too Large)を返す。
 
 http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size
 
@@ -493,7 +494,6 @@ client_max_body_size 42G;
 main
 #### context
 main, server, location
-j
 
 
 ### upload_pass
@@ -545,9 +545,9 @@ none
 server, location
 
 
-### limit_expect
+### limit_except
 
-nginxのlimit_execptと異なり、ブロックを取らず、全てのクライアントに対して指定されたメソッド以外を禁止する。
+nginxのlimit_exceptと異なり、ブロックを取らず、全てのクライアントに対して指定されたメソッド以外を禁止する。
 http://nginx.org/en/docs/http/ngx_http_core_module.html#limit_except
 
 #### 文法
