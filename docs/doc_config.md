@@ -88,17 +88,17 @@ main
 `<path>` にURLの絶対パスを1つ記述し、`{}` 内にlocationの設定を記述する。
 
 ```
-listen <path> { <directives> }
+location <path> { <directives> }
 ```
 
 #### 例
 
 ```
-listen / {
+location / {
     root /www/data;
 }
 
-listen /images/ {
+location /images/ {
     root /usr/images;
 }
 ```
@@ -108,6 +108,57 @@ none
 
 #### context
 server
+
+
+### listenディレクティブ
+接続要求を受け入れるホスト（またはIP）とポートを指定する。
+ポート番号を省略した場合は80番ポートを使用する。
+ホスト（またはIP）を省略した場合はホストアドレスを指定せず全てのIPアドレスへの接続要求を受け入れる。
+ホスト（またはIP）には`*`を用いて全てのIPアドレスへの要求を受け入れることを示すことができる。
+ホスト名の名前解決は`/etc/hosts`のみ使用する。
+
+http://nginx.org/en/docs/http/ngx_http_core_module.html#listen
+
+#### 文法
+
+```
+listen <IPv4 address | hostname>:<port number>;
+listen <IPv4 address | hostname>;
+listen <port number>;
+```
+
+#### 例
+
+```
+listen 80;
+listen 42.42.42.42:8080;
+listen localhost:8888;
+listen localhost;
+listen *:80;
+```
+
+#### default value
+none
+
+#### context
+server
+
+
+### rootディレクティブ
+URLの`/` の指すディレクトリを絶対パスで1つ指定する。
+1つのcontextにつき1つのみ設定できる。
+
+#### 文法
+
+```
+root /www/var;
+```
+
+#### defauilt value
+none
+
+#### context
+main, server, location
 
 
 ### server_name
@@ -155,6 +206,9 @@ autoindex off;
 #### default value
 off
 
+#### context
+main, server, location
+
 
 ### error_page
 HTTPエラーに対するデフォルトのエラーページを設定する
@@ -168,7 +222,6 @@ http://nginx.org/en/docs/http/ngx_http_core_module.html#error_page
 error_page <status_code> <path_to_error_page>
 ```
 
-
 #### 例
 
 ```
@@ -179,22 +232,8 @@ error_page 500 502 503 504 /50x.html;
 #### default value
 none
 
-
-### rootディレクティブ
-URLの`/` の指すディレクトリを絶対パスで1つ指定する。
-1つのcontextにつき1つのみ設定できる。
-
-#### 文法
-
-```
-root /www/var;
-```
-
-#### defauilt value
-none
-
 #### context
-main, server, location
+main, server, context
 
 
 ### indexディレクティブ
