@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/11 01:06:56 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/12 20:18:22 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ class Request {
   const std::string& getBody() const;
   int receive(int sock_fd, char* read_buf;
   int appendRawData(char* raw_data);
+  void eraseBuf(ssize_t n);
 
  private:
   int parseRequest();

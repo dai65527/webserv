@@ -6,15 +6,15 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 22:01:23 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/05 20:29:26 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/12 20:18:14 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CGIHANDLER_HPP
 #define CGIHANDLER_HPP
 
+#include "HttpStatusCode.hpp"
 #include <sys/types.h>
-
 #include <string>
 
 class CgiHandler {
@@ -33,7 +33,7 @@ class CgiHandler {
   pid_t getPid() const;
   int getInputFd() const;
   int getOutputFd() const;
-  int createCgiProcess(const std::string& path);
+  HTTPStatusCode createCgiProcess(const std::string& path);
   int writeToCgi(char* buf, size_t size);
   int finishWriting();
   int readFromCgi(char* buf, size_t size);

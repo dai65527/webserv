@@ -6,13 +6,15 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/07 23:25:56 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/11 11:09:30 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/12 20:18:09 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "CgiHandler.hpp"
 #include <unistd.h>
 #include <iostream>
+#include <fcntl.h>
+
 
 CgiHandler::CgiHandler() {}
 CgiHandler::~CgiHandler() {}
@@ -74,12 +76,12 @@ HTTPStatusCode CgiHandler::createCgiProcess(const std::string& path) {
   }
 
   // save piped fd and set to non blocking
-  cgi_input_fd_ = pipe_stdin[1];
-  cgi_output_fd_ = pipe_stdout[0];
+  input_fd_ = pipe_stdin[1];
+  output_fd_ = pipe_stdout[0];
 
   // set as non blocking fd
-  fcntl(cgi_input_fd_, F_SETFL, O_NONBLOCK);
-  fcntl(cgi_output_fd_, F_SETFL, O_NONBLOCK);
+  fcntl(input_fd_, F_SETFL, O_NONBLOCK);
+  fcntl(output_fd_, F_SETFL, O_NONBLOCK);
 
   // close fd not to use in parent process
   close(pipe_stdin[0]);
