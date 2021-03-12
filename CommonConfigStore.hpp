@@ -1,17 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   CommonConfig.hpp                                   :+:      :+:    :+:   */
+/*   CommonConfigStore.hpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 17:40:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/12 17:54:35 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/12 19:49:02 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef COMMONCONFIG_HPP
-#define COMMONCONFIG_HPP
+#ifndef COMMONCONFIGSTORE_HPP
+#define COMMONCONFIGSTORE_HPP
 
 #include <list>
 #include <map>
@@ -20,12 +20,12 @@
 #include "HttpStatusCode.hpp"
 
 /*
-** CommonConfig
+** CommonConfigStore
 **
 ** Base class of MainConfig, ServerConfig and LocationConfig
 */
 
-class CommonConfig {
+class CommonConfigStore {
  protected:
   std::string root_;                                  // root directive
   std::list<std::string> index_;                      // index directive
@@ -42,10 +42,10 @@ class CommonConfig {
 
  public:
   // coplien
-  CommonConfig();
-  CommonConfig(const CommonConfig& ref);
-  CommonConfig& operator=(const CommonConfig& ref);
-  virtual ~CommonConfig();
+  CommonConfigStore();
+  CommonConfigStore(const CommonConfigStore& ref);
+  CommonConfigStore& operator=(const CommonConfigStore& ref);
+  virtual ~CommonConfigStore();
 
   // getters
   const std::string& getRoot() const;
@@ -61,7 +61,7 @@ class CommonConfig {
   const unsigned long& getLimitExcept() const;
 
   /*
-  ** persers
+  ** parsers
   **
   ** Take content settings as string and then parse it and store the results.
   ** Return values:
@@ -84,4 +84,4 @@ class CommonConfig {
   int parseLimitExcept(const std::string& settings);
 };
 
-#endif /* COMMONCONFIG_HPP */
+#endif /* COMMONCONFIGSTORE_HPP */
