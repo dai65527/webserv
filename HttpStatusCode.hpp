@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpStatusCode.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 20:33:54 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/05 09:21:44 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/15 19:23:21 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,12 +36,11 @@ enum HTTPStatusCode {
   HTTP_406 = 406, /* Not Acceptable */
   HTTP_408 = 408, /* Request Timeout */
   HTTP_409 = 409, /* Conflict */
-  HTTP_409 = 410, /* Gone */
+  HTTP_410 = 410, /* Gone */
   HTTP_411 = 411, /* Length Required */
   HTTP_413 = 413, /* Pyaload Too Large */
   HTTP_415 = 415, /* URI Too Long */
   HTTP_417 = 417, /* Exception Failed */
-  HTTP_426 = 426, /* Upgrade Required */
   HTTP_426 = 426, /* Upgrade Required */
 
   HTTP_500 = 500, /* Internal Server Error */
