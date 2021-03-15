@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/12 20:18:22 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/12 20:51:56 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,8 @@
 
 class Request {
  private:
-  std::string buf_;
-  std::string method_;
+  std::string buf_;/*for temporary saving before parsing*/
+  std::string method_; /* below is the result of parsing*/
   std::string uri_;
   std::map<std::string, std::string> headers_;
   std::string body_;
@@ -41,7 +41,7 @@ class Request {
   const std::string& getBody() const;
   int receive(int sock_fd, char* read_buf;
   int appendRawData(char* raw_data);
-  void eraseBuf(ssize_t n);
+  void eraseBody(ssize_t n);
 
  private:
   int parseRequest();

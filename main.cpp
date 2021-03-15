@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 00:11:38 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/12 20:18:28 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/15 22:50:58 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,12 @@
 #include "Webserv.hpp"
 
 int main(void) {
-  Webserv ngindx;
+  Webserv nginDX;
 
   try {
     while (1) {
-      ngindx.setToSelect();
-      ngindx.selectAndExecute();
+      nginDX.setToSelect();
+      nginDX.selectAndExecute();
     }
   } catch (std::exception e) {
     std::cout << e.what() << std::endl;

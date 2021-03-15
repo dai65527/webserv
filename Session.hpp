@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/12 20:18:29 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/15 23:10:49 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,12 +52,13 @@ class Session {
   int setFdToSelect(fd_set* rfds, fd_set* wfds);
   int checkSelectedAndExecute(fd_set* rfds, fd_set* wfds);
   void startCreateResponse();
-  void closeConnection();
 
  private:
   int receiveRequest();
   int writeToFile();
   int readFromFile();
+  int writeToCgi();
+  int readFromCgi();
   int sendResponse();
 };
 

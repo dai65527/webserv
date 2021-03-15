@@ -6,16 +6,20 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 22:01:23 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/12 20:18:14 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/15 22:44:34 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CGIHANDLER_HPP
 #define CGIHANDLER_HPP
 
-#include "HttpStatusCode.hpp"
 #include <sys/types.h>
+
 #include <string>
+
+#include "HttpStatusCode.hpp"
+
+#define BUFFER_SIZE 1024
 
 class CgiHandler {
  private:

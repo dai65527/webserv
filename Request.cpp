@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/12 20:18:05 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/15 23:50:16 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,14 @@ const std::map<std::string, std::string>& Request::getHeaders() const {return he
 const std::string& Request::getBody() const {return body_;}
 
 int Request::receive(int sock_fd) {
-  return (recv(sock_fd, read_buf, BUFFER_SIZE, 0));
+  int ret;
+  char read_buf[BUFFER_SIZE];
+  ret = recv(sock_fd, read_buf, BUFFER_SIZE, 0);
+  if (ret < 0)
+    return -1;
+  buf_.append(read_buf);
+  parse_request();
+  return 0:
 }
 
 int Request::appendRawData(char* raw_data) {
@@ -33,9 +40,11 @@ int Request::appendRawData(char* raw_data) {
   return (parseRequest())
 }
 
-void  Request::eraseBuf(ssize_t n) {
+void  Request::eraseBody(ssize_t n) {
   buf_.erase(0, n);
 }
+
 int Request::parseRequest() {
+  
   return 0;
 }

@@ -6,15 +6,18 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/07 23:25:56 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/12 20:18:09 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/15 22:44:33 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "CgiHandler.hpp"
-#include <unistd.h>
-#include <iostream>
-#include <fcntl.h>
 
+#include <fcntl.h>
+#include <unistd.h>
+
+#include <iostream>
+
+#include "HttpStatusCode.hpp"
 
 CgiHandler::CgiHandler() {}
 CgiHandler::~CgiHandler() {}
@@ -27,7 +30,7 @@ int CgiHandler::getInputFd() const { return input_fd_; }
 int CgiHandler::getOutputFd() const { return output_fd_; }
 
 HTTPStatusCode CgiHandler::createCgiProcess(const std::string& path) {
-// create a pipe connect to stdin of cgi process
+  // create a pipe connect to stdin of cgi process
   int pipe_stdin[2];
   if (pipe(pipe_stdin) == -1) {
     std::cout << "[error] failed to create cgi process" << std::endl;
@@ -88,12 +91,34 @@ HTTPStatusCode CgiHandler::createCgiProcess(const std::string& path) {
   close(pipe_stdout[1]);
 
   // change status to cgi write
-  status_ = SESSION_FOR_CGI_WRITE;
+  // status_ = SESSION_FOR_CGI_WRITE;
 
   // return status 200 on success (but not a final status)
   return HTTP_200;
 }
 
-int CgiHandler::writeToCgi(char* buf, size_t size) {}
+int CgiHandler::writeToCgi(char* buf, size_t size) {
+  // write to cgi process
+  return (write(input_fd_, buf, size));
+}
+
 int CgiHandler::finishWriting() {}
-int CgiHandler::readFromCgi(char* buf, size_t size) {}
+
+int CgiHandler::readFromCgi(char* buf, size_t size) {
+  ssize_t ret;
+  char read_buf[BUFFER_SIZE];
+
+  // read from cgi process
+  ret = read(output_fd_, read_buf, BUFFER_SIZE);
+
+  // retry seveal times even if read failed
+  if (ret == -1) {
+    return -1;
+  }
+  // check if pipe closed
+  if (ret == 0) {
+    close(output_fd_);              // close pipefd
+    return 0;
+  }
+  return 0;
+}
