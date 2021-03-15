@@ -6,18 +6,18 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/09 18:13:27 by dnakano          ###   ########.fr        #
+#    Updated: 2021/03/16 00:02:23 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CXX			:=	clang++
-CPPFLAGS	:=	-Wall -Wextra -Werror
+CPPFLAGS	:=	-Wall -Wextra -Werror -D UNIT_TEST
 
 ### config ###
 SRCNAME		:=	target.cpp
 SRCDIR		:=	.
 INCLUDEDIR	:=	.
-TESTSRCNAME	:=	test.cc			# must be *.cc NOT *.cp
+TESTSRCNAME	:=	test_main.cc test_target.cc # must be *.cc NOT *.cpp
 TESTSRCDIR	:=	.
 ### config ###
 
@@ -28,6 +28,8 @@ GTESTSRCNAME:=	gtest-all.cc
 GTESTSRCDIR	:=	../gtest
 GTESTSRCS	:=	$(addprefix $(GTESTSRCDIR)/,$(GTESTSRCNAME))
 OBJS		:=	$(SRCS:%.cpp=%.o) $(TESTSRCS:%.cc=%.o) $(GTESTSRCS:%.cc=%.o)
+LIBFT		:=	libft.a
+LIBFTDIR	:=	../../../libft
 NAME		:=	test.out
 OUTDIR		:=	.
 
@@ -36,21 +38,29 @@ OUTDIR		:=	.
 .PHONY:		all
 all:		test
 
-$(NAME):	$(OBJS)
-			$(CXX) $(CPPFLAGS) $(OBJS) -o $(NAME)
+$(NAME):	$(LIBFT) $(OBJS)
+			$(CXX) $(CPPFLAGS) $(OBJS) \
+			-L$(LIBFTDIR) $(patsubst lib%,-l%,$(basename $(LIBFT))) \
+			-o $(NAME)
 
 .PHONY:		test
 test:		$(NAME)
 			$(OUTDIR)/$(NAME)
 
 .cpp.o:
-			$(CXX) $(CPPFLAGS) -I$(INCLUDEDIR) -I$(GTESTSRCDIR) -c $< -o $(patsubst %.cpp,%.o,$<)
+			$(CXX) $(CPPFLAGS) -I$(INCLUDEDIR) -I$(LIBFTDIR) -I$(GTESTSRCDIR) \
+			-c $< -o $(patsubst %.cpp,%.o,$<)
 
 .cc.o:
-			$(CXX) -std=c++11 -I$(GTESTSRCDIR) -c $< -o $(patsubst %.cc,%.o,$<)
+			$(CXX) -std=c++11 -I$(INCLUDEDIR) -I$(GTESTSRCDIR) -I$(LIBFTDIR) \
+			-c $< -o $(patsubst %.cc,%.o,$<)
+
+$(LIBFT):
+			make -C $(LIBFTDIR) $(LIBFT)
 
 .PHONY:		clean
 clean:
+			make -C $(LIBFTDIR) fclean
 			rm -f $(OBJS)
 
 .PHONY:		fclean
