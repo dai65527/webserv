@@ -1,27 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   target.cpp                                         :+:      :+:    :+:   */
+/*   ft_printf_putpadding.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/09 10:24:29 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/16 00:12:32 by dnakano          ###   ########.fr       */
+/*   Created: 2020/10/11 09:02:48 by dnakano           #+#    #+#             */
+/*   Updated: 2020/10/29 12:42:53 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-extern "C" {
-#include "libft.h"
-}
+#include "ft_printf.h"
 
-bool isAlpha(int n) {
-	return ft_isalpha(n);
-}
-
-bool isOdd(int n) {
-	return (n % 2);
-}
-
-bool isEven(int n) {
-	return !(n % 2);
+void			ft_printf_putpadding(int width, t_printf_flags *flags)
+{
+	while (width > 0)
+	{
+		if (flags->flag & FLAG_ZEROPADDING && !(flags->flag & FLAG_LEFTADJUST))
+			ft_putchar_fd('0', 1);
+		else
+			ft_putchar_fd(' ', 1);
+		width--;
+	}
 }

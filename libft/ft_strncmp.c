@@ -1,27 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   target.cpp                                         :+:      :+:    :+:   */
+/*   ft_strncmp.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/09 10:24:29 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/16 00:12:32 by dnakano          ###   ########.fr       */
+/*   Created: 2020/08/15 09:25:43 by dnakano           #+#    #+#             */
+/*   Updated: 2020/10/07 06:42:44 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-extern "C" {
 #include "libft.h"
-}
 
-bool isAlpha(int n) {
-	return ft_isalpha(n);
-}
-
-bool isOdd(int n) {
-	return (n % 2);
-}
-
-bool isEven(int n) {
-	return !(n % 2);
+int		ft_strncmp(const char *s1, const char *s2, size_t n)
+{
+	while (n > 0 && ((t_uchar)(*s1) != '\0' || (t_uchar)(*s2) != '\0'))
+	{
+		if ((t_uchar)(*s1) != (t_uchar)(*s2))
+			return ((t_uchar)(*s1) - (t_uchar)(*s2));
+		s1++;
+		s2++;
+		n--;
+	}
+	return (0);
 }
