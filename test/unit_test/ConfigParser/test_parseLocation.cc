@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/16 15:06:24 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/16 19:01:56 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "ConfigParser.hpp"
 #include "gtest.h"
 
-ConfigParser::DirectiveNode directive(int n, size_t line_no) {
+static ConfigParser::DirectiveNode directive(int n, size_t line_no) {
   ConfigParser::DirectiveNode res;
   res.line_no = line_no;
   res.name = "directive" + std::to_string(n);
@@ -24,7 +24,7 @@ ConfigParser::DirectiveNode directive(int n, size_t line_no) {
   return res;
 }
 
-ConfigParser::LocationContextNode locationEmpty(int line_no) {
+static ConfigParser::LocationContextNode locationEmpty(int line_no) {
   ConfigParser::LocationContextNode res;
 
   res.line_no = line_no;
@@ -32,7 +32,7 @@ ConfigParser::LocationContextNode locationEmpty(int line_no) {
   return res;
 }
 
-ConfigParser::LocationContextNode locationOneLine(int n, int line_no) {
+static ConfigParser::LocationContextNode locationOneLine(int n, int line_no) {
   ConfigParser::LocationContextNode res = locationEmpty(line_no);
 
   for (int i = 0; i < n; i++) {
@@ -41,7 +41,7 @@ ConfigParser::LocationContextNode locationOneLine(int n, int line_no) {
   return res;
 }
 
-ConfigParser::LocationContextNode locationMultiLine(int n, int line_no) {
+static ConfigParser::LocationContextNode locationMultiLine(int n, int line_no) {
   ConfigParser::LocationContextNode res = locationEmpty(line_no);
 
   for (int i = 0; i < n; i++) {
@@ -50,8 +50,8 @@ ConfigParser::LocationContextNode locationMultiLine(int n, int line_no) {
   return res;
 }
 
-ConfigParser::LocationContextNode locationMultiAndEmptyLine(int n,
-                                                            int line_no) {
+static ConfigParser::LocationContextNode locationMultiAndEmptyLine(
+    int n, int line_no) {
   ConfigParser::LocationContextNode res = locationEmpty(line_no);
 
   for (int i = 0; i < n; i++) {
@@ -239,7 +239,7 @@ TEST_F(test_parseLocation, ErrorHasDirective) {
   } catch (const std::runtime_error& e) {
     EXPECT_STREQ(
         e.what(),
-        "webserv: error: ConfigParser: line 3: unexpected server directive");
+                 "webserv: error: ConfigParser: line 3: expected '}'");
   }
 }
 
