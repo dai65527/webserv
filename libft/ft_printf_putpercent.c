@@ -1,27 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   target.cpp                                         :+:      :+:    :+:   */
+/*   ft_printf_putpercent.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/09 10:24:29 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/16 00:12:32 by dnakano          ###   ########.fr       */
+/*   Created: 2020/10/11 08:59:45 by dnakano           #+#    #+#             */
+/*   Updated: 2020/10/29 12:42:51 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-extern "C" {
-#include "libft.h"
-}
+#include "ft_printf.h"
 
-bool isAlpha(int n) {
-	return ft_isalpha(n);
-}
-
-bool isOdd(int n) {
-	return (n % 2);
-}
-
-bool isEven(int n) {
-	return !(n % 2);
+int				ft_printf_putpercent(t_printf_flags *flags)
+{
+	if (flags->width == -1)
+		flags->width = 0;
+	if (flags->flag & FLAG_LEFTADJUST)
+		ft_putchar_fd('%', 1);
+	ft_printf_putpadding(flags->width - 1, flags);
+	if (!(flags->flag & FLAG_LEFTADJUST))
+		ft_putchar_fd('%', 1);
+	return (flags->width ? flags->width : 1);
 }

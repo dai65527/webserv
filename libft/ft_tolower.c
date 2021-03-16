@@ -1,27 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   target.cpp                                         :+:      :+:    :+:   */
+/*   ft_tolower.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/09 10:24:29 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/16 00:12:32 by dnakano          ###   ########.fr       */
+/*   Created: 2020/10/05 18:44:07 by dnakano           #+#    #+#             */
+/*   Updated: 2020/10/11 19:41:53 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-extern "C" {
 #include "libft.h"
-}
 
-bool isAlpha(int n) {
-	return ft_isalpha(n);
-}
-
-bool isOdd(int n) {
-	return (n % 2);
-}
-
-bool isEven(int n) {
-	return !(n % 2);
+int		ft_tolower(int c)
+{
+	if (ft_isupper(c))
+		return (c - 'A' + 'a');
+	return (c);
 }

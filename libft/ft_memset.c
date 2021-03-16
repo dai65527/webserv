@@ -1,27 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   target.cpp                                         :+:      :+:    :+:   */
+/*   ft_memset.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/09 10:24:29 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/16 00:12:32 by dnakano          ###   ########.fr       */
+/*   Created: 2020/10/05 20:16:03 by dnakano           #+#    #+#             */
+/*   Updated: 2020/10/06 19:41:19 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-extern "C" {
 #include "libft.h"
-}
 
-bool isAlpha(int n) {
-	return ft_isalpha(n);
-}
+void		*ft_memset(void *b, int c, size_t len)
+{
+	size_t		i;
+	t_uchar		*b_uchar;
 
-bool isOdd(int n) {
-	return (n % 2);
-}
-
-bool isEven(int n) {
-	return !(n % 2);
+	b_uchar = (void *)b;
+	i = 0;
+	while (i < len)
+		b_uchar[i++] = c;
+	return (b);
 }

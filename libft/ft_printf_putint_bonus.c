@@ -1,27 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   target.cpp                                         :+:      :+:    :+:   */
+/*   ft_printf_putint_bonus.c                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/09 10:24:29 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/16 00:12:32 by dnakano          ###   ########.fr       */
+/*   Created: 2020/10/11 08:57:15 by dnakano           #+#    #+#             */
+/*   Updated: 2020/10/29 12:43:01 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-extern "C" {
-#include "libft.h"
-}
+#include "ft_printf.h"
 
-bool isAlpha(int n) {
-	return ft_isalpha(n);
-}
+int				ft_printf_putint(const char fc, va_list *ap,
+									t_printf_flags *flags)
+{
+	int		count;
 
-bool isOdd(int n) {
-	return (n % 2);
-}
-
-bool isEven(int n) {
-	return !(n % 2);
+	count = 0;
+	if (fc == 'd' || fc == 'i')
+		count = ft_printf_putsignedint(ap, flags);
+	else if (fc == 'u' || fc == 'x' || fc == 'X' || fc == 'o')
+		count = ft_printf_putunsignedint(ap, flags, fc);
+	return (count);
 }

@@ -1,27 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   target.cpp                                         :+:      :+:    :+:   */
+/*   ft_atof_bintof.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/09 10:24:29 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/16 00:12:32 by dnakano          ###   ########.fr       */
+/*   Created: 2020/10/30 15:35:59 by dnakano           #+#    #+#             */
+/*   Updated: 2020/10/30 19:29:41 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-extern "C" {
-#include "libft.h"
-}
+#include "ft_atof.h"
 
-bool isAlpha(int n) {
-	return ft_isalpha(n);
-}
+double	ft_atof_bintof(t_float iflt)
+{
+	t_ufloat	ufloat;
 
-bool isOdd(int n) {
-	return (n % 2);
-}
-
-bool isEven(int n) {
-	return !(n % 2);
+	ufloat.mem = 0;
+	ufloat.mem |= ((uint64_t)iflt.sign << 63);
+	ufloat.mem |= ((uint64_t)iflt.exp << 52);
+	ufloat.mem |= iflt.frac;
+	return (ufloat.num);
 }

@@ -1,27 +1,39 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   target.cpp                                         :+:      :+:    :+:   */
+/*   ft_strlcpy.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/09 10:24:29 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/16 00:12:32 by dnakano          ###   ########.fr       */
+/*   Created: 2020/08/11 18:37:19 by dnakano           #+#    #+#             */
+/*   Updated: 2020/10/08 13:18:45 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-extern "C" {
 #include "libft.h"
-}
 
-bool isAlpha(int n) {
-	return ft_isalpha(n);
-}
+size_t		ft_strlcpy(char *dst, const char *src, size_t dstsize)
+{
+	size_t	i;
+	int		flag_reach_dstsize;
 
-bool isOdd(int n) {
-	return (n % 2);
-}
-
-bool isEven(int n) {
-	return !(n % 2);
+	if (dstsize > 0)
+		flag_reach_dstsize = 0;
+	else
+		flag_reach_dstsize = 1;
+	i = 0;
+	while (src[i] != '\0')
+	{
+		if (i == dstsize - 1)
+		{
+			dst[dstsize - 1] = '\0';
+			flag_reach_dstsize = 1;
+		}
+		if (flag_reach_dstsize == 0)
+			dst[i] = src[i];
+		i++;
+	}
+	if (flag_reach_dstsize == 0)
+		dst[i] = '\0';
+	return (i);
 }

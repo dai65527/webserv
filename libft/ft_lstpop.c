@@ -1,27 +1,32 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   target.cpp                                         :+:      :+:    :+:   */
+/*   ft_lstpop.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/09 10:24:29 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/16 00:12:32 by dnakano          ###   ########.fr       */
+/*   Created: 2020/12/21 07:36:43 by dnakano           #+#    #+#             */
+/*   Updated: 2020/12/21 08:03:00 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-extern "C" {
 #include "libft.h"
-}
 
-bool isAlpha(int n) {
-	return ft_isalpha(n);
-}
+void		ft_lstpop(t_list **lst, void (*del)(void *))
+{
+	t_list	*prevlast;
 
-bool isOdd(int n) {
-	return (n % 2);
-}
-
-bool isEven(int n) {
-	return !(n % 2);
+	if (lst == NULL || *lst == NULL)
+		return ;
+	if ((*lst)->next == NULL)
+	{
+		ft_lstdelone(*lst, del);
+		*lst = NULL;
+		return ;
+	}
+	prevlast = *lst;
+	while (prevlast->next->next != NULL)
+		prevlast = prevlast->next;
+	ft_lstdelone(prevlast->next, del);
+	prevlast->next = NULL;
 }

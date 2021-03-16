@@ -1,27 +1,30 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   target.cpp                                         :+:      :+:    :+:   */
+/*   get_next_line.h                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/09 10:24:29 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/16 00:12:32 by dnakano          ###   ########.fr       */
+/*   Created: 2020/10/18 18:21:05 by dnakano           #+#    #+#             */
+/*   Updated: 2020/10/29 13:17:03 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-extern "C" {
-#include "libft.h"
-}
+#ifndef GET_NEXT_LINE_H
+# define GET_NEXT_LINE_H
 
-bool isAlpha(int n) {
-	return ft_isalpha(n);
-}
+# include "libft.h"
 
-bool isOdd(int n) {
-	return (n % 2);
-}
+# ifndef BUFFER_SIZE
+#  define BUFFER_SIZE	1024
+# endif
 
-bool isEven(int n) {
-	return !(n % 2);
-}
+# ifndef N_FDMAX
+#  define N_FDMAX		256
+# endif
+
+# define GNL_EXITENDF   0
+# define GNL_EXITENDL   1
+# define GNL_EXITERR    -1
+
+#endif

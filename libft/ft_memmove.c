@@ -1,27 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   target.cpp                                         :+:      :+:    :+:   */
+/*   ft_memmove.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/09 10:24:29 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/16 00:12:32 by dnakano          ###   ########.fr       */
+/*   Created: 2020/10/06 08:31:16 by dnakano           #+#    #+#             */
+/*   Updated: 2020/10/07 22:55:43 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-extern "C" {
 #include "libft.h"
-}
 
-bool isAlpha(int n) {
-	return ft_isalpha(n);
-}
+void	*ft_memmove(void *dst, const void *src, size_t len)
+{
+	size_t	i;
+	char	*dst_c;
+	char	*src_c;
 
-bool isOdd(int n) {
-	return (n % 2);
-}
-
-bool isEven(int n) {
-	return !(n % 2);
+	if (!dst && !src)
+		return (NULL);
+	if (dst <= src)
+		return (ft_memcpy(dst, src, len));
+	dst_c = (char *)dst;
+	src_c = (char *)src;
+	i = len;
+	while (i > 0)
+	{
+		dst_c[i - 1] = src_c[i - 1];
+		i--;
+	}
+	return (dst);
 }

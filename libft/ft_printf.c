@@ -1,27 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   target.cpp                                         :+:      :+:    :+:   */
+/*   ft_printf.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/09 10:24:29 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/16 00:12:32 by dnakano          ###   ########.fr       */
+/*   Created: 2020/10/09 07:26:44 by dnakano           #+#    #+#             */
+/*   Updated: 2020/10/29 12:40:40 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-extern "C" {
-#include "libft.h"
-}
+#include "ft_printf.h"
 
-bool isAlpha(int n) {
-	return ft_isalpha(n);
-}
+int				ft_printf(const char *format, ...)
+{
+	int			count;
+	va_list		ap;
 
-bool isOdd(int n) {
-	return (n % 2);
-}
-
-bool isEven(int n) {
-	return !(n % 2);
+	va_start(ap, format);
+	count = 0;
+	while (*format)
+	{
+		if (*format == '%')
+			format = ft_printf_putarg(format + 1, &ap, &count);
+		else
+		{
+			ft_putchar_fd(*(format++), 1);
+			count++;
+		}
+	}
+	va_end(ap);
+	return (count);
 }

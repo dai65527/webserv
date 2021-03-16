@@ -1,27 +1,32 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   target.cpp                                         :+:      :+:    :+:   */
+/*   ft_memccpy.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/09 10:24:29 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/16 00:12:32 by dnakano          ###   ########.fr       */
+/*   Created: 2020/10/06 06:30:16 by dnakano           #+#    #+#             */
+/*   Updated: 2020/10/08 13:14:26 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-extern "C" {
 #include "libft.h"
-}
 
-bool isAlpha(int n) {
-	return ft_isalpha(n);
-}
+void	*ft_memccpy(void *dst, const void *src, int c, size_t n)
+{
+	size_t		i;
+	t_uchar		*dst_c;
+	t_uchar		*src_c;
 
-bool isOdd(int n) {
-	return (n % 2);
-}
-
-bool isEven(int n) {
-	return !(n % 2);
+	dst_c = (t_uchar *)dst;
+	src_c = (t_uchar *)src;
+	i = 0;
+	while (i < n)
+	{
+		dst_c[i] = src_c[i];
+		if (src_c[i] == (t_uchar)c)
+			return (dst_c + i + 1);
+		i++;
+	}
+	return (NULL);
 }
