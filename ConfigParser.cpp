@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/15 10:34:35 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/16 10:48:44 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/16 12:08:18 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,9 +167,9 @@ void ConfigParser::throwError(const std::string& err) {
   std::string msg;
 
   msg.reserve(128);
-  msg = "webserv: config: ";
+  msg = "webserv: error: ConfigParser: ";
   if (line_count_ != 0) {
-    msg += "line: " + std::to_string(line_count_) + ": ";
+    msg += "line " + std::to_string(line_count_) + ": ";
   }
   msg += err;
   throw std::runtime_error(msg);
@@ -252,3 +252,13 @@ std::string ConfigParser::getNextWord() {
   return filecontent_.substr(char_count_origin,
                              char_count_ - char_count_origin);
 }
+
+#ifdef UNIT_TEST
+
+bool operator==(const ConfigParser::DirectiveNode& lhs,
+                const ConfigParser::DirectiveNode& rhs) {
+  return (lhs.line_no == rhs.line_no && lhs.name == rhs.name &&
+          lhs.settings == rhs.settings);
+}
+
+#endif /* UNIT_TEST */

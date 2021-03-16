@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/15 19:58:59 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/16 12:12:30 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,9 @@ class testThrowError : public ::testing::Test {
 TEST(testThrowError, cannotOpenFile) {
   try {
     ConfigParser parser("filenonexist.conf");
-  } catch (std::runtime_error e) {
-    EXPECT_EQ(0,
-              strcmp(e.what(),
-                     "webserv: config: filenonexist.conf: cannot open file"));
+  } catch (const std::runtime_error& e) {
+    EXPECT_STREQ(e.what(),
+                 "webserv: error: ConfigParser: filenonexist.conf: "
+                 "cannot open file");
   }
 }

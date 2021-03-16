@@ -6,21 +6,21 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/15 19:26:25 by dnakano          ###   ########.fr        #
+#    Updated: 2021/03/16 12:30:24 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CXX			:=	clang++
-CPPFLAGS	:=	-Wall -Wextra -Werror
+CPPFLAGS	:=	-Wall -Wextra -Werror -D UNIT_TEST
 
 ### config ###
 SRCNAME		:=	ConfigParser.cpp
 SRCDIR		:=	../../..
 INCLUDEDIR	:=	../../..
 TESTSRCNAME	:=	test_main.cc \
-								test_throwError.cc \
-								test_getNextWord.cc 
-# test_parseDirective.cc
+				test_throwError.cc \
+				test_getNextWord.cc \
+				test_parseDirective.cc
 TESTSRCDIR	:=	.
 ### config ###
 
