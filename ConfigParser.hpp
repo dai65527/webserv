@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/15 10:33:40 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/15 19:51:10 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/16 10:08:13 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,10 @@
 
 class ConfigParser {
  private:
+#ifdef UNIT_TEST
+ public:
+#endif /* UNIT_TEST */
+
   enum ConfigDirectiveType {
     CONF_SERVER,
     CONF_LOCATION,
@@ -66,10 +70,6 @@ class ConfigParser {
 
   ConfigParser(const ConfigParser& ref);
   ConfigParser& operator=(const ConfigParser& rhs);
-
-#ifdef UNIT_TEST
- public:
-#endif /* UNIT_TEST */
   ConfigParser();
 
   void throwError(const std::string& err);
@@ -80,8 +80,6 @@ class ConfigParser {
   void skipSpaceAndComment();
   void checkAndSkipOpeningBrace();
   std::string getNextWord();
-
-  ConfigDirectiveType checkDirectiveType();
 
   MainContextNode parseMainContext();
   ServerContextNode parseServerContext();

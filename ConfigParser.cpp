@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/15 10:34:35 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/15 19:55:21 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/16 10:48:44 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,12 +163,6 @@ ConfigParser::DirectiveNode ConfigParser::parseDirective(
   }
 }
 
-// MainConfig ConfigParser::storeMainConfig(
-//     const ConfigParser::MainContextNode& main_node) {
-//   (void)main_node;
-//   return MainConfig();
-// }
-
 void ConfigParser::throwError(const std::string& err) {
   std::string msg;
 
@@ -230,7 +224,7 @@ void ConfigParser::skipComment() {
 }
 
 void ConfigParser::skipSpaceAndComment() {
-  while (1) {
+  while (filecontent_[char_count_] != '\0') {
     skipSpace();
     if (filecontent_[char_count_] != '#') {
       break;

@@ -11,13 +11,16 @@
 # **************************************************************************** #
 
 CXX			:=	clang++
-CPPFLAGS	:=	-Wall -Wextra -Werror -D UNIT_TEST
+CPPFLAGS	:=	-Wall -Wextra -Werror
 
 ### config ###
 SRCNAME		:=	ConfigParser.cpp
 SRCDIR		:=	../../..
 INCLUDEDIR	:=	../../..
-TESTSRCNAME	:=	test_main.cc test_throwError.cc # must be *.cc NOT *.cpp
+TESTSRCNAME	:=	test_main.cc \
+								test_throwError.cc \
+								test_getNextWord.cc 
+# test_parseDirective.cc
 TESTSRCDIR	:=	.
 ### config ###
 
