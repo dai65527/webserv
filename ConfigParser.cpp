@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/15 10:34:35 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/16 12:08:18 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/16 14:20:16 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,7 +114,7 @@ ConfigParser::LocationContextNode ConfigParser::parseLocationContext() {
   // get rocation
   res.route = getNextWord();
   if (res.route.empty()) {
-    throwError("route expected");
+    throwError("expected route config of location directive");
   }
 
   // check '{'
@@ -153,6 +153,7 @@ ConfigParser::DirectiveNode ConfigParser::parseDirective(
 
     if (word.empty()) {
       if (filecontent_[char_count_] == ';') {
+        char_count_++;
         return res;
       } else {
         throwError("expected ';'");
@@ -259,6 +260,12 @@ bool operator==(const ConfigParser::DirectiveNode& lhs,
                 const ConfigParser::DirectiveNode& rhs) {
   return (lhs.line_no == rhs.line_no && lhs.name == rhs.name &&
           lhs.settings == rhs.settings);
+}
+
+bool operator==(const ConfigParser::LocationContextNode& lhs,
+                const ConfigParser::LocationContextNode& rhs) {
+  return (lhs.line_no == rhs.line_no && lhs.route == rhs.route &&
+          lhs.directives == rhs.directives);
 }
 
 #endif /* UNIT_TEST */

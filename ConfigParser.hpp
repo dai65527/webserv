@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/15 10:33:40 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/16 11:32:29 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/16 14:03:48 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,6 +99,9 @@ class ConfigParser {
 
 bool operator==(const ConfigParser::DirectiveNode& lhs,
                 const ConfigParser::DirectiveNode& rhs);
+
+bool operator==(const ConfigParser::LocationContextNode& lhs,
+                const ConfigParser::LocationContextNode& rhs);
 
 #endif /* UNIT_TEST */
 
