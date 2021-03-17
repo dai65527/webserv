@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/17 19:56:36 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/17 21:04:25 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 class test_parseRoot : public ::testing::Test {
  protected:
+  bool flg_thrown = false;
   CommonConfigStore store;
   std::list<std::string> settings;
 
@@ -29,4 +30,38 @@ TEST_F(test_parseRoot, normal) {
   settings.push_back("/root/");
   EXPECT_NO_THROW(store.parseRoot(settings));
   EXPECT_EQ(store.getRoot(), settings.front());
+}
+
+TEST_F(test_parseRoot, emptySetting) {
+  try {
+    store.parseRoot(settings);
+  } catch (const std::runtime_error& e) {
+    EXPECT_STREQ(e.what(), "root: empty root setting");
+    flg_thrown = true;
+  }
+  EXPECT_TRUE(flg_thrown);
+}
+
+TEST_F(test_parseRoot, duplicateSetting) {
+  settings.push_back("/root/");
+  try {
+    store.parseRoot(settings);
+    store.parseRoot(settings);
+  } catch (const std::runtime_error& e) {
+    EXPECT_STREQ(e.what(), "root: directive duplicated");
+    flg_thrown = true;
+  }
+  EXPECT_TRUE(flg_thrown);
+}
+
+TEST_F(test_parseRoot, settingInvalidNumber) {
+  settings.push_back("/root");
+  settings.push_back("/root2");
+  try {
+    store.parseRoot(settings);
+  } catch (const std::runtime_error& e) {
+    EXPECT_STREQ(e.what(), "root: invalid number of setting");
+    flg_thrown = true;
+  }
+  EXPECT_TRUE(flg_thrown);
 }
