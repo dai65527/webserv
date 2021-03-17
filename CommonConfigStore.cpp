@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/17 21:05:08 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/17 22:07:04 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,9 +77,7 @@ const unsigned long& CommonConfigStore::getLimitExcept() const {
 void CommonConfigStore::parseRoot(const std::list<std::string>& settings) {
   if (!root_.empty()) {
     throw std::runtime_error("root: directive duplicated");
-  } else if (settings.empty()) {
-    throw std::runtime_error("root: empty root setting");
-  } else if (settings.size() > 1) {
+  } else if (settings.size() != 1) {
     throw std::runtime_error("root: invalid number of setting");
   }
   root_ = settings.front();

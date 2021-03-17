@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/17 21:04:25 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/17 22:07:35 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ TEST_F(test_parseRoot, emptySetting) {
   try {
     store.parseRoot(settings);
   } catch (const std::runtime_error& e) {
-    EXPECT_STREQ(e.what(), "root: empty root setting");
+    EXPECT_STREQ(e.what(), "root: invalid number of setting");
     flg_thrown = true;
   }
   EXPECT_TRUE(flg_thrown);
