@@ -82,3 +82,10 @@ void CommonConfigStore::parseRoot(const std::list<std::string>& settings) {
   }
   root_ = settings.front();
 }
+
+void CommonConfigStore::parseIndex(const std::list<std::string>& settings) {
+  if (settings.empty()) {
+    throw std::runtime_error("index: invalid number of setting");
+  }
+  index_.insert(index_.end(), settings.begin(), settings.end());
+}

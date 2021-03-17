@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/17 19:50:06 by dnakano          ###   ########.fr        #
+#    Updated: 2021/03/17 21:51:25 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,8 @@ SRCNAME		:=	CommonConfigStore.cpp
 SRCDIR		:=	../../..
 INCLUDEDIR	:=	../../..
 TESTSRCNAME	:=	test_main.cc \
-				test_parseRoot.cc
+				test_parseRoot.cc \
+				test_parseIndex.cc
 TESTSRCDIR	:=	.
 ### config ###
 
