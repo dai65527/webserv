@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/15 10:34:35 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/16 14:20:16 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/17 08:24:39 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ ConfigParser::ServerContextNode ConfigParser::parseServerContext() {
 
     if (word.empty()) {
       if (filecontent_[char_count_] == '}') {
+        char_count_++;
         return res;
       } else {
         throwError("expected '}'");
@@ -126,6 +127,7 @@ ConfigParser::LocationContextNode ConfigParser::parseLocationContext() {
 
     if (word.empty()) {
       if (filecontent_[char_count_] == '}') {
+        char_count_++;
         return res;
       } else {
         throwError("expected '}'");
@@ -254,7 +256,56 @@ std::string ConfigParser::getNextWord() {
                              char_count_ - char_count_origin);
 }
 
+// for debug
 #ifdef UNIT_TEST
+#include <ostream>
+
+std::ostream& operator<<(std::ostream& out,
+                         const ConfigParser::DirectiveNode& x) {
+  out << "line: " << x.line_no << " name: " << x.name << " settings: ";
+  std::list<std::string>::const_iterator itr = x.settings.begin();
+  while (itr != x.settings.end()) {
+    out << *itr;
+    ++itr;
+    if (itr != x.settings.end()) {
+      out << ", ";
+    }
+  }
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const ConfigParser::LocationContextNode& x) {
+  out << "    line: " << x.line_no << " route: " << x.route << std::endl;
+  out << "    directives: " << std::endl;
+  for (std::list<ConfigParser::DirectiveNode>::const_iterator itr =
+           x.directives.begin();
+       itr != x.directives.end(); ++itr) {
+    out << "      " << *itr << std::endl;
+  }
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const ConfigParser::ServerContextNode& x) {
+  out << "  line: " << x.line_no << std::endl;
+  out << "  locations:" << std::endl;
+  for (std::list<ConfigParser::LocationContextNode>::const_iterator itr =
+           x.locations.begin();
+       itr != x.locations.end(); ++itr) {
+    out << *itr;
+  }
+  out << "  directives:" << std::endl;
+  for (std::list<ConfigParser::DirectiveNode>::const_iterator itr =
+           x.directives.begin();
+       itr != x.directives.end(); ++itr) {
+    out << "    " << *itr << std::endl;
+  }
+  return out;
+}
+
+// std::ostream& operator<<(const std::ostream& out,
+//                          const ConfigParser::LocationContextNode& x);
 
 bool operator==(const ConfigParser::DirectiveNode& lhs,
                 const ConfigParser::DirectiveNode& rhs) {
@@ -265,6 +316,12 @@ bool operator==(const ConfigParser::DirectiveNode& lhs,
 bool operator==(const ConfigParser::LocationContextNode& lhs,
                 const ConfigParser::LocationContextNode& rhs) {
   return (lhs.line_no == rhs.line_no && lhs.route == rhs.route &&
+          lhs.directives == rhs.directives);
+}
+
+bool operator==(const ConfigParser::ServerContextNode& lhs,
+                const ConfigParser::ServerContextNode& rhs) {
+  return (lhs.line_no == rhs.line_no && lhs.locations == rhs.locations &&
           lhs.directives == rhs.directives);
 }
 
