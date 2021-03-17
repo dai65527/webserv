@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/16 18:54:47 by dnakano          ###   ########.fr        #
+#    Updated: 2021/03/17 12:21:29 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,7 +22,8 @@ TESTSRCNAME	:=	test_main.cc \
 				test_getNextWord.cc \
 				test_parseDirective.cc \
 				test_parseLocation.cc \
-				test_parseServer.cc
+				test_parseServer.cc \
+				test_parseMainContext.cc
 TESTSRCDIR	:=	.
 ### config ###
 

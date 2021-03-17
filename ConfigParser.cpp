@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/15 10:34:35 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/17 08:24:39 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/17 18:05:07 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,8 +59,8 @@ ConfigParser::MainContextNode ConfigParser::parseMainContext() {
       if (filecontent_[char_count_] == '\0') {
         return res;
       } else {
-        throwError("unexpected \"" + std::string(1, filecontent_[char_count_]) +
-                   '\"');
+        throwError("unexpected \'" + std::string(1, filecontent_[char_count_]) +
+                   '\'');
         return res;
       }
     } else if (directive_name == "server") {
@@ -304,8 +304,22 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-// std::ostream& operator<<(const std::ostream& out,
-//                          const ConfigParser::LocationContextNode& x);
+std::ostream& operator<<(std::ostream& out,
+                         const ConfigParser::MainContextNode x) {
+  out << "servers:" << std::endl;
+  for (std::list<ConfigParser::ServerContextNode>::const_iterator itr =
+           x.servers.begin();
+       itr != x.servers.end(); ++itr) {
+    out << *itr;
+  }
+  out << "directives:" << std::endl;
+  for (std::list<ConfigParser::DirectiveNode>::const_iterator itr =
+           x.directives.begin();
+       itr != x.directives.end(); ++itr) {
+    out << "  " << *itr << std::endl;
+  }
+  return out;
+}
 
 bool operator==(const ConfigParser::DirectiveNode& lhs,
                 const ConfigParser::DirectiveNode& rhs) {
@@ -323,6 +337,11 @@ bool operator==(const ConfigParser::ServerContextNode& lhs,
                 const ConfigParser::ServerContextNode& rhs) {
   return (lhs.line_no == rhs.line_no && lhs.locations == rhs.locations &&
           lhs.directives == rhs.directives);
+}
+
+bool operator==(const ConfigParser::MainContextNode& lhs,
+                const ConfigParser::MainContextNode& rhs) {
+  return (lhs.servers == rhs.servers && lhs.directives == rhs.directives);
 }
 
 #endif /* UNIT_TEST */

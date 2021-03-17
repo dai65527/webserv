@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/15 10:33:40 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/17 08:18:22 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/17 12:48:25 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,6 +107,9 @@ bool operator==(const ConfigParser::LocationContextNode& lhs,
 bool operator==(const ConfigParser::ServerContextNode& lhs,
                 const ConfigParser::ServerContextNode& rhs);
 
+bool operator==(const ConfigParser::MainContextNode& lhs,
+                const ConfigParser::MainContextNode& rhs);
+
 #include <ostream>
 
 std::ostream& operator<<(std::ostream& out,
@@ -120,6 +123,9 @@ std::ostream& operator<<(std::ostream& out,
 
 std::ostream& operator<<(std::ostream& out,
                          const ConfigParser::LocationContextNode& x);
+
+std::ostream& operator<<(std::ostream& out,
+                         const ConfigParser::MainContextNode x);
 
 #endif /* UNIT_TEST */
 
