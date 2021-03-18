@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/18 14:03:18 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/18 14:41:46 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,4 +177,13 @@ void CommonConfigStore::parseBaseAuth(const std::list<std::string>& settings) {
   }
   // need to check language name???
   base_auth_ = settings.front();
+}
+
+void CommonConfigStore::parseAuthBasicUserFile(
+    const std::list<std::string>& settings) {
+  if (settings.empty()) {
+    throw std::runtime_error("auth_basic_user_file: invalid number of setting");
+  }
+  auth_basic_user_file_.insert(auth_basic_user_file_.end(), settings.begin(),
+                               settings.end());
 }
