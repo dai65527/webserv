@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 21:48:48 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/16 00:04:36 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/18 21:52:31 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include <signal.h>
 
 #include <iostream>
-#define DEFALUT_PORT 8080
+#define DEFALUT_PORT 8088
 
 Webserv::Webserv() {
   // initialize timeout of select
@@ -53,7 +53,7 @@ Webserv::~Webserv() {
 
 Webserv::Webserv(const Webserv& other) {}
 
-Webserv& Webserv::operator=(const Webserv& other) {}
+Webserv& Webserv::operator=(const Webserv& other) {return *this;}
 
 int Webserv::setToSelect() {
   // initialize fd sets
@@ -73,6 +73,7 @@ int Webserv::setToSelect() {
        itr != sessions_.end(); ++itr) {
     max_fd_ = std::max(max_fd_, (*itr)->setFdToSelect(&rfds_, &wfds_));
   }
+  return 0;
 }
 
 int Webserv::selectAndExecute() {

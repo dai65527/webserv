@@ -1,30 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/10 00:11:38 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/16 23:26:53 by dhasegaw         ###   ########.fr       */
+/*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
+/*   Updated: 2021/03/17 00:04:10 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <iostream>
-#include <stdexcept>
+#include "Response.hpp"
 
-#include "Webserv.hpp"
+Response::Response() {}
 
-int main(void) {
-  Webserv nginDX;
+Response::~Response() {}
 
-  try {
-    while (1) {
-      nginDX.setToSelect();
-      nginDX.selectAndExecute();
-    }
-  } catch (std::exception e) {
-    std::cout << e.what() << std::endl;
-  }
-  return 0;
-}
+// int Response::appendRawData(char* data) {raw_respose_.append(data);}
+
+// int Response::createRawData(char* data) {}
+
+// const char* Response::getRawReponse() const {return raw_response_;} {}
+
+// void Response::incrementBytesAlreadySent(size_t bytes) {}

@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/07 23:25:56 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/15 22:44:33 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/18 21:17:33 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,13 +23,14 @@ CgiHandler::CgiHandler() {}
 CgiHandler::~CgiHandler() {}
 
 CgiHandler::CgiHandler(const CgiHandler& other) {}
-CgiHandler& CgiHandler::operator=(const CgiHandler& other) {}
+CgiHandler& CgiHandler::operator=(const CgiHandler& other) {return *this;}
 
 pid_t CgiHandler::getPid() const { return pid_; }
 int CgiHandler::getInputFd() const { return input_fd_; }
 int CgiHandler::getOutputFd() const { return output_fd_; }
 
-HTTPStatusCode CgiHandler::createCgiProcess(const std::string& path) {
+// HTTPStatusCode CgiHandler::createCgiProcess(const std::string& path) {
+HTTPStatusCode CgiHandler::createCgiProcess() {
   // create a pipe connect to stdin of cgi process
   int pipe_stdin[2];
   if (pipe(pipe_stdin) == -1) {
@@ -102,14 +103,13 @@ int CgiHandler::writeToCgi(char* buf, size_t size) {
   return (write(input_fd_, buf, size));
 }
 
-int CgiHandler::finishWriting() {}
+// int CgiHandler::finishWriting() {}
 
 int CgiHandler::readFromCgi(char* buf, size_t size) {
   ssize_t ret;
-  char read_buf[BUFFER_SIZE];
 
   // read from cgi process
-  ret = read(output_fd_, read_buf, BUFFER_SIZE);
+  ret = read(output_fd_, buf, BUFFER_SIZE);
 
   // retry seveal times even if read failed
   if (ret == -1) {

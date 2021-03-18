@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/16 00:08:15 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/18 21:33:04 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,7 +135,7 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
       return (1);
     }
   } else if (FD_ISSET(cgi_handler_.getOutputFd(), rfds)) {
-    if (cgi_handler_.readFromCgi() == -1) {
+    if (readFromCgi() == -1) {
       return (-1);
     } else {
       std::cout << "[webserv] read data from cgi" << std::endl;
@@ -158,7 +158,7 @@ void Session::startCreateResponse() {
     int http_status = cgi_handler_.createCgiProcess();  //
     if (http_status != HTTP_200) {
       std::cout << "[error] failed to create cgi process" << std::endl;
-      response_buf_ = "cannot execute cgi";  // TODO: func create error
+      // response_buf_ = "cannot execute cgi";  // TODO: func create error
       // response
       status_ = SESSION_FOR_CLIENT_SEND;
       return;
@@ -170,7 +170,7 @@ void Session::startCreateResponse() {
   } else if (!request_.getBuf().compare(0, 4, "read", 0, 4)) {
     file_fd_ = open("hello.txt", O_RDONLY);  // toriaezu
     if (file_fd_ == -1) {
-      response_buf_ = "404 not found"; //TODO:
+      // response_buf_ = "404 not found"; //TODO:
       status_ = SESSION_FOR_CLIENT_SEND;
       return;
     }
@@ -182,20 +182,22 @@ void Session::startCreateResponse() {
   } else if (!request_.getBuf().compare(0, 4, "write", 0, 4)) {
     file_fd_ = open("./test_req.txt", O_RDWR | O_CREAT, 0777);  // toriaezu
     if (file_fd_ == -1) {
-      response_buf_ = "503 forbidden";
-      return SESSION_FOR_CLIENT_SEND;
+      // response_buf_ = "503 forbidden";
+      status_ = SESSION_FOR_CLIENT_SEND;
+			return ;
     }
     fcntl(file_fd_, F_SETFL, O_NONBLOCK);
     status_ = SESSION_FOR_FILE_WRITE;
     return;
   }
 
-  response_buf_ = request_.getBody();  // TODO: create function to make response
+  response_.raw_response_.append(request_.getBuf());  // TODO: create function to make response
   status_ = SESSION_FOR_CLIENT_SEND;
   return;
 }
 
 int Session::receiveRequest() {
+	int ret;
   ret = request_.receive(sock_fd_);
   if (ret == -1) {
     if (retry_count_ == RETRY_TIME_MAX) {
@@ -231,7 +233,7 @@ int Session::writeToFile() {
       // close(file_fd_);
 
       // send response to notify request failed
-       response_buf_ = "500 server error"; /* (tmp setter) error msg
+      //  response_buf_ = "500 server error"; /* (tmp setter) error msg
       //  generator in Request class*/
       status_ = SESSION_FOR_CLIENT_SEND;  // to send response to client
       return 0;
@@ -252,7 +254,7 @@ int Session::writeToFile() {
     close(file_fd_);
 
     // create response to notify the client
-    response_buf_ = "201 created";
+    // response_buf_ = "201 created";
     status_ = SESSION_FOR_CLIENT_SEND;  // to send response to client
     return 0;
   }
@@ -276,8 +278,8 @@ int Session::readFromFile() {
       // close file and make error responce
       std::cout << "[error] close file" << std::endl;
       close(file_fd_);
-      response_buf_ =
-          "500 internal server error";  // TODO: make response func
+      // response_buf_ =
+          // "500 internal server error";  // TODO: make response func
 
       // to send error response to client
       status_ = SESSION_FOR_CLIENT_SEND;
@@ -292,13 +294,13 @@ int Session::readFromFile() {
 
   // check if reached eof
   if (n == 0) {
-    close(cgi_output_fd_);              // close pipefd
+    close(cgi_handler_.getOutputFd());              // close pipefd
     status_ = SESSION_FOR_CLIENT_SEND;  // set for send response
     return 0;
   }
 
   // append data to response
-  response_buf_.append(read_buf, n);
+  response_.raw_response_.append(read_buf);
 
   return 0;
 }
@@ -307,7 +309,7 @@ int Session::writeToCgi() {
 	 ssize_t n;
 
   // write to cgi process
-  n = cgi_handler_.writeToCgi(request_.getBody().c_str(), request_.getBody().length());
+  n = cgi_handler_.writeToCgi(const_cast<char *>(request_.buf_.c_str()), request_.getBuf().length());
 
   // retry several times even if write failed
   if (n == -1) {
@@ -334,10 +336,10 @@ int Session::writeToCgi() {
   retry_count_ = 0;
 
   // erase written data
-  request_.eraseBody(0, n);
+  request_.eraseBuf(n);
 
   // written all data
-  if (request_getBody().empty()) {
+  if (request_.getBuf().empty()) {
     close(cgi_handler_.getInputFd());
     status_ = SESSION_FOR_CGI_READ;  // to read from cgi process
     return 0;
@@ -351,7 +353,7 @@ int Session::readFromCgi() {
 	ssize_t n;
 
   // read from cgi process
-	n = cgi_handler_.readFromCgi(request_.getBody().c_str(), request_.getBody().length());
+	n = cgi_handler_.readFromCgi(const_cast<char *>(request_.buf_.c_str()), request_.buf_.length());
 
   // retry seveal times even if read failed
   if (n == -1) {
@@ -388,7 +390,7 @@ int Session::readFromCgi() {
   }
 
   // append data to response
-  response_buf_.append(read_buf, n);
+  response_.raw_response_.append(request_.getBuf(), n);
 
   return 0;
 }
@@ -396,7 +398,7 @@ int Session::readFromCgi() {
 int Session::sendResponse() {
   ssize_t n;
 
-  n = send(sock_fd_, response_buf_.c_str(), response_buf_.length(), 0);
+  n = send(sock_fd_, response_.raw_response_.c_str(), response_.raw_response_.length(), 0);
   if (n == -1) {
     std::cout << "[error] failed to send response" << std::endl;
     if (retry_count_ == RETRY_TIME_MAX) {
@@ -407,8 +409,8 @@ int Session::sendResponse() {
     retry_count_++;
     return 0;
   }
-  response_buf_.erase(0, n);  // erase data already sent
-  if (response_buf_.empty()) {
+  response_.raw_response_.erase(0, n);  // erase data already sent
+  if (response_.raw_response_.empty()) {
     close(sock_fd_);
     return 1;  // return 1 if all data sent (this session will be closed)
   }

@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/15 23:10:49 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/18 21:19:42 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 
 #include <sys/types.h>
 #include <unistd.h>
+#include <signal.h>
+#include <sys/socket.h>
 
 #include "CgiHandler.hpp"
 #include "LocationConfig.hpp"

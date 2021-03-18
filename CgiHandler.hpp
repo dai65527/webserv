@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 22:01:23 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/15 22:44:34 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/17 00:11:28 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,8 @@ class CgiHandler {
   pid_t getPid() const;
   int getInputFd() const;
   int getOutputFd() const;
-  HTTPStatusCode createCgiProcess(const std::string& path);
+  // HTTPStatusCode createCgiProcess(const std::string& path);
+  HTTPStatusCode createCgiProcess();
   int writeToCgi(char* buf, size_t size);
   int finishWriting();
   int readFromCgi(char* buf, size_t size);
