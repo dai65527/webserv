@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/18 13:33:35 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/18 13:38:58 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,4 +157,14 @@ void CommonConfigStore::parseCharset(const std::list<std::string>& settings) {
   }
   // need to check charset name???
   charset_ = settings.front();
+}
+
+void CommonConfigStore::parseLanguage(const std::list<std::string>& settings) {
+  if (!language_.empty()) {
+    throw std::runtime_error("language: directive duplicated");
+  } else if (settings.size() != 1) {
+    throw std::runtime_error("language: invalid number of setting");
+  }
+  // need to check language name???
+  language_ = settings.front();
 }

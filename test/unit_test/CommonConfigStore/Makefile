@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/18 13:29:12 by dnakano          ###   ########.fr        #
+#    Updated: 2021/03/18 13:38:21 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,7 +23,8 @@ TESTSRCNAME	:=	test_main.cc \
 				test_parseErrorPage.cc \
 				test_parseAutoIndex.cc \
 				test_parseCgiExtension.cc \
-				test_parseCharset.cc
+				test_parseCharset.cc \
+				test_parseLanguage.cc
 TESTSRCDIR	:=	.
 ### config ###
 
