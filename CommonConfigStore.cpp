@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/18 13:00:17 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/18 13:33:35 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,4 +147,14 @@ void CommonConfigStore::parseCgiExtension(
     throw std::runtime_error("cgi_extension: invalid number of setting");
   }
   cgi_extension_.insert(cgi_extension_.end(), settings.begin(), settings.end());
+}
+
+void CommonConfigStore::parseCharset(const std::list<std::string>& settings) {
+  if (!charset_.empty()) {
+    throw std::runtime_error("charset: directive duplicated");
+  } else if (settings.size() != 1) {
+    throw std::runtime_error("charset: invalid number of setting");
+  }
+  // need to check charset name???
+  charset_ = settings.front();
 }
