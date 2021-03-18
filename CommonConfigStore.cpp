@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/18 13:38:58 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/18 14:03:18 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,4 +167,14 @@ void CommonConfigStore::parseLanguage(const std::list<std::string>& settings) {
   }
   // need to check language name???
   language_ = settings.front();
+}
+
+void CommonConfigStore::parseBaseAuth(const std::list<std::string>& settings) {
+  if (!base_auth_.empty()) {
+    throw std::runtime_error("base_auth: directive duplicated");
+  } else if (settings.size() != 1) {
+    throw std::runtime_error("base_auth: invalid number of setting");
+  }
+  // need to check language name???
+  base_auth_ = settings.front();
 }
