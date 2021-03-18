@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/18 14:41:46 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/18 18:41:19 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@ extern "C" {
 CommonConfigStore::CommonConfigStore() {
   autoindex_ = false;
   flg_autoindex_set_ = false;
+  client_max_body_size_ = 1000000;
+  flg_client_max_body_size_set_ = false;
 }
 
 CommonConfigStore::CommonConfigStore(const CommonConfigStore& ref) {
@@ -186,4 +188,40 @@ void CommonConfigStore::parseAuthBasicUserFile(
   }
   auth_basic_user_file_.insert(auth_basic_user_file_.end(), settings.begin(),
                                settings.end());
+}
+
+void CommonConfigStore::parseClientMaxBodySize(
+    const std::list<std::string>& settings) {
+  if (flg_client_max_body_size_set_) {
+    throw std::runtime_error("client_max_body_size: directive duplicated");
+  } else if (settings.size() != 1) {
+    throw std::runtime_error("client_max_body_size: invalid number of setting");
+  }
+
+  client_max_body_size_ = 1;
+
+  // check value of setting
+  for (const char* value_str = settings.front().c_str(); *value_str != '\0';
+       value_str++) {
+    if (!ft_isdigit(*value_str)) {
+      if ((*value_str == 'k' || *value_str == 'K') &&
+          *(value_str + 1) == '\0' && settings.front().length() != 1) {
+        client_max_body_size_ = 1000;
+        break;
+      } else if ((*value_str == 'm' || *value_str == 'M') &&
+                 *(value_str + 1) == '\0' && settings.front().length() != 1) {
+        client_max_body_size_ = 1000000;
+        break;
+      } else if ((*value_str == 'g' || *value_str == 'G') &&
+                 *(value_str + 1) == '\0' && settings.front().length() != 1) {
+        client_max_body_size_ = 1000000000;
+        break;
+      }
+      throw std::runtime_error("client_max_body_size: invalid value \"" +
+                               settings.front() + "\"");
+    }
+  }
+
+  client_max_body_size_ *= ft_atoul(settings.front().c_str());
+  flg_client_max_body_size_set_ = true;
 }

@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 17:40:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/18 12:01:44 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/18 18:30:52 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ class CommonConfigStore {
   std::string root_;                                  // root directive
   std::list<std::string> index_;                      // index directive
   std::map<HTTPStatusCode, std::string> error_page_;  // error_page directive
-  bool autoindex_;                                   // autoindex directive
+  bool autoindex_;                                    // autoindex directive
   bool flg_autoindex_set_;                // true if autoindex already set
   std::list<std::string> cgi_extension_;  // cgi_extension directive
   std::string charset_;                   // charset directive
@@ -39,6 +39,7 @@ class CommonConfigStore {
   std::list<std::string>
       auth_basic_user_file_;            // auth_basic_userfile directive
   unsigned long client_max_body_size_;  // client_max_body_size directive
+  bool flg_client_max_body_size_set_;   // true if cmds already set
   unsigned long limit_except_;          // allowed functions
 
  public:
@@ -83,6 +84,8 @@ class CommonConfigStore {
   void parseAuthBasicUserFile(const std::list<std::string>& settings);
   void parseClientMaxBodySize(const std::list<std::string>& settings);
   void parseLimitExcept(const std::list<std::string>& settings);
+
+  // virtual void checkDirectives() const;
 };
 
 #endif /* COMMONCONFIGSTORE_HPP */
