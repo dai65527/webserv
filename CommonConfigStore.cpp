@@ -6,11 +6,17 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/17 22:07:04 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/18 10:19:02 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "CommonConfigStore.hpp"
+
+#include "webserv_utils.hpp"
+
+extern "C" {
+#include "libft.h"
+}
 
 CommonConfigStore::CommonConfigStore() {}
 
@@ -88,4 +94,28 @@ void CommonConfigStore::parseIndex(const std::list<std::string>& settings) {
     throw std::runtime_error("index: invalid number of setting");
   }
   index_.insert(index_.end(), settings.begin(), settings.end());
+}
+
+void CommonConfigStore::parseErrorPage(const std::list<std::string>& settings) {
+  HTTPStatusCode code;
+
+  // check number of settings
+  if (settings.size() < 2) {
+    throw std::runtime_error("error_page: invalid number of setting");
+  }
+
+  // set all settings
+  std::list<std::string>::const_iterator itr;
+  std::list<std::string>::const_iterator itr_end = --settings.end();
+  for (itr = settings.begin(); itr != itr_end; ++itr) {
+    // check code is valid (must be between 300 and 599 because it's an "error")
+    code = isHttpStatusCode(ft_atoi(itr->c_str()));
+    if (code == HTTP_NOMATCH) {
+      throw std::runtime_error("error_page: invalid value \"" +
+                              *itr + "\"");
+    } else if (code < 300) {
+      throw std::runtime_error("error_page: value must be between 300 and 599");
+    }
+    error_page_[code] = settings.back();//settings.back();
+  }
 }
