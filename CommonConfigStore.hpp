@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 17:40:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/17 19:39:45 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/18 12:01:44 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,11 +30,12 @@ class CommonConfigStore {
   std::string root_;                                  // root directive
   std::list<std::string> index_;                      // index directive
   std::map<HTTPStatusCode, std::string> error_page_;  // error_page directive
-  bool auto_index_;                                   // autoindex directive
-  std::list<std::string> cgi_extension_;              // cgi_extension directive
-  std::string charset_;                               // charset directive
-  std::string language_;                              // launuage directive
-  std::string base_auth_;                             // base_auth directive
+  bool autoindex_;                                   // autoindex directive
+  bool flg_autoindex_set_;                // true if autoindex already set
+  std::list<std::string> cgi_extension_;  // cgi_extension directive
+  std::string charset_;                   // charset directive
+  std::string language_;                  // launuage directive
+  std::string base_auth_;                 // base_auth directive
   std::list<std::string>
       auth_basic_user_file_;            // auth_basic_userfile directive
   unsigned long client_max_body_size_;  // client_max_body_size directive

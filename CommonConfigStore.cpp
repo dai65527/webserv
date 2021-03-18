@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/18 10:19:02 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/18 12:15:04 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,10 @@ extern "C" {
 #include "libft.h"
 }
 
-CommonConfigStore::CommonConfigStore() {}
+CommonConfigStore::CommonConfigStore() {
+  autoindex_ = false;
+  flg_autoindex_set_ = false;
+}
 
 CommonConfigStore::CommonConfigStore(const CommonConfigStore& ref) {
   *this = ref;
@@ -29,7 +32,8 @@ CommonConfigStore& CommonConfigStore::operator=(const CommonConfigStore& rhs) {
     root_ = rhs.root_;
     index_ = rhs.index_;
     error_page_ = rhs.error_page_;
-    auto_index_ = rhs.auto_index_;
+    autoindex_ = rhs.autoindex_;
+    flg_autoindex_set_ = rhs.flg_autoindex_set_;
     cgi_extension_ = rhs.cgi_extension_;
     charset_ = rhs.charset_;
     language_ = rhs.language_;
@@ -55,7 +59,7 @@ const std::map<HTTPStatusCode, std::string>& CommonConfigStore::getErrorPage()
   return error_page_;
 }
 
-bool CommonConfigStore::getAutoIndex() const { return auto_index_; }
+bool CommonConfigStore::getAutoIndex() const { return autoindex_; }
 
 const std::list<std::string>& CommonConfigStore::getCgiExtension() const {
   return cgi_extension_;
@@ -111,11 +115,28 @@ void CommonConfigStore::parseErrorPage(const std::list<std::string>& settings) {
     // check code is valid (must be between 300 and 599 because it's an "error")
     code = isHttpStatusCode(ft_atoi(itr->c_str()));
     if (code == HTTP_NOMATCH) {
-      throw std::runtime_error("error_page: invalid value \"" +
-                              *itr + "\"");
+      throw std::runtime_error("error_page: invalid value \"" + *itr + "\"");
     } else if (code < 300) {
       throw std::runtime_error("error_page: value must be between 300 and 599");
     }
-    error_page_[code] = settings.back();//settings.back();
+    error_page_[code] = settings.back();  // settings.back();
   }
+}
+
+void CommonConfigStore::parseAutoIndex(const std::list<std::string>& settings) {
+  if (flg_autoindex_set_) {
+    throw std::runtime_error("autoindex: directive duplicated");
+  } else if (settings.size() != 1) {
+    throw std::runtime_error("autoindex: invalid number of setting");
+  }
+
+  if (!settings.front().compare("on")) {
+    autoindex_ = true;
+  } else if (!settings.front().compare("off")) {
+    autoindex_ = false;
+  } else {
+    throw std::runtime_error("autoindex: invalid value \"" + settings.front() +
+                             "\"");
+  }
+  flg_autoindex_set_ = true;
 }
