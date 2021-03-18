@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 21:48:48 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/18 21:52:31 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/19 02:07:28 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include <signal.h>
 
 #include <iostream>
-#define DEFALUT_PORT 8088
+#define DEFAULT_PORT 8088
 
 Webserv::Webserv() {
   // initialize timeout of select
@@ -30,7 +30,7 @@ Webserv::Webserv() {
   // sockets_(1);//pointerにするか？
   Socket* sock = new Socket;
   sockets_.push_back(sock);
-  (*sockets_.begin())->init(DEFALUT_PORT, 0);
+  (*sockets_.begin())->init(DEFAULT_PORT, 0);
   std::cout << "socket initialized" << std::endl;
 }
 

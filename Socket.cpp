@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 23:34:23 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/06 01:50:29 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/19 02:14:57 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ void Socket::init(int port, int ip) {
 
   // create addressing info
   addr_in_.sin_family = AF_INET;  // specify address family is IPv4
-  addr_in_.sin_addr.s_addr = ip;  // accept IP address (if all, use INADDR_ANY)
+  addr_in_.sin_addr.s_addr = INADDR_ANY;  // accept IP address (if all, use INADDR_ANY)
   addr_in_.sin_port = htons(port);  // convert port number to big endian
                                     // TODO: need to create "ft_htons"
   // bind address to the fd of socket
@@ -92,7 +92,12 @@ void Socket::init(int port, int ip) {
     close(fd_);
     throw std::runtime_error("webserv: Socket: cannot initialize socket");
   }
-
+  
+  // make the socket ready to accept connection
+  if (listen(fd_, SOCKET_QUE_LEN) == -1) {
+    close(fd_);
+    throw std::runtime_error("webserv: Socket: cannot initialize socket");
+  }
   // initialize address length
   addrlen_ = sizeof(struct sockaddr_in);
 }
