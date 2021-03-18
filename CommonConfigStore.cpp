@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/18 12:15:04 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/18 13:00:17 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,4 +139,12 @@ void CommonConfigStore::parseAutoIndex(const std::list<std::string>& settings) {
                              "\"");
   }
   flg_autoindex_set_ = true;
+}
+
+void CommonConfigStore::parseCgiExtension(
+    const std::list<std::string>& settings) {
+  if (settings.empty()) {
+    throw std::runtime_error("cgi_extension: invalid number of setting");
+  }
+  cgi_extension_.insert(cgi_extension_.end(), settings.begin(), settings.end());
 }
