@@ -40,21 +40,21 @@ class ServerOnlyConfigStore {
 
   // getters
   const std::map<in_addr_t, int>& getListen() const;
-  const std::list<std::string>& serverName() const;
+  const std::list<std::string>& getServerName() const;
 
   /*
   ** persers
   **
-  ** Take content settings as string and then parse it and store the results.
-  ** Return values:
-  **  0: successfully parsed and stored the result
-  **  1: syntax error
-  **  2: wrong value was set
-  **  3: duplicate value (only for directive cannot be duplicated)
+  ** These function may throw on error.
+  **  - syntax error
+  **  - wrong value was set
+  **  - duplicate value (only for directive cannot be duplicated)
   */
 
-  int parseListen(const std::string& settings);
-  int parseServerName(const std::string& settings);
+  void parseListen(const std::list<std::string>& settings);
+  void parseServerName(const std::list<std::string>& settings);
+  
+  int checkDirective();
 };
 
 #endif /* SERVERONLYCONFIGSTORE_HPP */
