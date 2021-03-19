@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/19 11:31:25 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/19 11:45:14 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/19 12:04:01 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,5 +52,12 @@ void ServerLocationConfigStore::parseUploadPass(
   upload_pass_ = settings.front();
 }
 
-// void ServerLocationConfigStore::parseUploadStore(const std::string&
-// settings);
+void ServerLocationConfigStore::parseUploadStore(
+    const std::list<std::string>& settings) {
+  if (!upload_store_.empty()) {
+    throw std::runtime_error("upload_store: directive duplicated");
+  } else if (settings.size() != 1) {
+    throw std::runtime_error("upload_store: invalid number of setting");
+  }
+  upload_store_ = settings.front();
+}
