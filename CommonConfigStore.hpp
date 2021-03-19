@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 17:40:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/18 18:30:52 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/19 09:51:54 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <map>
 #include <string>
 
+#include "HttpMethodFlag.hpp"
 #include "HttpStatusCode.hpp"
 
 /*
@@ -39,8 +40,9 @@ class CommonConfigStore {
   std::list<std::string>
       auth_basic_user_file_;            // auth_basic_userfile directive
   unsigned long client_max_body_size_;  // client_max_body_size directive
-  bool flg_client_max_body_size_set_;   // true if cmds already set
+  bool flg_client_max_body_size_set_;   // true if CMBS already set
   unsigned long limit_except_;          // allowed functions
+  bool flg_limit_except_set_;           // true if limit_except already set
 
  public:
   // coplien

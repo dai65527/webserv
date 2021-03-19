@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/18 18:41:19 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/19 10:17:31 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@ CommonConfigStore::CommonConfigStore() {
   flg_autoindex_set_ = false;
   client_max_body_size_ = 1000000;
   flg_client_max_body_size_set_ = false;
+  limit_except_ = HTTP_GET | HTTP_HEAD;
+  flg_limit_except_set_ = false;
 }
 
 CommonConfigStore::CommonConfigStore(const CommonConfigStore& ref) {
@@ -224,4 +226,38 @@ void CommonConfigStore::parseClientMaxBodySize(
 
   client_max_body_size_ *= ft_atoul(settings.front().c_str());
   flg_client_max_body_size_set_ = true;
+}
+
+void CommonConfigStore::parseLimitExcept(
+    const std::list<std::string>& settings) {
+  if (flg_limit_except_set_) {
+    throw std::runtime_error("limit_except: directive duplicated");
+  } else if (settings.empty()) {
+    throw std::runtime_error("limit_except: invalid number of setting");
+  }
+
+  limit_except_ = 0;  // delete default value
+  for (std::list<std::string>::const_iterator itr = settings.begin();
+       itr != settings.end(); ++itr) {
+    if (*itr == "GET") {
+      limit_except_ |= (HTTP_GET | HTTP_HEAD);
+    } else if (*itr == "HEAD") {
+      limit_except_ |= HTTP_HEAD;
+    } else if (*itr == "PUT") {
+      limit_except_ |= HTTP_PUT;
+    } else if (*itr == "POST") {
+      limit_except_ |= HTTP_POST;
+    } else if (*itr == "DELETE") {
+      limit_except_ |= HTTP_DELETE;
+    } else if (*itr == "CONNECT") {
+      throw std::runtime_error("limit_except: CONNECT method not supported");
+    } else if (*itr == "OPTIONS") {
+      limit_except_ |= HTTP_OPTIONS;
+    } else if (*itr == "TRACE") {
+      limit_except_ |= HTTP_TRACE;
+    } else {
+      throw std::runtime_error("limit_except: invalid value \"" + *itr + "\"");
+    }
+  }
+  flg_limit_except_set_ = true;
 }
