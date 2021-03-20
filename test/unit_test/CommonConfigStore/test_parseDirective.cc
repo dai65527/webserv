@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/20 23:32:50 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 08:53:49 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,14 +29,14 @@ class test_parseDirective : public ::testing::Test {
 TEST_F(test_parseDirective, root) {
   EXPECT_THROW(store.parseDirective("root", settings), std::runtime_error);
   settings.push_back("/root");
-  EXPECT_NO_THROW(store.parseDirective("root", settings));
+  EXPECT_TRUE(store.parseDirective("root", settings));
   EXPECT_EQ(store.getRoot(), "/root");
 }
 
 TEST_F(test_parseDirective, index) {
   EXPECT_THROW(store.parseDirective("index", settings), std::runtime_error);
   settings.push_back("index.html");
-  EXPECT_NO_THROW(store.parseDirective("index", settings));
+  EXPECT_TRUE(store.parseDirective("index", settings));
   EXPECT_EQ(store.getIndex().front(), "index.html");
 }
 
@@ -45,14 +45,14 @@ TEST_F(test_parseDirective, error_page) {
                std::runtime_error);
   settings.push_back("404");
   settings.push_back("404.html");
-  EXPECT_NO_THROW(store.parseDirective("error_page", settings));
+  EXPECT_TRUE(store.parseDirective("error_page", settings));
   EXPECT_EQ(store.getErrorPage().find(HTTP_404)->second, "404.html");
 }
 
 TEST_F(test_parseDirective, autoindex) {
   EXPECT_THROW(store.parseDirective("autoindex", settings), std::runtime_error);
   settings.push_back("on");
-  EXPECT_NO_THROW(store.parseDirective("autoindex", settings));
+  EXPECT_TRUE(store.parseDirective("autoindex", settings));
   EXPECT_EQ(store.getAutoIndex(), true);
 }
 
@@ -60,28 +60,28 @@ TEST_F(test_parseDirective, cgi_extension) {
   EXPECT_THROW(store.parseDirective("cgi_extension", settings),
                std::runtime_error);
   settings.push_back("cgi");
-  EXPECT_NO_THROW(store.parseDirective("cgi_extension", settings));
+  EXPECT_TRUE(store.parseDirective("cgi_extension", settings));
   EXPECT_EQ(store.getCgiExtension().front(), "cgi");
 }
 
 TEST_F(test_parseDirective, charset) {
   EXPECT_THROW(store.parseDirective("charset", settings), std::runtime_error);
   settings.push_back("utf-8");
-  EXPECT_NO_THROW(store.parseDirective("charset", settings));
+  EXPECT_TRUE(store.parseDirective("charset", settings));
   EXPECT_EQ(store.getCharset(), "utf-8");
 }
 
 TEST_F(test_parseDirective, language) {
   EXPECT_THROW(store.parseDirective("language", settings), std::runtime_error);
   settings.push_back("ja-JP");
-  EXPECT_NO_THROW(store.parseDirective("language", settings));
+  EXPECT_TRUE(store.parseDirective("language", settings));
   EXPECT_EQ(store.getLanguage(), "ja-JP");
 }
 
 TEST_F(test_parseDirective, base_auth) {
   EXPECT_THROW(store.parseDirective("base_auth", settings), std::runtime_error);
   settings.push_back("message");
-  EXPECT_NO_THROW(store.parseDirective("base_auth", settings));
+  EXPECT_TRUE(store.parseDirective("base_auth", settings));
   EXPECT_EQ(store.getBaseAuth(), "message");
 }
 
@@ -89,7 +89,7 @@ TEST_F(test_parseDirective, auth_basic_user_file) {
   EXPECT_THROW(store.parseDirective("auth_basic_user_file", settings),
                std::runtime_error);
   settings.push_back("auth_basic_user_file.html");
-  EXPECT_NO_THROW(store.parseDirective("auth_basic_user_file", settings));
+  EXPECT_TRUE(store.parseDirective("auth_basic_user_file", settings));
   EXPECT_EQ(store.getAuthBasicUserFile().front(), "auth_basic_user_file.html");
 }
 
@@ -97,7 +97,7 @@ TEST_F(test_parseDirective, client_max_body_size) {
   EXPECT_THROW(store.parseDirective("client_max_body_size", settings),
                std::runtime_error);
   settings.push_back("42");
-  EXPECT_NO_THROW(store.parseDirective("client_max_body_size", settings));
+  EXPECT_TRUE(store.parseDirective("client_max_body_size", settings));
   EXPECT_EQ(store.getClientMaxBodySize(), 42);
 }
 
@@ -105,6 +105,6 @@ TEST_F(test_parseDirective, limit_except) {
   EXPECT_THROW(store.parseDirective("limit_except", settings),
                std::runtime_error);
   settings.push_back("GET");
-  EXPECT_NO_THROW(store.parseDirective("limit_except", settings));
+  EXPECT_TRUE(store.parseDirective("limit_except", settings));
   EXPECT_EQ(store.getLimitExcept(), HTTP_GET | HTTP_HEAD);
 }
