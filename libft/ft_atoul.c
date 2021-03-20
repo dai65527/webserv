@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 17:03:04 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/18 18:33:45 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/20 20:25:56 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 unsigned long	ft_atoul(const char *str)
 {
-	int		num;
+	unsigned long	num;
 
 	num = 0;
 	while (ft_isspace(*str))
