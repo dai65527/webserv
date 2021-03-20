@@ -33,6 +33,7 @@ class ServerOnlyConfigStore {
   std::list<std::string> server_name_;                 // server_name directive
   std::map<std::string, in_addr_t> host_ip_map_;       // host ip map
 
+  void addToListen(const in_addr_t addr, const uint16_t port);
   void storeEtcHostsToHostIpMap();
   in_addr_t getIpFromHostIpMap(const char* str);
   in_addr_t parseIp(const char* str);

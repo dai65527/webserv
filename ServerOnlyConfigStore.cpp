@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/19 12:09:53 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/20 13:51:30 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/20 14:59:43 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,10 +195,32 @@ static bool strIsDigit(const char* str) {
   return true;
 }
 
+void ServerOnlyConfigStore::addToListen(const in_addr_t addr,
+                                        const uint16_t port) {
+  std::list<std::pair<in_addr_t, uint16_t> >::iterator itr;
+  for (itr = listen_.begin(); itr != listen_.end(); ++itr) {
+    if (itr->second == port) {
+      if (itr->first == INADDR_ANY || itr->first == addr) {
+        return;
+      } else if (addr == INADDR_ANY) {
+        itr->first = INADDR_ANY;
+        return;
+      }
+      break;
+    }
+  }
+  listen_.push_back(std::pair<in_addr_t, uint16_t>(addr, port));
+}
+
 void ServerOnlyConfigStore::parseListen(
     const std::list<std::string>& settings) {
   if (settings.size() != 1) {
     throw std::runtime_error("listen: invalid number of setting");
+  } else if (settings.front().front() == ':' ||
+             settings.front().find_last_of(':') ==
+                 settings.front().length() - 1) {
+    throw std::runtime_error("listen: invalid value \"" + settings.front() +
+                             "\"");
   }
 
   // devide by ':'
@@ -215,20 +237,11 @@ void ServerOnlyConfigStore::parseListen(
   }
 
   size_t cnt = countStrs(ip_port);
-  if (cnt == 1 && ft_strncmp(ip_port[0], settings.front().c_str(),
-                             settings.front().size() + 1)) {
-    throw std::runtime_error("listen: invalid value \"" + settings.front() +
-                             "\"");
-  }
   if (cnt == 0 || cnt > 2) {
     freeStrs(ip_port);
     throw std::runtime_error("listen: invalid value \"" + settings.front() +
                              "\"");
   } else if (cnt == 2) {
-    if (ip_port[0][0] == '\0' || ip_port[1][0] == '\0') {
-      throw std::runtime_error("listen: invalid value \"" + settings.front() +
-                               "\"");
-    }
     const in_addr_t addr = parseIp(ip_port[0]);
     const int port = ft_atoi(ip_port[1]);
     freeStrs(ip_port);
@@ -239,7 +252,7 @@ void ServerOnlyConfigStore::parseListen(
       throw std::runtime_error("listen: invalid port number " +
                                std::to_string(port));
     }
-    listen_.push_back(std::pair<in_addr_t, uint16_t>(addr, ft_htons(port)));
+    addToListen(addr, ft_htons(port));
   } else if (cnt == 1 && strIsDigit(ip_port[0])) {
     const int port = ft_atoi(ip_port[0]);
     freeStrs(ip_port);
@@ -247,8 +260,7 @@ void ServerOnlyConfigStore::parseListen(
       throw std::runtime_error("listen: invalid port number " +
                                std::to_string(port));
     }
-    listen_.push_back(
-        std::pair<in_addr_t, uint16_t>(INADDR_ANY, ft_htons(port)));
+    addToListen(INADDR_ANY, ft_htons(port));
   } else {
     const in_addr_t addr = parseIp(ip_port[0]);
     freeStrs(ip_port);
@@ -256,7 +268,7 @@ void ServerOnlyConfigStore::parseListen(
       throw std::runtime_error("listen: invalid value \"" + settings.front() +
                                "\"");
     }
-    listen_.push_back(std::pair<in_addr_t, uint16_t>(addr, ft_htons(80)));
+    addToListen(addr, ft_htons(80));
   }
 }
 

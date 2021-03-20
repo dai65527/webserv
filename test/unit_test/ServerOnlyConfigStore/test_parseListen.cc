@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/20 13:55:06 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/20 14:52:24 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,12 +75,113 @@ TEST_F(test_parseListen, asteriskOnly) {
 
 TEST_F(test_parseListen, hostOnly_localhost) {
   settings.push_back("localhost");
-  store.parseListen(settings);
-  // EXPECT_NO_THROW(store.parseListen(settings));
+  EXPECT_NO_THROW(store.parseListen(settings));
   std::list<std::pair<in_addr_t, uint16_t> >::const_iterator itr =
       store.getListen().begin();
   EXPECT_EQ(itr->first, inet_addr("127.0.0.1"));
   EXPECT_EQ(itr->second, htons(80));
+}
+
+TEST_F(test_parseListen, set_twice_1) {
+  settings.push_back("localhost");
+  EXPECT_NO_THROW(store.parseListen(settings));
+  EXPECT_NO_THROW(store.parseListen(settings));
+  std::list<std::pair<in_addr_t, uint16_t> >::const_iterator itr =
+      store.getListen().begin();
+  EXPECT_EQ(itr->first, inet_addr("127.0.0.1"));
+  EXPECT_EQ(itr->second, htons(80));
+  ++itr;
+  EXPECT_EQ(itr, store.getListen().end());
+}
+
+TEST_F(test_parseListen, set_twice_2) {
+  settings.push_back("localhost");
+  EXPECT_NO_THROW(store.parseListen(settings));
+  settings.front() = "localhost:80";
+  EXPECT_NO_THROW(store.parseListen(settings));
+  std::list<std::pair<in_addr_t, uint16_t> >::const_iterator itr =
+      store.getListen().begin();
+  EXPECT_EQ(itr->first, inet_addr("127.0.0.1"));
+  EXPECT_EQ(itr->second, htons(80));
+  ++itr;
+  EXPECT_EQ(itr, store.getListen().end());
+}
+
+TEST_F(test_parseListen, set_twice_3) {
+  settings.push_back("80");
+  EXPECT_NO_THROW(store.parseListen(settings));
+  settings.front() = "80";
+  EXPECT_NO_THROW(store.parseListen(settings));
+  std::list<std::pair<in_addr_t, uint16_t> >::const_iterator itr =
+      store.getListen().begin();
+  EXPECT_EQ(itr->first, INADDR_ANY);
+  EXPECT_EQ(itr->second, htons(80));
+  ++itr;
+  EXPECT_EQ(itr, store.getListen().end());
+}
+
+TEST_F(test_parseListen, set_twice_4) {
+  settings.push_back("80");
+  EXPECT_NO_THROW(store.parseListen(settings));
+  settings.front() = "localhost";
+  EXPECT_NO_THROW(store.parseListen(settings));
+  std::list<std::pair<in_addr_t, uint16_t> >::const_iterator itr =
+      store.getListen().begin();
+  EXPECT_EQ(itr->first, INADDR_ANY);
+  EXPECT_EQ(itr->second, htons(80));
+  ++itr;
+  EXPECT_EQ(itr, store.getListen().end());
+}
+
+TEST_F(test_parseListen, set_twice_5) {
+  settings.push_back("1.2.3.4:80");
+  EXPECT_NO_THROW(store.parseListen(settings));
+  settings.front() = "4.3.2.1:80";
+  EXPECT_NO_THROW(store.parseListen(settings));
+  std::list<std::pair<in_addr_t, uint16_t> >::const_iterator itr =
+      store.getListen().begin();
+  EXPECT_EQ(itr->first, inet_addr("1.2.3.4"));
+  EXPECT_EQ(itr->second, htons(80));
+  ++itr;
+  EXPECT_EQ(itr->first, inet_addr("4.3.2.1"));
+  EXPECT_EQ(itr->second, htons(80));
+  ++itr;
+  EXPECT_EQ(itr, store.getListen().end());
+}
+
+TEST_F(test_parseListen, set_eight_times) {
+  settings.push_back("1.2.3.4:80");
+  EXPECT_NO_THROW(store.parseListen(settings));
+  settings.front() = "4.3.2.1:80";
+  EXPECT_NO_THROW(store.parseListen(settings));
+  settings.front() = "1.2.3.4:80";
+  EXPECT_NO_THROW(store.parseListen(settings));
+  settings.front() = "4.3.2.1:42";
+  EXPECT_NO_THROW(store.parseListen(settings));
+  settings.front() = "42";
+  EXPECT_NO_THROW(store.parseListen(settings));
+  settings.front() = "8080";
+  EXPECT_NO_THROW(store.parseListen(settings));
+  settings.front() = "1.2.3.4:8080";
+  EXPECT_NO_THROW(store.parseListen(settings));
+  settings.front() = "4.2.4.2:4242";
+  EXPECT_NO_THROW(store.parseListen(settings));
+  std::list<std::pair<in_addr_t, uint16_t> >::const_iterator itr =
+      store.getListen().begin();
+  EXPECT_EQ(itr->first, inet_addr("1.2.3.4"));
+  EXPECT_EQ(itr->second, htons(80));
+  ++itr;
+  EXPECT_EQ(itr->first, inet_addr("4.3.2.1"));
+  EXPECT_EQ(itr->second, htons(80));
+  ++itr;
+  EXPECT_EQ(itr->first, INADDR_ANY);
+  EXPECT_EQ(itr->second, htons(42));
+  ++itr;
+  EXPECT_EQ(itr->first, INADDR_ANY);
+  EXPECT_EQ(itr->second, htons(8080));
+  ++itr;
+  EXPECT_EQ(itr->first, inet_addr("4.2.4.2"));
+  EXPECT_EQ(itr->second, htons(4242));
 }
 
 TEST_F(test_parseListen, ipAndPortAsteriskAnd1234) {
@@ -193,6 +294,39 @@ TEST_F(test_parseListen, errorInvalidIpAndPort_localhost_424242) {
     store.parseListen(settings);
   } catch (const std::runtime_error& e) {
     EXPECT_STREQ(e.what(), "listen: invalid port number 424242");
+    flg_thrown = true;
+  }
+  EXPECT_TRUE(flg_thrown);
+}
+
+TEST_F(test_parseListen, errorInvalidIpAndPort__80_) {
+  settings.push_back(":80:");
+  try {
+    store.parseListen(settings);
+  } catch (const std::runtime_error& e) {
+    EXPECT_STREQ(e.what(), "listen: invalid value \":80:\"");
+    flg_thrown = true;
+  }
+  EXPECT_TRUE(flg_thrown);
+}
+
+TEST_F(test_parseListen, errorInvalidIpAndPort_localhost_80_) {
+  settings.push_back("localhost:80:");
+  try {
+    store.parseListen(settings);
+  } catch (const std::runtime_error& e) {
+    EXPECT_STREQ(e.what(), "listen: invalid value \"localhost:80:\"");
+    flg_thrown = true;
+  }
+  EXPECT_TRUE(flg_thrown);
+}
+
+TEST_F(test_parseListen, errorInvalidIpAndPort__localhost_80_) {
+  settings.push_back(":localhost:80:");
+  try {
+    store.parseListen(settings);
+  } catch (const std::runtime_error& e) {
+    EXPECT_STREQ(e.what(), "listen: invalid value \":localhost:80:\"");
     flg_thrown = true;
   }
   EXPECT_TRUE(flg_thrown);
