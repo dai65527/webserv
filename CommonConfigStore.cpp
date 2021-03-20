@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/19 10:17:31 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/20 22:56:58 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -260,4 +260,41 @@ void CommonConfigStore::parseLimitExcept(
     }
   }
   flg_limit_except_set_ = true;
+}
+
+/*
+** parseDirective
+**
+** return true if stored
+** false otherwise
+*/
+
+bool CommonConfigStore::parseDirective(const std::string& name,
+                                       const std::list<std::string>& settings) {
+  if (name == "root") {
+    parseRoot(settings);
+  } else if (name == "index") {
+    parseIndex(settings);
+  } else if (name == "error_page") {
+    parseErrorPage(settings);
+  } else if (name == "autoindex") {
+    parseAutoIndex(settings);
+  } else if (name == "cgi_extension") {
+    parseCgiExtension(settings);
+  } else if (name == "charset") {
+    parseCharset(settings);
+  } else if (name == "language") {
+    parseLanguage(settings);
+  } else if (name == "base_auth") {
+    parseBaseAuth(settings);
+  } else if (name == "auth_basic_user_file") {
+    parseAuthBasicUserFile(settings);
+  } else if (name == "client_max_body_size") {
+    parseClientMaxBodySize(settings);
+  } else if (name == "limit_except") {
+    parseLimitExcept(settings);
+  } else {
+    return false;
+  }
+  return true;
 }

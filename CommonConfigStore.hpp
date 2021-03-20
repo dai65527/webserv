@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 17:40:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/19 10:57:47 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/20 22:57:05 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,6 +86,12 @@ class CommonConfigStore {
   void parseAuthBasicUserFile(const std::list<std::string>& settings);
   void parseClientMaxBodySize(const std::list<std::string>& settings);
   void parseLimitExcept(const std::list<std::string>& settings);
+
+  /*
+  ** store_config
+  */
+  virtual bool parseDirective(const std::string& name,
+                              const std::list<std::string>& settings);
 };
 
 #endif /* COMMONCONFIGSTORE_HPP */
