@@ -1,7 +1,8 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ServerOnlyConfigStoreStore.hpp                          :+:      :+:    :+:   */
+/*   ServerOnlyConfigStoreStore.hpp                          :+:      :+:    :+:
+ */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -28,8 +29,13 @@
 
 class ServerOnlyConfigStore {
  protected:
-  std::map<in_addr_t, int> listen_;     // listen directive
-  std::list<std::string> server_name_;  // server_name directive
+  std::list<std::pair<in_addr_t, uint16_t> > listen_;  // listen directive
+  std::list<std::string> server_name_;                 // server_name directive
+  std::map<std::string, in_addr_t> host_ip_map_;       // host ip map
+
+  void storeEtcHostsToHostIpMap();
+  in_addr_t getIpFromHostIpMap(const char* str);
+  in_addr_t parseIp(const char* str);
 
  public:
   // coplien
@@ -39,7 +45,7 @@ class ServerOnlyConfigStore {
   virtual ~ServerOnlyConfigStore();
 
   // getters
-  const std::map<in_addr_t, int>& getListen() const;
+  const std::list<std::pair<in_addr_t, uint16_t> >& getListen() const;
   const std::list<std::string>& getServerName() const;
 
   /*
@@ -53,7 +59,7 @@ class ServerOnlyConfigStore {
 
   void parseListen(const std::list<std::string>& settings);
   void parseServerName(const std::list<std::string>& settings);
-  
+
   int checkDirective();
 };
 

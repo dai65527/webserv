@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/19 12:28:14 by dnakano          ###   ########.fr        #
+#    Updated: 2021/03/19 14:17:39 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,8 @@ SRCNAME		:=	ServerOnlyConfigStore.cpp
 SRCDIR		:=	../../..
 INCLUDEDIR	:=	../../..
 TESTSRCNAME	:=	test_main.cc \
-				test_parseServerName.cc
+				test_parseServerName.cc \
+				test_parseListen.cc
 TESTSRCDIR	:=	.
 ### config ###
 
