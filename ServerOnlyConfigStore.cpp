@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/19 12:09:53 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/20 14:59:43 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 08:40:37 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -278,4 +278,23 @@ void ServerOnlyConfigStore::parseServerName(
     throw std::runtime_error("server_name: invalid number of setting");
   }
   server_name_.insert(server_name_.end(), settings.begin(), settings.end());
+}
+
+/*
+** parseDirective
+**
+** return true if stored
+** false otherwise
+*/
+
+bool ServerOnlyConfigStore::parseDirective(
+    const std::string& name, const std::list<std::string>& settings) {
+  if (name == "listen") {
+    parseListen(settings);
+  } else if (name == "server_name") {
+    parseServerName(settings);
+  } else {
+    return false;
+  }
+  return true;
 }

@@ -61,7 +61,8 @@ class ServerOnlyConfigStore {
   void parseListen(const std::list<std::string>& settings);
   void parseServerName(const std::list<std::string>& settings);
 
-  int checkDirective();
+  virtual bool parseDirective(const std::string& name,
+                              const std::list<std::string>& settings);
 };
 
 #endif /* SERVERONLYCONFIGSTORE_HPP */

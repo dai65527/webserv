@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/19 14:17:39 by dnakano          ###   ########.fr        #
+#    Updated: 2021/03/21 08:39:57 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,7 +19,8 @@ SRCDIR		:=	../../..
 INCLUDEDIR	:=	../../..
 TESTSRCNAME	:=	test_main.cc \
 				test_parseServerName.cc \
-				test_parseListen.cc
+				test_parseListen.cc \
+				test_parseDirective.cc
 TESTSRCDIR	:=	.
 ### config ###
 
