@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/01 23:59:30 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/12 19:53:15 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 11:38:52 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 
 class LocationConfig : public CommonConfigStore {
  private:
-  std::string location_;  // location path
+  std::string route_;  // location path
 
  public:
   LocationConfig();
@@ -29,7 +29,11 @@ class LocationConfig : public CommonConfigStore {
   LocationConfig& operator=(const LocationConfig& rhs);
   virtual ~LocationConfig();
 
-  // int load(type data);
+  /*** getter ***/
+  const std::string& getRoute() const;
+
+  /*** setter ***/
+  void setRoute(const std::string& getRoute);
 };
 
 #endif /* LOCATIONCONFIG_HPP */
