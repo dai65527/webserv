@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/12 18:58:48 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/21 11:45:41 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 18:06:19 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@ class ServerConfig : public CommonConfigStore,
   ServerConfig(const ServerConfig& ref);
   ServerConfig& operator=(const ServerConfig& rhs);
   virtual ~ServerConfig();
+
+  const std::list<LocationConfig>& getLocations() const;
 
   void addLocation(const LocationConfig& location);
   bool parseDirective(const std::string& name,

@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/21 10:47:22 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/21 12:09:58 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 19:20:32 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ ServerConfig::ServerConfig() {}
 ServerConfig::ServerConfig(const ServerConfig& ref) { *this = ref; }
 
 ServerConfig& ServerConfig::operator=(const ServerConfig& rhs) {
+  locations_ = rhs.locations_;
   CommonConfigStore::operator=(rhs);
   ServerLocationConfigStore::operator=(rhs);
   ServerOnlyConfigStore::operator=(rhs);
@@ -24,6 +25,10 @@ ServerConfig& ServerConfig::operator=(const ServerConfig& rhs) {
 }
 
 ServerConfig::~ServerConfig() {}
+
+const std::list<LocationConfig>& ServerConfig::getLocations() const {
+  return locations_;
+}
 
 void ServerConfig::addLocation(const LocationConfig& location) {
   locations_.push_back(location);
