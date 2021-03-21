@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:56:57 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/19 11:17:45 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 19:29:08 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ LocationConfig& LocationConfig::operator=(const LocationConfig& rhs) {
     CommonConfigStore::operator=(rhs);
     route_ = rhs.route_;
   }
+  return *this;
 }
 
 /*** getter ***/
