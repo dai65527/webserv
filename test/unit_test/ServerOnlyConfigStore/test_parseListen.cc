@@ -6,9 +6,11 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/20 14:52:24 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 09:13:13 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#define UNIT_TEST
 
 #include <arpa/inet.h>
 

@@ -38,16 +38,9 @@ class ServerOnlyConfigStore {
   in_addr_t getIpFromHostIpMap(const char* str);
   in_addr_t parseIp(const char* str);
 
+#ifdef UNIT_TEST
  public:
-  // coplien
-  ServerOnlyConfigStore();
-  ServerOnlyConfigStore(const ServerOnlyConfigStore& ref);
-  ServerOnlyConfigStore& operator=(const ServerOnlyConfigStore& ref);
-  virtual ~ServerOnlyConfigStore();
-
-  // getters
-  const std::list<std::pair<in_addr_t, uint16_t> >& getListen() const;
-  const std::list<std::string>& getServerName() const;
+#endif /* UNIT_TEST */
 
   /*
   ** persers
@@ -60,6 +53,17 @@ class ServerOnlyConfigStore {
 
   void parseListen(const std::list<std::string>& settings);
   void parseServerName(const std::list<std::string>& settings);
+
+ public:
+  // coplien
+  ServerOnlyConfigStore();
+  ServerOnlyConfigStore(const ServerOnlyConfigStore& ref);
+  ServerOnlyConfigStore& operator=(const ServerOnlyConfigStore& ref);
+  virtual ~ServerOnlyConfigStore();
+
+  // getters
+  const std::list<std::pair<in_addr_t, uint16_t> >& getListen() const;
+  const std::list<std::string>& getServerName() const;
 
   virtual bool parseDirective(const std::string& name,
                               const std::list<std::string>& settings);
