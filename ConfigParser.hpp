@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/15 10:33:40 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/21 12:38:45 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 20:40:59 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,8 @@ class ConfigParser {
   MainConfig storeMainConfig(const MainContextNode& main_node);
   ServerConfig storeServerCofing(const ServerContextNode& server_node);
   LocationConfig storeLocationConfig(const LocationContextNode& location_node);
+
+  void checkMainConfig(const MainConfig& main_config);
 
  public:
   ConfigParser();
