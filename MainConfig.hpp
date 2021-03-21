@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/12 18:58:53 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/12 19:53:16 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 11:36:56 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,25 +22,17 @@
 
 class MainConfig : public CommonConfigStore, public MainOnlyConfigStore {
  private:
-  std::string location;  // location path
   std::list<ServerConfig> servers_;
 
  public:
   MainConfig();
   MainConfig(const MainConfig& ref);
-  MainConfig& operator=(const MainConfig& rhs);
   virtual ~MainConfig();
+  MainConfig& operator=(const MainConfig& rhs);
 
-  /*
-  ** loadConfigFile
-  **
-  ** Read and parse a config file.
-  ** Return number of error in config file.
-  */
-
-  int loadConfigFile(const std::string& filename);
-
-  // TODO: find config
+  void addServer(const ServerConfig& server);
+  bool parseDirective(const std::string& name,
+                      const std::list<std::string>& settings);
 };
 
 #endif /* MAINCONFIG_HPP */
