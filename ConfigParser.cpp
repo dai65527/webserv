@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/15 10:34:35 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/17 18:05:07 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 12:02:07 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,15 +39,87 @@ ConfigParser::ConfigParser(const std::string& filename)
 
 ConfigParser::~ConfigParser() {}
 
-// MainConfig ConfigParser::parseConfig() {
-//   // parse config file (may throw exception)
-//   MainContextNode ast = parseMainContext();
+MainConfig ConfigParser::parseConfig() {
+  // parse config file (may throw exception)
+  MainContextNode config_tree = parseMainContext();
 
-//   // store parsed data (may throw exception)
-//   return storeMainConfig(ast);
-// }
+  // store parsed data in tree structure (may throw exception)
+  return storeMainConfig(config_tree);
+}
 
-// MainContextNode ConfigParser::parseMainContext() {
+MainConfig ConfigParser::storeMainConfig(const MainContextNode& main_node) {
+  MainConfig main_config;
+
+  // store directives
+  for (std::list<DirectiveNode>::const_iterator itr =
+           main_node.directives.begin();
+       itr != main_node.directives.end(); ++itr) {
+    try {
+      main_config.parseDirective(itr->name, itr->settings);
+    } catch (const std::runtime_error& e) {
+      line_count_ = itr->line_no;  // will be in error message
+      throwError(e.what());
+    }
+  }
+
+  // store server contexts
+  for (std::list<ServerContextNode>::const_iterator itr =
+           main_node.servers.begin();
+       itr != main_node.servers.end(); ++itr) {
+    main_config.addServer(storeServerCofing(*itr));
+  }
+
+  return main_config;
+}
+
+ServerConfig ConfigParser::storeServerCofing(
+    const ServerContextNode& server_node) {
+  ServerConfig server_config;
+
+  // store directives
+  for (std::list<DirectiveNode>::const_iterator itr =
+           server_node.directives.begin();
+       itr != server_node.directives.end(); ++itr) {
+    try {
+      server_config.parseDirective(itr->name, itr->settings);
+    } catch (const std::runtime_error& e) {
+      line_count_ = itr->line_no;  // will be in error message
+      throwError(e.what());
+    }
+  }
+
+  // store location contexts
+  for (std::list<LocationContextNode>::const_iterator itr =
+           server_node.locations.begin();
+       itr != server_node.locations.end(); ++itr) {
+    server_config.addLocation(storeLocationConfig(*itr));
+  }
+
+  return server_config;
+}
+
+LocationConfig ConfigParser::storeLocationConfig(
+    const LocationContextNode& location_node) {
+  LocationConfig location_config;
+
+  // store route of location
+  location_config.setRoute(location_node.route);
+
+  // store directives
+  for (std::list<DirectiveNode>::const_iterator itr =
+           location_node.directives.begin();
+       itr != location_node.directives.end(); ++itr) {
+    try {
+      location_config.parseDirective(itr->name, itr->settings);
+    } catch (const std::runtime_error& e) {
+      line_count_ = itr->line_no;  // will be in error message
+      throwError(e.what());
+    }
+  }
+
+  return location_config;
+}
+
 ConfigParser::MainContextNode ConfigParser::parseMainContext() {
   MainContextNode res;
   std::string directive_name;

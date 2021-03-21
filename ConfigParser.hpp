@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/15 10:33:40 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/17 12:48:25 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 12:22:12 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,15 +87,17 @@ class ConfigParser {
   DirectiveNode parseDirective(const std::string& directive_name);
 
   MainConfig storeMainConfig(const MainContextNode& main_node);
+  ServerConfig storeServerCofing(const ServerContextNode& server_node);
+  LocationConfig storeLocationConfig(const LocationContextNode& location_node);
 
  public:
   ConfigParser(const std::string& filename);
   virtual ~ConfigParser();
 
-  // MainConfig parseConfig();
+  MainConfig parseConfig();
 };
 
-// for debug
+// for test and debug
 #ifdef UNIT_TEST
 
 bool operator==(const ConfigParser::DirectiveNode& lhs,
