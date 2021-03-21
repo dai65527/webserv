@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/07 23:25:56 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/18 21:17:33 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/21 23:19:39 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,7 @@ int CgiHandler::readFromCgi(char* buf, size_t size) {
   ssize_t ret;
 
   // read from cgi process
-  ret = read(output_fd_, buf, BUFFER_SIZE);
+  ret = read(output_fd_, buf, size);
 
   // retry seveal times even if read failed
   if (ret == -1) {
@@ -120,5 +120,5 @@ int CgiHandler::readFromCgi(char* buf, size_t size) {
     close(output_fd_);              // close pipefd
     return 0;
   }
-  return 0;
+  return ret;
 }

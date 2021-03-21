@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 21:48:48 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/19 02:07:28 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/20 21:37:22 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include <signal.h>
 
 #include <iostream>
-#define DEFAULT_PORT 8088
+#define DEFAULT_PORT 5050
 
 Webserv::Webserv() {
   // initialize timeout of select

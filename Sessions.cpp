@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/18 21:33:04 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/21 23:20:07 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,6 +198,7 @@ void Session::startCreateResponse() {
 
 int Session::receiveRequest() {
 	int ret;
+	std::cout << "sock_fd in session: " << sock_fd_ << std::endl;
   ret = request_.receive(sock_fd_);
   if (ret == -1) {
     if (retry_count_ == RETRY_TIME_MAX) {
@@ -218,7 +219,7 @@ int Session::writeToFile() {
   ssize_t n;
 
   // write to file
-  n = write(file_fd_, request_.getBody().c_str(), request_.getBody().length());
+  n = write(file_fd_, request_.getBuf().c_str(), request_.getBuf().length());
 
   // retry several times even if write failed
   if (n == -1) {
@@ -247,10 +248,10 @@ int Session::writeToFile() {
   retry_count_ = 0;
 
   // erase written data
-  request_.eraseBody(n);
+  request_.eraseBuf(n);
 
   // written all data
-  if (request_.getBody().empty()) {
+  if (request_.getBuf().empty()) {
     close(file_fd_);
 
     // create response to notify the client
@@ -309,7 +310,7 @@ int Session::writeToCgi() {
 	 ssize_t n;
 
   // write to cgi process
-  n = cgi_handler_.writeToCgi(const_cast<char *>(request_.buf_.c_str()), request_.getBuf().length());
+  n = cgi_handler_.writeToCgi(const_cast<char *>(request_.getBuf().c_str()), request_.getBuf().length());
 
   // retry several times even if write failed
   if (n == -1) {
@@ -351,10 +352,10 @@ int Session::writeToCgi() {
 
 int Session::readFromCgi() {
 	ssize_t n;
+	char read_buf[BUFFER_SIZE];
 
   // read from cgi process
-	n = cgi_handler_.readFromCgi(const_cast<char *>(request_.buf_.c_str()), request_.buf_.length());
-
+	n = cgi_handler_.readFromCgi(read_buf, BUFFER_SIZE);
   // retry seveal times even if read failed
   if (n == -1) {
     std::cout << "[error] failed to read from cgi process" << std::endl;
@@ -390,7 +391,7 @@ int Session::readFromCgi() {
   }
 
   // append data to response
-  response_.raw_response_.append(request_.getBuf(), n);
+  response_.raw_response_.append(read_buf, n);
 
   return 0;
 }
@@ -398,6 +399,7 @@ int Session::readFromCgi() {
 int Session::sendResponse() {
   ssize_t n;
 
+	std::cout << response_.raw_response_ << std::endl;
   n = send(sock_fd_, response_.raw_response_.c_str(), response_.raw_response_.length(), 0);
   if (n == -1) {
     std::cout << "[error] failed to send response" << std::endl;

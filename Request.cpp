@@ -6,12 +6,13 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/18 21:37:25 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/21 21:51:43 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 #include <sys/socket.h>
+#include <iostream>
 
 Request::Request() {}
 
@@ -27,17 +28,19 @@ const std::string& Request::getBody() const {return body_;}
 int Request::receive(int sock_fd) {
   int ret;
   char read_buf[BUFFER_SIZE];
-  while (1)
-  {
+  // while (1)
+  // {
+    std::cout << "sock_fd in request: " << sock_fd << std::endl;
     ret = recv(sock_fd, read_buf, BUFFER_SIZE, 0);
+    std::cout << "ret: " << ret << std::endl;
     if (ret < 0)
       return -1;
-    if (ret == 0)
-      break ;
+    // if (ret == 0)
+    //   break ;
     buf_.append(read_buf);
-  }
+  // }
   // parse_request();
-  return 0;
+  return ret;
 }
 
 // int Request::appendRawData(char* raw_data) {
