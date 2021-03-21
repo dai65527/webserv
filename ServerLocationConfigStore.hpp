@@ -28,17 +28,9 @@ class ServerLocationConfigStore {
   std::string upload_pass_;
   std::string upload_store_;
 
+#ifdef UNIT_TEST
  public:
-  // coplien
-  ServerLocationConfigStore();
-  ServerLocationConfigStore(const ServerLocationConfigStore& ref);
-  ServerLocationConfigStore& operator=(const ServerLocationConfigStore& ref);
-  virtual ~ServerLocationConfigStore();
-
-  // getters
-  const std::string& getUploadPass() const;
-  const std::string& getUploadStore() const;
-
+#endif /* UNIT_TEST */
   /*
   ** parsers
   **
@@ -52,6 +44,17 @@ class ServerLocationConfigStore {
 
   void parseUploadPass(const std::list<std::string>& settings);
   void parseUploadStore(const std::list<std::string>& settings);
+
+ public:
+  // coplien
+  ServerLocationConfigStore();
+  ServerLocationConfigStore(const ServerLocationConfigStore& ref);
+  ServerLocationConfigStore& operator=(const ServerLocationConfigStore& ref);
+  virtual ~ServerLocationConfigStore();
+
+  // getters
+  const std::string& getUploadPass() const;
+  const std::string& getUploadStore() const;
 
   virtual bool parseDirective(const std::string& name,
                               const std::list<std::string>& settings);
