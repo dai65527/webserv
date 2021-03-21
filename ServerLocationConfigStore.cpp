@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/19 11:31:25 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/19 12:04:01 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 09:21:18 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,4 +60,16 @@ void ServerLocationConfigStore::parseUploadStore(
     throw std::runtime_error("upload_store: invalid number of setting");
   }
   upload_store_ = settings.front();
+}
+
+bool ServerLocationConfigStore::parseDirective(
+    const std::string& name, const std::list<std::string>& settings) {
+  if (name == "upload_pass") {
+    parseUploadPass(settings);
+  } else if (name == "upload_store") {
+    parseUploadStore(settings);
+  } else {
+    return false;
+  }
+  return true;
 }

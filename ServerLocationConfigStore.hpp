@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/12 18:59:06 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/19 11:42:38 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 09:08:40 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,9 @@ class ServerLocationConfigStore {
 
   void parseUploadPass(const std::list<std::string>& settings);
   void parseUploadStore(const std::list<std::string>& settings);
+
+  virtual bool parseDirective(const std::string& name,
+                              const std::list<std::string>& settings);
 };
 
 #endif /* SERVERLOCATIONCONFIGSTORE_HPP */
