@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 17:40:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/20 22:57:05 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 09:09:27 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,25 +44,9 @@ class CommonConfigStore {
   unsigned long limit_except_;          // allowed functions
   bool flg_limit_except_set_;           // true if limit_except already set
 
+#ifdef UNIT_TEST
  public:
-  // coplien
-  CommonConfigStore();
-  CommonConfigStore(const CommonConfigStore& ref);
-  CommonConfigStore& operator=(const CommonConfigStore& rhs);
-  virtual ~CommonConfigStore();
-
-  // getters
-  const std::string& getRoot() const;
-  const std::list<std::string>& getIndex() const;
-  const std::map<HTTPStatusCode, std::string>& getErrorPage() const;
-  bool getAutoIndex() const;
-  const std::list<std::string>& getCgiExtension() const;
-  const std::string& getCharset() const;
-  const std::string& getLanguage() const;
-  const std::string& getBaseAuth() const;
-  const std::list<std::string>& getAuthBasicUserFile() const;
-  const unsigned long& getClientMaxBodySize() const;
-  const unsigned long& getLimitExcept() const;
+#endif /* UNIT_TEST */
 
   /*
   ** parsers
@@ -86,6 +70,26 @@ class CommonConfigStore {
   void parseAuthBasicUserFile(const std::list<std::string>& settings);
   void parseClientMaxBodySize(const std::list<std::string>& settings);
   void parseLimitExcept(const std::list<std::string>& settings);
+
+ public:
+  // coplien
+  CommonConfigStore();
+  CommonConfigStore(const CommonConfigStore& ref);
+  CommonConfigStore& operator=(const CommonConfigStore& rhs);
+  virtual ~CommonConfigStore();
+
+  // getters
+  const std::string& getRoot() const;
+  const std::list<std::string>& getIndex() const;
+  const std::map<HTTPStatusCode, std::string>& getErrorPage() const;
+  bool getAutoIndex() const;
+  const std::list<std::string>& getCgiExtension() const;
+  const std::string& getCharset() const;
+  const std::string& getLanguage() const;
+  const std::string& getBaseAuth() const;
+  const std::list<std::string>& getAuthBasicUserFile() const;
+  const unsigned long& getClientMaxBodySize() const;
+  const unsigned long& getLimitExcept() const;
 
   /*
   ** store_config

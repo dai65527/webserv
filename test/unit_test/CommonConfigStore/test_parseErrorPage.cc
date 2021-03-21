@@ -10,6 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#define UNIT_TEST
+
 #include "gtest.h"
 #include "CommonConfigStore.hpp"
 

@@ -6,9 +6,11 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/17 22:07:35 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 09:16:24 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#define UNIT_TEST
 
 #include "gtest.h"
 #include "CommonConfigStore.hpp"
