@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/17 12:21:29 by dnakano          ###   ########.fr        #
+#    Updated: 2021/03/21 16:15:01 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,16 +14,24 @@ CXX			:=	clang++
 CPPFLAGS	:=	-Wall -Wextra -Werror -D UNIT_TEST
 
 ### config ###
-SRCNAME		:=	ConfigParser.cpp
+SRCNAME		:=	ConfigParser.cpp \
+				MainConfig.cpp \
+				ServerConfig.cpp \
+				LocationConfig.cpp \
+				CommonConfigStore.cpp \
+				ServerLocationConfigStore.cpp \
+				ServerOnlyConfigStore.cpp \
+				MainOnlyConfigStore.cpp \
+				webserv_utils.cpp
 SRCDIR		:=	../../..
 INCLUDEDIR	:=	../../..
 TESTSRCNAME	:=	test_main.cc \
-				test_throwError.cc \
 				test_getNextWord.cc \
 				test_parseDirective.cc \
 				test_parseLocation.cc \
 				test_parseServer.cc \
-				test_parseMainContext.cc
+				test_parseMainContext.cc \
+				test_parseConfig.cc
 TESTSRCDIR	:=	.
 ### config ###
 
