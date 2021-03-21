@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/20 15:05:16 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/20 20:55:52 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 10:15:43 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,4 +107,23 @@ void MainOnlyConfigStore::parseRetryAfter(
                              settings.front() + "\"");
   }
   flg_retry_after_set_ = true;
+}
+
+/*
+** parseDirective
+**
+** return true if stored
+** false otherwise
+*/
+
+bool MainOnlyConfigStore::parseDirective(
+    const std::string& name, const std::list<std::string>& settings) {
+  if (name == "max_sessions") {
+    parseMaxSessions(settings);
+  } else if (name == "retry_after") {
+    parseRetryAfter(settings);
+  } else {
+    return false;
+  }
+  return true;
 }

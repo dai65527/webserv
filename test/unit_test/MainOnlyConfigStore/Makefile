@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/20 20:56:18 by dnakano          ###   ########.fr        #
+#    Updated: 2021/03/21 10:20:59 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,7 +19,8 @@ SRCDIR		:=	../../..
 INCLUDEDIR	:=	../../..
 TESTSRCNAME	:=	test_main.cc \
 				test_parseMaxSessions.cc \
-				test_parseRetryAfter.cc
+				test_parseRetryAfter.cc \
+				test_parseDirective.cc
 TESTSRCDIR	:=	.
 ### config ###
 

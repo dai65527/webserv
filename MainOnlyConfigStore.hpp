@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/12 18:59:01 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/20 20:55:19 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 10:14:08 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,16 +30,9 @@ class MainOnlyConfigStore {
   int retry_after_;   // retry_after directive (times in sec)
   bool flg_retry_after_set_;        // flag for retry_after already set
 
+#ifdef UNIT_TEST
  public:
-  // coplien
-  MainOnlyConfigStore();
-  MainOnlyConfigStore(const MainOnlyConfigStore& ref);
-  MainOnlyConfigStore& operator=(const MainOnlyConfigStore& rhs);
-  virtual ~MainOnlyConfigStore();
-
-  // getters
-  int getMaxSessions() const;
-  int getRetryAfter() const;
+#endif /* UNIT_TEST */
 
   /*
   ** persers
@@ -54,6 +47,20 @@ class MainOnlyConfigStore {
 
   void parseMaxSessions(const std::list<std::string>& settings);
   void parseRetryAfter(const std::list<std::string>& settings);
+
+ public:
+  // coplien
+  MainOnlyConfigStore();
+  MainOnlyConfigStore(const MainOnlyConfigStore& ref);
+  MainOnlyConfigStore& operator=(const MainOnlyConfigStore& rhs);
+  virtual ~MainOnlyConfigStore();
+
+  // getters
+  int getMaxSessions() const;
+  int getRetryAfter() const;
+
+  virtual bool parseDirective(const std::string& name,
+                              const std::list<std::string>& settings);
 };
 
 #endif /* MAINONLYCONFIGSTORE_HPP */
