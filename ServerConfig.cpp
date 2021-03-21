@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/21 10:47:22 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/21 19:20:32 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 19:50:47 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,8 @@ bool ServerConfig::parseDirective(const std::string& name,
   if (!ServerOnlyConfigStore::parseDirective(name, settings) &&
       !ServerLocationConfigStore::parseDirective(name, settings) &&
       !CommonConfigStore::parseDirective(name, settings)) {
-    throw std::runtime_error(name + " invalid directive name in main context");
+    throw std::runtime_error(name +
+                             ": invalid directive name in server context");
   }
   return true;
 }
