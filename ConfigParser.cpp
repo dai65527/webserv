@@ -113,6 +113,7 @@ ConfigParser::MainContextNode ConfigParser::parseMainContext() {
   MainContextNode res;
   std::string directive_name;
 
+  char_count_ = 0;
   while (1) {
     directive_name = getNextWord();
 
