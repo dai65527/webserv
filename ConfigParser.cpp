@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/15 10:34:35 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/21 12:02:07 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 19:21:03 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,23 +23,12 @@ extern "C" {
 
 ConfigParser::ConfigParser() {}
 
-ConfigParser::ConfigParser(const std::string& filename)
-    : filename_(filename), char_count_(0), line_count_(0) {
-  // open file
-  fd_ = open(filename.c_str(), O_RDONLY);
-  if (fd_ < 0) {
-    throwError(filename + ": cannot open file");
-  }
-
-  // read from file and save to store
-  storeFileContent();
-
-  line_count_ = 1;
-}
-
 ConfigParser::~ConfigParser() {}
 
-MainConfig ConfigParser::parseConfig() {
+MainConfig ConfigParser::parseConfig(const std::string& filename) {
+  // open and read config file store it to server
+  openAndReadFile(filename);
+
   // parse config file (may throw exception)
   MainContextNode config_tree = parseMainContext();
 
@@ -250,15 +239,30 @@ void ConfigParser::throwError(const std::string& err) {
   throw std::runtime_error(msg);
 }
 
-void ConfigParser::storeFileContent() {
+void ConfigParser::openAndReadFile(const std::string& filename) {
+  // open file
+  int fd = open(filename.c_str(), O_RDONLY);
+  if (fd < 0) {
+    line_count_ = 0;
+    throwError(filename + ": cannot open file");
+  }
+
+  // read from file and save to store
+  storeFileContent(fd);
+
+  close(fd);
+  line_count_ = 1;
+}
+
+void ConfigParser::storeFileContent(int fd) {
   char buf[CONF_BUFSIZE];
   ssize_t readlen;
 
   // read all file content
-  while ((readlen = read(fd_, buf, CONF_BUFSIZE)) != 0) {
+  while ((readlen = read(fd, buf, CONF_BUFSIZE)) != 0) {
     // check read error
     if (readlen == -1) {
-      close(fd_);
+      close(fd);
       throwError(filename_ + ": cannot read file");
     }
 
@@ -266,7 +270,7 @@ void ConfigParser::storeFileContent() {
     try {
       filecontent_.append(buf, readlen);
     } catch (std::exception e) {
-      close(fd_);
+      close(fd);
       throwError(filename_ + ": file too large");
     }
   }

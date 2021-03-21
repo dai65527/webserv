@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/15 10:33:40 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/21 12:22:12 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 12:38:45 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,16 +64,15 @@ class ConfigParser {
 
   std::string filename_;
   std::string filecontent_;
-  int fd_;
   size_t char_count_;
   size_t line_count_;
 
   ConfigParser(const ConfigParser& ref);
   ConfigParser& operator=(const ConfigParser& rhs);
-  ConfigParser();
 
   void throwError(const std::string& err);
-  void storeFileContent();
+  void storeFileContent(int fd);
+  void openAndReadFile(const std::string& filename);
   bool isSpecialChar(char c) const;
   void skipSpace();
   void skipComment();
@@ -91,10 +90,10 @@ class ConfigParser {
   LocationConfig storeLocationConfig(const LocationContextNode& location_node);
 
  public:
-  ConfigParser(const std::string& filename);
+  ConfigParser();
   virtual ~ConfigParser();
 
-  MainConfig parseConfig();
+  MainConfig parseConfig(const std::string& filename);
 };
 
 // for test and debug
