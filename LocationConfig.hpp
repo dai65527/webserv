@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/01 23:59:30 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/21 11:38:52 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 19:54:42 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,9 @@ class LocationConfig : public CommonConfigStore {
 
   /*** setter ***/
   void setRoute(const std::string& getRoute);
+
+  bool parseDirective(const std::string& name,
+                      const std::list<std::string>& settings);
 };
 
 #endif /* LOCATIONCONFIG_HPP */

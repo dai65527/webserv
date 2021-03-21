@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:56:57 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/21 19:29:08 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 19:55:25 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,3 +29,12 @@ const std::string& LocationConfig::getRoute() const { return route_; }
 
 /*** setter ***/
 void LocationConfig::setRoute(const std::string& route) { route_ = route; }
+
+bool LocationConfig::parseDirective(const std::string& name,
+                                    const std::list<std::string>& settings) {
+  if (!CommonConfigStore::parseDirective(name, settings)) {
+    throw std::runtime_error(name +
+                             ": invalid directive name in location context");
+  }
+  return true;
+}
