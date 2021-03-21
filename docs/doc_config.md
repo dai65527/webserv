@@ -359,7 +359,7 @@ main, server, location
 このwebservで作成できる最大のセッション数を指定する
 mainディレクティブに1回のみ記述できる
 
-この上限を超える接続要求がソケットにきた場合は、`429 Too Many Requests` を返す。その際retry_afterディレクティブに指定された秒数を`Retry-After` ヘッダに指定する。
+この上限を超える接続要求がソケットにきた場合は、`503 Service Unavailable` を返す。その際retry_afterディレクティブに指定された秒数を`Retry-After` ヘッダに指定する。
 
 (nginxにはない)
 
@@ -504,6 +504,7 @@ main, server, location
 https://www.nginx.com/resources/wiki/modules/upload/
 
 #### 文法
+
 ```
 upload_pass <route>;
 ```
@@ -563,7 +564,7 @@ limit_except GET POST HEAD;
 ```
 
 #### default value
-GET, PUT, POST, DELETE, OPTIONS (暫定)
+GET, HEAD (暫定)
 
 #### context
 main, location, server
