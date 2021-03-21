@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/15 10:34:35 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/21 21:35:35 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 22:14:07 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,17 +113,21 @@ LocationConfig ConfigParser::storeLocationConfig(
 }
 
 void ConfigParser::checkMainConfig(const MainConfig& main_config) {
+  line_count_ = 0;
+
+  // if config has at least one server directive
+  if (main_config.getServers().empty()) {
+      throwError("missing server directive");
+  }
+
   // check all server has root
   for (std::list<ServerConfig>::const_iterator itr =
            main_config.getServers().begin();
        itr != main_config.getServers().end(); ++itr) {
     if (itr->getListen().empty()) {
-      throw std::runtime_error(
-          "webserv: error: ConfigParser: missing listen directive in server "
-          "directive");
+      throwError("missing listen directive in server directive");
     } else if (itr->getRoot().empty() && main_config.getRoot().empty()) {
-      throw std::runtime_error(
-          "webserv: error: ConfigParser: missing root directive");
+      throwError("missing root directive");
     }
   }
 }

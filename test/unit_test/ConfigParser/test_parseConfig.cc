@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/21 20:34:50 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 22:18:51 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,6 +194,17 @@ TEST_F(testThrowError, errorInvalidDirectiveInLocation) {
     EXPECT_STREQ(e.what(),
                  "webserv: error: ConfigParser: line 42: hogehoge: "
                  "invalid directive name in location context");
+  }
+  EXPECT_TRUE(flg_thrown);
+}
+
+TEST_F(testThrowError, errorNoServerDirective) {
+  try {
+    parser.parseConfig("./configfiles/ng_no_server_directive.conf");
+  } catch (const std::runtime_error& e) {
+    flg_thrown = true;
+    EXPECT_STREQ(e.what(),
+                 "webserv: error: ConfigParser: missing server directive");
   }
   EXPECT_TRUE(flg_thrown);
 }
