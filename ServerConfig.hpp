@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/12 18:58:48 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/12 19:50:29 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/21 11:45:41 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,15 +17,15 @@
 #include <string>
 
 #include "CommonConfigStore.hpp"
+#include "LocationConfig.hpp"
 #include "ServerLocationConfigStore.hpp"
 #include "ServerOnlyConfigStore.hpp"
-#include "LocationConfig.hpp"
 
 class ServerConfig : public CommonConfigStore,
                      public ServerLocationConfigStore,
                      public ServerOnlyConfigStore {
  private:
-  std::list<LocationConfig> location_config_list_;
+  std::list<LocationConfig> locations_;
 
  public:
   ServerConfig();
@@ -33,7 +33,9 @@ class ServerConfig : public CommonConfigStore,
   ServerConfig& operator=(const ServerConfig& rhs);
   virtual ~ServerConfig();
 
-  // int load(type data);
+  void addLocation(const LocationConfig& location);
+  bool parseDirective(const std::string& name,
+                      const std::list<std::string>& settings);
 };
 
 #endif /* SERVERCONFIG_HPP */
