@@ -1,20 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   webserv_utils.hpp                                  :+:      :+:    :+:   */
+/*   ft_atoul.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/18 09:06:32 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/19 08:39:34 by dnakano          ###   ########.fr       */
+/*   Created: 2021/03/18 17:03:04 by dnakano           #+#    #+#             */
+/*   Updated: 2021/03/20 20:25:56 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef WEBSERV_UTILS_HPP
-#define WEBSERV_UTILS_HPP
+#include "libft.h"
 
-#include "HttpStatusCode.hpp"
+unsigned long	ft_atoul(const char *str)
+{
+	unsigned long	num;
 
-HTTPStatusCode isHttpStatusCode(int code);
-
-#endif /* WEBSERV_UTILS_HPP */
+	num = 0;
+	while (ft_isspace(*str))
+		str++;
+	if (*str == '+')
+		str++;
+	while (ft_isdigit(*str))
+		num = num * 10 + *(str++) - '0';
+	return num;
+}

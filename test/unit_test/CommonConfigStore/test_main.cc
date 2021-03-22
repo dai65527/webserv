@@ -1,20 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   webserv_utils.hpp                                  :+:      :+:    :+:   */
+/*   test_main.cc                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/18 09:06:32 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/19 08:39:34 by dnakano          ###   ########.fr       */
+/*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
+/*   Updated: 2021/03/15 14:07:57 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef WEBSERV_UTILS_HPP
-#define WEBSERV_UTILS_HPP
+#include "gtest.h"
 
-#include "HttpStatusCode.hpp"
-
-HTTPStatusCode isHttpStatusCode(int code);
-
-#endif /* WEBSERV_UTILS_HPP */
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}
