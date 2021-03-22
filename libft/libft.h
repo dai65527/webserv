@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/10/05 12:01:52 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/14 12:38:19 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/19 15:38:31 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define LIBFT_H
 
 # include <stddef.h>
+# include <stdint.h>
 
 # define FD_STDIN	0
 # define FD_STDOUT	1
@@ -63,6 +64,7 @@ char				*ft_strnstr(const char *haystack, const char *needle,
 char				*ft_strdup(const char *s1);
 
 int					ft_atoi(const char *str);
+unsigned long		ft_atoul(const char *str);
 double				ft_atof(const char *s);
 char				*ft_itoa(int n);
 
@@ -99,5 +101,7 @@ t_list				*ft_lstdup(t_list *srclst, void *(*dup)(void *),
 
 int					get_next_line(int fd, char **line);
 int					ft_printf(const char *format, ...);
+
+uint16_t			ft_htons(uint16_t shortshort);
 
 #endif

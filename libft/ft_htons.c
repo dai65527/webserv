@@ -1,20 +1,31 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   webserv_utils.hpp                                  :+:      :+:    :+:   */
+/*   ft_htons.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/18 09:06:32 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/19 08:39:34 by dnakano          ###   ########.fr       */
+/*   Created: 2021/03/19 15:23:31 by dnakano           #+#    #+#             */
+/*   Updated: 2021/03/19 15:36:00 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef WEBSERV_UTILS_HPP
-#define WEBSERV_UTILS_HPP
+#include <stdio.h>
+#include <stdint.h>
 
-#include "HttpStatusCode.hpp"
+static int	is_little_endian(void)
+{
+	uint16_t	n;
+	uint8_t		*uc;
 
-HTTPStatusCode isHttpStatusCode(int code);
+	n = 1;
+	uc = (uint8_t*)&n;
+	return (*uc);
+}
 
-#endif /* WEBSERV_UTILS_HPP */
+uint16_t	ft_htons(uint16_t shortshort)
+{
+	if (is_little_endian())
+		return (shortshort << 8 | shortshort >> 8);
+	return (shortshort);
+}

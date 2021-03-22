@@ -1,20 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   webserv_utils.hpp                                  :+:      :+:    :+:   */
+/*   HttpMethodFlag.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/18 09:06:32 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/19 08:39:34 by dnakano          ###   ########.fr       */
+/*   Created: 2021/03/19 08:47:06 by dnakano           #+#    #+#             */
+/*   Updated: 2021/03/19 09:33:26 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef WEBSERV_UTILS_HPP
-#define WEBSERV_UTILS_HPP
+#ifndef HTTPMETHODFLAG_HPP
+#define HTTPMETHODFLAG_HPP
 
-#include "HttpStatusCode.hpp"
+enum HTTPMethodFlag {
+  HTTP_GET = 0x001,
+  HTTP_HEAD = 0x002,
+  HTTP_POST = 0x004,
+  HTTP_PUT = 0x008,
+  HTTP_DELETE = 0x010,
+  HTTP_CONNECT = 0x020,   // CONNECT method is bonus
+  HTTP_OPTIONS = 0x040,
+  HTTP_TRACE = 0x080
+};
 
-HTTPStatusCode isHttpStatusCode(int code);
-
-#endif /* WEBSERV_UTILS_HPP */
+#endif /* HTTPMETHODFLAG_HPP */

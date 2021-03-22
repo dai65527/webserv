@@ -1,42 +1,39 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   LocationConfig.hpp                                 :+:      :+:    :+:   */
+/*   MainConfig.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/03/01 23:59:30 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/21 19:54:42 by dnakano          ###   ########.fr       */
+/*   Created: 2021/03/12 18:58:53 by dnakano           #+#    #+#             */
+/*   Updated: 2021/03/21 17:46:38 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef LOCATIONCONFIG_HPP
-#define LOCATIONCONFIG_HPP
+#ifndef MAINCONFIG_HPP
+#define MAINCONFIG_HPP
 
 #include <list>
 #include <string>
 
 #include "CommonConfigStore.hpp"
 #include "MainOnlyConfigStore.hpp"
+#include "ServerConfig.hpp"
 
-class LocationConfig : public CommonConfigStore {
+class MainConfig : public CommonConfigStore, public MainOnlyConfigStore {
  private:
-  std::string route_;  // location path
+  std::list<ServerConfig> servers_;
 
  public:
-  LocationConfig();
-  LocationConfig(const LocationConfig& ref);
-  LocationConfig& operator=(const LocationConfig& rhs);
-  virtual ~LocationConfig();
+  MainConfig();
+  MainConfig(const MainConfig& ref);
+  virtual ~MainConfig();
+  MainConfig& operator=(const MainConfig& rhs);
 
-  /*** getter ***/
-  const std::string& getRoute() const;
-
-  /*** setter ***/
-  void setRoute(const std::string& getRoute);
-
+  const std::list<ServerConfig>& getServers() const;
+  void addServer(const ServerConfig& server);
   bool parseDirective(const std::string& name,
                       const std::list<std::string>& settings);
 };
 
-#endif /* LOCATIONCONFIG_HPP */
+#endif /* MAINCONFIG_HPP */
