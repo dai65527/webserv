@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 21:48:48 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/23 14:42:45 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/23 15:22:13 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,11 +97,18 @@ int Webserv::selectAndExecute() {
   for (std::list<Session*>::iterator itr = sessions_.begin();
        itr != sessions_.end() && n_fd_ > 0;) {
     ret = (*itr)->checkSelectedAndExecute(&rfds_, &wfds_);
-    if (ret == -1)
+
+    if (ret == 0) {
+      ++itr;
+      continue;
+    }
+
+    if (ret == -1) {
       itr = sessions_.erase(itr);
-    else if (ret == 1)
-      n_fd_--;
-    ++itr;
+    } else {
+      ++itr;
+    }
+    n_fd_--;
   }
 
   // accept new connection and add to sessions list
