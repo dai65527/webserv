@@ -3,30 +3,50 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+         #
+#    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/01/05 17:34:06 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/23 15:47:20 by dhasegaw         ###   ########.fr        #
+#    Updated: 2021/03/23 19:03:07 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CXX			:=	clang++
 CPPFLAGS	:=	-Wall -Wextra -Werror
 
-SRCS		:=	main.cpp Webserv.cpp Session.cpp Socket.cpp Request.cpp Response.cpp CgiHandler.cpp
+SRCS		:=	main.cpp \
+				webserv_utils.cpp \
+				Webserv.cpp \
+				Session.cpp \
+				Socket.cpp \
+				Request.cpp \
+				Response.cpp \
+				CgiHandler.cpp \
+				CommonConfigStore.cpp \
+				ConfigParser.cpp \
+				LocationConfig.cpp \
+				MainConfig.cpp \
+				MainOnlyConfigStore.cpp \
+				ServerConfig.cpp \
+				ServerLocationConfigStore.cpp \
+				ServerOnlyConfigStore.cpp
 OBJS		:=	$(SRCS:%.cpp=%.o)
+LIBFT		:=	libft.a
+LIBFTDIR	:=	./libft
 NAME		:=	nginDX
 OUTDIR		:=	.
 
 .PHONY:		all
 all:		$(NAME)
 
-$(NAME):	$(OBJS)
+$(NAME):	$(OBJS) $(LIBFT)
 			$(CXX) $(CPPFLAGS) $(OBJS) -o $(NAME)
 
 .PHONY:		unittest
-unittest:
-			$(CXX) $(SRCS) -o $(NAME) -D UNIT_TEST
+unittest:	$(LIBFT)
+			$(CXX) -L$(LIBFTDIR) -lft $(SRCS) -o $(NAME) -I$(LIBFTDIR) -D UNIT_TEST
+
+$(LIBFT):
+			make -C $(LIBFTDIR)
 
 .PHONY:		test
 test:		$(NAME)

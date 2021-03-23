@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 23:34:23 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/19 02:14:57 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/23 20:29:56 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,13 +21,13 @@
 #include <stdexcept>
 
 /*
-** default constructor
+** constructor
 **
-** initialize fd_ and port_ by 0
-** will check value in each member functions
+** initialize fd_ and port_ as arguments.
+** arguments has to be network order (big endian) and initialize socket
 */
 
-Socket::Socket() : fd_(0), port_(0) {}
+Socket::Socket(in_addr_t ip, uint16_t port) : ip_(ip), port_(port) { init(); }
 
 /*
 ** destructor
@@ -46,7 +46,8 @@ Socket::~Socket() {
 */
 
 int Socket::getFd() const { return fd_; }
-int Socket::getPort() const { return port_; }
+uint16_t Socket::getPort() const { return port_; }
+in_addr_t Socket::getIp() const {return ip_;}
 sockaddr_in Socket::getSockAddr() const { return addr_in_; }
 socklen_t Socket::getSockLen() const { return addrlen_; }
 
@@ -60,44 +61,44 @@ socklen_t Socket::getSockLen() const { return addrlen_; }
 **  - make the socket ready to listen
 */
 
-void Socket::init(int port, int ip) {
-  // check the range of port
-  if (port < 0 || std::numeric_limits<unsigned short>::max() < port) {
-    throw std::runtime_error("webserv: Socket: port nubmer is out of range");
-  }
-
+void Socket::init() {
   // create end point of the socket
   //    AF_INET: IPv4 protocol family
   //    SOCK_STREAM: TCP
   //    3rd arg: No need to specify protocols more
   fd_ = socket(AF_INET, SOCK_STREAM, 0);
   if (fd_ < 0) {
-    throw std::runtime_error("webserv: Socket: cannot initialize socket");
+    throw std::runtime_error(
+        "webserv: error: Socket: init: failed to create socket");
   }
 
   // change socket to non blocking fd
   if (fcntl(fd_, F_SETFL, O_NONBLOCK) != 0) {
     close(fd_);
-    throw std::runtime_error("webserv: Socket: cannot initialize socket");
+    throw std::runtime_error(
+        "webserv: error: Socket: init: failed to set to non-blockiing");
   }
 
   // create addressing info
-  addr_in_.sin_family = AF_INET;  // specify address family is IPv4
-  addr_in_.sin_addr.s_addr = INADDR_ANY;  // accept IP address (if all, use INADDR_ANY)
-  addr_in_.sin_port = htons(port);  // convert port number to big endian
-                                    // TODO: need to create "ft_htons"
+  addr_in_.sin_family = AF_INET;   // specify address family is IPv4
+  addr_in_.sin_addr.s_addr = ip_;  // accept IP address (if all, use INADDR_ANY)
+  addr_in_.sin_port = port_;       // convert port number to big endian
+
   // bind address to the fd of socket
   if (bind(fd_, reinterpret_cast<struct sockaddr *>(&addr_in_),
            sizeof(addr_in_)) == -1) {
     close(fd_);
-    throw std::runtime_error("webserv: Socket: cannot initialize socket");
+    throw std::runtime_error(
+        "webserv: error: Socket: init: failed to bind socket");
   }
-  
+
   // make the socket ready to accept connection
   if (listen(fd_, SOCKET_QUE_LEN) == -1) {
     close(fd_);
-    throw std::runtime_error("webserv: Socket: cannot initialize socket");
+    throw std::runtime_error(
+        "webserv: error: Socket: init: failed to start listiening");
   }
+
   // initialize address length
   addrlen_ = sizeof(struct sockaddr_in);
 }

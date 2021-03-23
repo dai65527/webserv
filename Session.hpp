@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/18 21:19:42 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/23 18:35:21 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,8 +29,8 @@ class Session {
   int sock_fd_;
   int file_fd_;
   int retry_count_;
-  const LocationConfig* config_;
   SessionStatus status_;
+  LocationConfig* config_;
   Request request_;
   Response response_;
   CgiHandler cgi_handler_;

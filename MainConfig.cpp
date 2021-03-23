@@ -6,11 +6,11 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:34:15 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/21 17:50:18 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/23 19:00:34 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <MainConfig.hpp>
+#include "MainConfig.hpp"
 
 MainConfig::MainConfig() {}
 

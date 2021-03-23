@@ -3,12 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Session.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/23 16:15:47 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/23 20:33:36 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#include "Session.hpp"
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -17,7 +19,6 @@
 
 #include <iostream>
 
-#include "Session.hpp"
 /*
 ** default constructor
 */
@@ -184,21 +185,22 @@ void Session::startCreateResponse() {
     if (file_fd_ == -1) {
       // response_buf_ = "503 forbidden";
       status_ = SESSION_FOR_CLIENT_SEND;
-			return ;
+      return;
     }
     fcntl(file_fd_, F_SETFL, O_NONBLOCK);
     status_ = SESSION_FOR_FILE_WRITE;
     return;
   }
 
-  response_.raw_response_.append(request_.getBuf());  // TODO: create function to make response
+  response_.raw_response_.append(
+      request_.getBuf());  // TODO: create function to make response
   status_ = SESSION_FOR_CLIENT_SEND;
   return;
 }
 
 int Session::receiveRequest() {
-	int ret;
-	std::cout << "sock_fd in session: " << sock_fd_ << std::endl;
+  int ret;
+  std::cout << "sock_fd in session: " << sock_fd_ << std::endl;
   ret = request_.receive(sock_fd_);
   if (ret == -1) {
     if (retry_count_ == RETRY_TIME_MAX) {
@@ -280,7 +282,7 @@ int Session::readFromFile() {
       std::cout << "[error] close file" << std::endl;
       close(file_fd_);
       // response_buf_ =
-          // "500 internal server error";  // TODO: make response func
+      // "500 internal server error";  // TODO: make response func
 
       // to send error response to client
       status_ = SESSION_FOR_CLIENT_SEND;
@@ -295,7 +297,7 @@ int Session::readFromFile() {
 
   // check if reached eof
   if (n == 0) {
-    close(file_fd_);              // close pipefd
+    close(file_fd_);                    // close pipefd
     status_ = SESSION_FOR_CLIENT_SEND;  // set for send response
     return 0;
   }
@@ -307,10 +309,11 @@ int Session::readFromFile() {
 }
 
 int Session::writeToCgi() {
-	 ssize_t n;
+  ssize_t n;
 
   // write to cgi process
-  n = cgi_handler_.writeToCgi(request_.getBuf().c_str(), request_.getBuf().length());
+  n = cgi_handler_.writeToCgi(request_.getBuf().c_str(),
+                              request_.getBuf().length());
 
   // retry several times even if write failed
   if (n == -1) {
@@ -351,11 +354,11 @@ int Session::writeToCgi() {
 }
 
 int Session::readFromCgi() {
-	ssize_t n;
-	char read_buf[BUFFER_SIZE];
+  ssize_t n;
+  char read_buf[BUFFER_SIZE];
 
   // read from cgi process
-	n = cgi_handler_.readFromCgi(read_buf, BUFFER_SIZE);
+  n = cgi_handler_.readFromCgi(read_buf, BUFFER_SIZE);
   // retry seveal times even if read failed
   if (n == -1) {
     std::cout << "[error] failed to read from cgi process" << std::endl;
@@ -365,7 +368,8 @@ int Session::readFromCgi() {
       // close connection and make error responce
       std::cout << "[error] close connection to CGI process" << std::endl;
       close(cgi_handler_.getOutputFd());
-      // response_buf_ = "500 internal server error";  // TODO: make response func
+      // response_buf_ = "500 internal server error";  // TODO: make response
+      // func
 
       // kill the process on error (if failed kill, we can do nothing...)
       if (kill(cgi_handler_.getPid(), SIGKILL) == -1) {
@@ -385,7 +389,7 @@ int Session::readFromCgi() {
 
   // check if pipe closed
   if (n == 0) {
-    close(cgi_handler_.getOutputFd());              // close pipefd
+    close(cgi_handler_.getOutputFd());  // close pipefd
     status_ = SESSION_FOR_CLIENT_SEND;  // set for send response
     return 0;
   }
@@ -399,8 +403,9 @@ int Session::readFromCgi() {
 int Session::sendResponse() {
   ssize_t n;
 
-	std::cout << response_.raw_response_ << std::endl;
-  n = send(sock_fd_, response_.raw_response_.c_str(), response_.raw_response_.length(), 0);
+  std::cout << response_.raw_response_ << std::endl;
+  n = send(sock_fd_, response_.raw_response_.c_str(),
+           response_.raw_response_.length(), 0);
   if (n == -1) {
     std::cout << "[error] failed to send response" << std::endl;
     if (retry_count_ == RETRY_TIME_MAX) {

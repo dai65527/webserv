@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/01 23:36:35 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/05 00:49:57 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/23 18:31:31 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ class Server {
 
   const std::map<int, in_addr_t>& getPortIp() const;
   const std::list<std::string>& getNames() const;
-  const size_t getMaxClientBodySize() const;
+  size_t getMaxClientBodySize() const;
   const LocationConfig& getDefaultLocationConfig() const;
   int addPortIpToMap(int port, std::string ip);
   int addServerName(const std::list<std::string>& names);
