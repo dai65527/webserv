@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/21 21:51:43 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/23 11:16:44 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,11 +43,6 @@ int Request::receive(int sock_fd) {
   return ret;
 }
 
-// int Request::appendRawData(char* raw_data) {
-//   buf_.append(raw_data);
-//   return (parseRequest());
-// }
-
 void  Request::eraseBuf(ssize_t n) {
   buf_.erase(0, n);
 }
@@ -65,7 +60,7 @@ void  Request::eraseBody(ssize_t n) {
 //   while (*itr != '\n')
 //   {
 //     copy_begin = itr;
-//     while (*itr != ' ' || *itr != '\n')
+//     while (*itr != ' ' || *itr != '\r\n')
 //       itr++;
 //     buf_.copy(str, itr - copy_begin, copy_begin);
 //     cnt++;
