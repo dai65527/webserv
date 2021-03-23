@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Webserv.cpp                                        :+:      :+:    :+:   */
+/*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 21:48:48 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/23 15:22:13 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/23 20:29:50 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,9 @@
 #include <signal.h>
 
 #include <iostream>
+
+#include "ConfigParser.hpp"
+#include "Webserv.hpp"
 #define DEFAULT_PORT 5050
 
 Webserv::Webserv() {}
@@ -36,11 +39,14 @@ Webserv::~Webserv() {
   }
 }
 
-Webserv::Webserv(const Webserv& other) {}
+/*
+** init and relational functions
+*/
 
-Webserv& Webserv::operator=(const Webserv& other) { return *this; }
+void Webserv::init(const std::string& configfilepath) {
+  // load configfile
+  loadConfig(configfilepath);
 
-void Webserv::init() {
   // initialize timeout of select
   tv_timeout_.tv_sec = SELECT_TIMEOUT_MS / 1000;
   tv_timeout_.tv_usec = (SELECT_TIMEOUT_MS * 1000) % 1000000;
@@ -49,12 +55,42 @@ void Webserv::init() {
   signal(SIGCHLD, SIG_IGN);
 
   /* prepare sockets according to config */
-  // would use while loop to create list and init sockets
-  // sockets_(1);//pointerにするか？
-  Socket* sock = new Socket;
-  sockets_.push_back(sock);
-  (*sockets_.begin())->init(DEFAULT_PORT, 0);
-  std::cout << "socket initialized" << std::endl;
+  initSockets();
+}
+
+void Webserv::loadConfig(const std::string& filename) {
+  ConfigParser parser;
+  config_ = parser.parseConfig(filename);
+}
+
+void Webserv::initSockets() {
+  std::list<std::pair<in_addr_t, uint16_t> > listenlist;
+
+  // get unique listen list
+  for (std::list<ServerConfig>::const_iterator itr =
+           config_.getServers().begin();
+       itr != config_.getServers().end(); ++itr) {
+    listenlist.insert(listenlist.end(), itr->getListen().begin(),
+                      itr->getListen().end());
+  }
+  listenlist.sort();
+  listenlist.unique();
+
+  // add and init sockets
+  for (std::list<std::pair<in_addr_t, uint16_t> >::const_iterator itr =
+           listenlist.begin();
+       itr != listenlist.end();) {
+    // add new socket to list
+    sockets_.push_back(new Socket(itr->first, itr->second));
+
+    // pass port if INADDR_ANY set
+    if (itr->first == INADDR_ANY) {
+      while (itr != listenlist.end() &&
+             itr->second == sockets_.back()->getPort()) {
+        ++itr;
+      }
+    }
+  }
 }
 
 void Webserv::run() {

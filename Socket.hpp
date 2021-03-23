@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/01 23:24:47 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/19 02:13:24 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/23 19:38:19 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,23 +20,26 @@
 class Socket {
  private:
   int fd_;
-  int port_;
+  uint16_t port_;
+  in_addr_t ip_;
   sockaddr_in addr_in_;
   socklen_t addrlen_;
 
- public:
+  Socket();
   Socket(Socket const&);
   Socket& operator=(Socket const&);
 
-  //  public:
-  Socket();
+  void init();
+
+ public:
+  Socket(in_addr_t ip, uint16_t port);
   virtual ~Socket();
 
   int getFd() const;
-  int getPort() const;
+  uint16_t getPort() const;
+  in_addr_t getIp() const;
   sockaddr_in getSockAddr() const;
   socklen_t getSockLen() const;
-  void init(int port, int ip);
   int acceptRequest();
 };
 
