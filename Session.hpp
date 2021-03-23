@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/05 20:37:31 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/18 21:19:42 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 
 #include <sys/types.h>
 #include <unistd.h>
+#include <signal.h>
+#include <sys/socket.h>
 
 #include "CgiHandler.hpp"
 #include "LocationConfig.hpp"
@@ -25,12 +27,14 @@
 class Session {
  private:
   int sock_fd_;
+  int file_fd_;
+  int retry_count_;
   const LocationConfig* config_;
   SessionStatus status_;
   Request request_;
   Response response_;
   CgiHandler cgi_handler_;
-  pid_t cgi_pid;
+  pid_t cgi_pid_;
 
  public:
   Session();
@@ -40,6 +44,7 @@ class Session {
   Session& operator=(Session const& other);
 
   int getSockFd() const;
+  int getFileFd() const;
   const LocationConfig& getConfig() const;
   const SessionStatus& getStatus() const;
   const Request& getRequest() const;
@@ -49,11 +54,13 @@ class Session {
   int setFdToSelect(fd_set* rfds, fd_set* wfds);
   int checkSelectedAndExecute(fd_set* rfds, fd_set* wfds);
   void startCreateResponse();
-  void closeConnection();
 
  private:
+  int receiveRequest();
   int writeToFile();
   int readFromFile();
+  int writeToCgi();
+  int readFromCgi();
   int sendResponse();
 };
 

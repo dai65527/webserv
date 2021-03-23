@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpStatusCode.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 20:33:54 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/18 23:23:19 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/19 02:17:30 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
