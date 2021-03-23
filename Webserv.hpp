@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/01 22:44:35 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/12 20:18:12 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/23 14:42:31 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,8 @@ class Webserv {
   int loadConfig(const std::string& filename) const;
   int setToSelect();
   int selectAndExecute();
+  void init();
+  void run();
 };
 
 #endif /* WEBSERV_HPP */

@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 21:48:48 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/20 21:37:22 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/23 14:42:45 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,22 +17,7 @@
 #include <iostream>
 #define DEFAULT_PORT 5050
 
-Webserv::Webserv() {
-  // initialize timeout of select
-  tv_timeout_.tv_sec = SELECT_TIMEOUT_MS / 1000;
-  tv_timeout_.tv_usec = (SELECT_TIMEOUT_MS * 1000) % 1000000;
-
-  /* ignore sigchld signal */
-  signal(SIGCHLD, SIG_IGN);
-
-  /* prepare sockets according to config */
-  // would use while loop to create list and init sockets
-  // sockets_(1);//pointerにするか？
-  Socket* sock = new Socket;
-  sockets_.push_back(sock);
-  (*sockets_.begin())->init(DEFAULT_PORT, 0);
-  std::cout << "socket initialized" << std::endl;
-}
+Webserv::Webserv() {}
 
 Webserv::~Webserv() {
   for (std::list<Session*>::iterator itr = sessions_.begin();
@@ -53,7 +38,29 @@ Webserv::~Webserv() {
 
 Webserv::Webserv(const Webserv& other) {}
 
-Webserv& Webserv::operator=(const Webserv& other) {return *this;}
+Webserv& Webserv::operator=(const Webserv& other) { return *this; }
+
+void Webserv::init() {
+  // initialize timeout of select
+  tv_timeout_.tv_sec = SELECT_TIMEOUT_MS / 1000;
+  tv_timeout_.tv_usec = (SELECT_TIMEOUT_MS * 1000) % 1000000;
+
+  /* ignore sigchld signal */
+  signal(SIGCHLD, SIG_IGN);
+
+  /* prepare sockets according to config */
+  // would use while loop to create list and init sockets
+  // sockets_(1);//pointerにするか？
+  Socket* sock = new Socket;
+  sockets_.push_back(sock);
+  (*sockets_.begin())->init(DEFAULT_PORT, 0);
+  std::cout << "socket initialized" << std::endl;
+}
+
+void Webserv::run() {
+  setToSelect();
+  selectAndExecute();
+}
 
 int Webserv::setToSelect() {
   // initialize fd sets
@@ -112,5 +119,5 @@ int Webserv::selectAndExecute() {
       }
     }
   }
-	return 0;
+  return 0;
 }
