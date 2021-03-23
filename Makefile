@@ -6,14 +6,14 @@
 #    By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/01/05 17:34:06 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/19 23:25:00 by dhasegaw         ###   ########.fr        #
+#    Updated: 2021/03/23 15:47:20 by dhasegaw         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CXX			:=	clang++
 CPPFLAGS	:=	-Wall -Wextra -Werror
 
-SRCS		:=	main.cpp Webserv.cpp Sessions.cpp Socket.cpp Request.cpp Response.cpp CgiHandler.cpp
+SRCS		:=	main.cpp Webserv.cpp Session.cpp Socket.cpp Request.cpp Response.cpp CgiHandler.cpp
 OBJS		:=	$(SRCS:%.cpp=%.o)
 NAME		:=	nginDX
 OUTDIR		:=	.

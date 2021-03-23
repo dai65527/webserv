@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Sessions.cpp                                       :+:      :+:    :+:   */
+/*   Session.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/21 23:20:07 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/23 16:15:47 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -295,13 +295,13 @@ int Session::readFromFile() {
 
   // check if reached eof
   if (n == 0) {
-    close(cgi_handler_.getOutputFd());              // close pipefd
+    close(file_fd_);              // close pipefd
     status_ = SESSION_FOR_CLIENT_SEND;  // set for send response
     return 0;
   }
 
   // append data to response
-  response_.raw_response_.append(read_buf);
+  response_.raw_response_.append(read_buf, n);
 
   return 0;
 }
@@ -310,7 +310,7 @@ int Session::writeToCgi() {
 	 ssize_t n;
 
   // write to cgi process
-  n = cgi_handler_.writeToCgi(const_cast<char *>(request_.getBuf().c_str()), request_.getBuf().length());
+  n = cgi_handler_.writeToCgi(request_.getBuf().c_str(), request_.getBuf().length());
 
   // retry several times even if write failed
   if (n == -1) {

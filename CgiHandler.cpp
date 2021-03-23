@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/07 23:25:56 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/21 23:19:39 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/23 15:35:52 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,7 +98,7 @@ HTTPStatusCode CgiHandler::createCgiProcess() {
   return HTTP_200;
 }
 
-int CgiHandler::writeToCgi(char* buf, size_t size) {
+int CgiHandler::writeToCgi(const char* buf, size_t size) {
   // write to cgi process
   return (write(input_fd_, buf, size));
 }

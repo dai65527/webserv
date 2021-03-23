@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/23 11:16:44 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/23 15:26:46 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,14 +30,12 @@ int Request::receive(int sock_fd) {
   char read_buf[BUFFER_SIZE];
   // while (1)
   // {
-    std::cout << "sock_fd in request: " << sock_fd << std::endl;
     ret = recv(sock_fd, read_buf, BUFFER_SIZE, 0);
-    std::cout << "ret: " << ret << std::endl;
     if (ret < 0)
       return -1;
     // if (ret == 0)
     //   break ;
-    buf_.append(read_buf);
+    buf_.append(read_buf, ret);
   // }
   // parse_request();
   return ret;
