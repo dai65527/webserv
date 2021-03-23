@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+nginDX
+
+#test file
+test_req.txt
+
+# hidden files
+.*
+!.gitignore

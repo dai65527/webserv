@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/05 20:37:31 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/23 18:35:21 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 
 #include <sys/types.h>
 #include <unistd.h>
+#include <signal.h>
+#include <sys/socket.h>
 
 #include "CgiHandler.hpp"
 #include "LocationConfig.hpp"
@@ -25,12 +27,14 @@
 class Session {
  private:
   int sock_fd_;
-  const LocationConfig* config_;
+  int file_fd_;
+  int retry_count_;
   SessionStatus status_;
+  LocationConfig* config_;
   Request request_;
   Response response_;
   CgiHandler cgi_handler_;
-  pid_t cgi_pid;
+  pid_t cgi_pid_;
 
  public:
   Session();
@@ -40,6 +44,7 @@ class Session {
   Session& operator=(Session const& other);
 
   int getSockFd() const;
+  int getFileFd() const;
   const LocationConfig& getConfig() const;
   const SessionStatus& getStatus() const;
   const Request& getRequest() const;
@@ -49,11 +54,13 @@ class Session {
   int setFdToSelect(fd_set* rfds, fd_set* wfds);
   int checkSelectedAndExecute(fd_set* rfds, fd_set* wfds);
   void startCreateResponse();
-  void closeConnection();
 
  private:
+  int receiveRequest();
   int writeToFile();
   int readFromFile();
+  int writeToCgi();
+  int readFromCgi();
   int sendResponse();
 };
 

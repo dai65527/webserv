@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 20:22:22 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/05 11:33:07 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/17 00:02:47 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,13 @@
 #include "HttpStatusCode.hpp"
 
 class Response {
- private:
+#ifdef UNIT_TEST
+#define kind public
+#else
+#define kind private
+#endif
+
+kind:
   std::string raw_response_;
   HTTPStatusCode status_;
   std::string method_;
