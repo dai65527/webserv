@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/07 23:25:56 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/23 15:35:52 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/23 17:04:48 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ CgiHandler::CgiHandler() {}
 CgiHandler::~CgiHandler() {}
 
 CgiHandler::CgiHandler(const CgiHandler& other) {}
-CgiHandler& CgiHandler::operator=(const CgiHandler& other) {return *this;}
+CgiHandler& CgiHandler::operator=(const CgiHandler& other) { return *this; }
 
 pid_t CgiHandler::getPid() const { return pid_; }
 int CgiHandler::getInputFd() const { return input_fd_; }
@@ -98,7 +98,7 @@ HTTPStatusCode CgiHandler::createCgiProcess() {
   return HTTP_200;
 }
 
-int CgiHandler::writeToCgi(const char* buf, size_t size) {
+int CgiHandler::writeToCgi(const ßchar* buf, size_t size) {
   // write to cgi process
   return (write(input_fd_, buf, size));
 }
@@ -117,7 +117,7 @@ int CgiHandler::readFromCgi(char* buf, size_t size) {
   }
   // check if pipe closed
   if (ret == 0) {
-    close(output_fd_);              // close pipefd
+    close(output_fd_);  // close pipefd
     return 0;
   }
   return ret;
