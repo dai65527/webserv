@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 02:16:27 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/24 02:32:55 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <sys/socket.h>
 
 #include <iostream>
+#include <stdexcept>
 
 Request::Request() {}
 
@@ -45,7 +46,7 @@ void Request::eraseBody(ssize_t n) { body_.erase(0, n); }
 
 size_t Request::parseMethod() {
   size_t pos = 0;
-  while (buf_[pos] != ' ' && buf_[pos] != '\n') {
+  while (buf_[pos] != ' ' && buf_[pos] != '\r') {
     ++pos;
   }
   method_ = buf_.substr(0, pos);
@@ -53,11 +54,11 @@ size_t Request::parseMethod() {
 }
 
 size_t Request::parseUri(size_t pos) {
-  while (buf_[pos] == ' ' && buf_[pos] != '\n') {
+  while (buf_[pos] == ' ' && buf_[pos] != '\r') {
     ++pos;
   }
   size_t copy_begin = pos;
-  while (buf_[pos] != ' ') {
+  while (buf_[pos] != ' ' && buf_[pos] != '\r') {
     ++pos;
   }
   uri_ = buf_.substr(copy_begin, pos - copy_begin);
@@ -76,19 +77,19 @@ size_t Request::checkRequestLine(size_t pos) {
       return 1;
     }
   }
-  while (buf_[pos] == ' ' && buf_[pos] != '\n') {
+  while (buf_[pos] == ' ' && buf_[pos] != '\r') {
     ++pos;
   }
   size_t copy_begin = pos;
   std::string protocol;
-  while (buf_[pos] != ' ' && buf_[pos] != '\n') {
+  while (buf_[pos] != ' ' && buf_[pos] != '\r') {
     ++pos;
   }
   protocol = buf_.substr(copy_begin, pos - copy_begin);
   if (protocol != "HTTP/1.1") {
     return 1;
   }
-  if (buf_[pos] != '\n') {
+  if (buf_[pos] != '\r' && buf_[pos] != '\n') {
     return 1;
   }
   return 0;
@@ -104,14 +105,13 @@ size_t Request::parseRequestLine() {
     pos = parseUri(pos);
   }
   if (checkRequestLine(pos)) {
-    std::cout << "Error in request line" << std::endl;  // TODO: std::exception?
+    throw std::runtime_error("Error in request line"); // TODO: std::exception?
   }
   return pos;
 }
 
 int Request::parseRequest() {
-  parseRequestLine();
-  return 0;
+  return (parseRequestLine());
 }
 
 // int Request::parseRequest() {

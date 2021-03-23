@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/24 01:10:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 02:18:45 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/24 03:50:58 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,11 +28,45 @@ class test_parseRequest : public ::testing::Test {
 };
 
 TEST_F(test_parseRequest, allOK) {
-  request.buf_ = "GET / HTTP/1.1";
-  EXPECT_EQ(request.parseRequest(), 0);
+  request.buf_ = "GET / HTTP/1.1\r\n";
+  EXPECT_NO_THROW(request.parseRequest());
   EXPECT_EQ(request.method_, "GET");
   EXPECT_EQ(request.uri_, "/");
 }
+
+TEST_F(test_parseRequest, allOK2) {
+  request.buf_ = "HEAD /index.html HTTP/1.1\r\n";
+  EXPECT_NO_THROW(request.parseRequest());
+  EXPECT_EQ(request.method_, "HEAD");
+  EXPECT_EQ(request.uri_, "/index.html");
+}
+
+TEST_F(test_parseRequest, protocolFail) {
+  request.buf_ = "GET / HTTP/1.2\r\n";
+  EXPECT_THROW(request.parseRequest(), std::runtime_error);
+}
+
+TEST_F(test_parseRequest, linefeedFail) {
+  request.buf_ = "GET / HTTP/1.1\n";
+  EXPECT_THROW(request.parseRequest(), std::runtime_error);
+}
+
+TEST_F(test_parseRequest, methodFail) {
+  request.buf_ = "GUT / HTTP/1.1\r\n";
+  EXPECT_THROW(request.parseRequest(), std::runtime_error);
+}
+
+TEST_F(test_parseRequest, methodFail2) {
+  request.buf_ = " GET / HTTP/1.1\r\n";
+  EXPECT_THROW(request.parseRequest(), std::runtime_error);
+}
+
+// TEST_F(test_parseRequest, failMethod) {
+//   request.buf_ = " GET / HTTP/1.1\r\n";
+//   EXPECT_NO_THROW(request.parseRequest());
+//   EXPECT_EQ(request.method_, "GET");
+//   EXPECT_EQ(request.uri_, "/");
+// }
 
 // TEST_F(test_parseRequest, uri) {
 //   request.buf_ = "GET / HTTP/1.1";
