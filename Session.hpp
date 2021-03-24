@@ -6,20 +6,21 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 12:11:52 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/25 00:27:44 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SESSION_HPP
 #define SESSION_HPP
 
-#include <sys/types.h>
-#include <unistd.h>
 #include <signal.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "CgiHandler.hpp"
 #include "LocationConfig.hpp"
+#include "MainConfig.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
 #include "SessionStatus.hpp"
@@ -30,7 +31,7 @@ class Session {
   int file_fd_;
   int retry_count_;
   SessionStatus status_;
-  LocationConfig* config_;
+  const MainConfig& main_config_;
   Request request_;
   Response response_;
   CgiHandler cgi_handler_;
@@ -42,7 +43,7 @@ class Session {
 
  public:
   virtual ~Session();
-  Session(int sock_fd_);
+  Session(int sock_fd_, const MainConfig& main_config);
 
   int getSockFd() const;
   int getFileFd() const;
@@ -55,15 +56,21 @@ class Session {
   void setConfig(const std::list<LocationConfig>& config_list);
   int setFdToSelect(fd_set* rfds, fd_set* wfds);
   int checkSelectedAndExecute(fd_set* rfds, fd_set* wfds);
-  void startCreateResponse(HTTPStatusCode status_code);
+  void startCreateResponse();
+  int checkResponseType();
 
  private:
   int receiveRequest();
+  void startReadingFromFile();
+  void startDirectoryListing();
+  void startWritingToFile();
+  void startCgiProcess();
   int writeToFile();
   int readFromFile();
   int writeToCgi();
   int readFromCgi();
   int sendResponse();
+  void createErrorResponse(HTTPStatusCode http_status);
 };
 
 #endif /* SESSION_HPP */

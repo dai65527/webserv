@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 11:37:06 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/24 22:59:59 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,9 @@ const std::string& Request::getBody() const { return body_; }
 ** receive request using recv syscall
 **
 ** return val:
-**  -2: failed to receive (recv syscall failed)
-**  -1: bad request (parse failue)
+**  -3: failed to receive (recv syscall failed)
+**  -2: 505 http version not supported
+**  -1: 400 bad request (parse failue)
 **   0: end of request (go to create response)
 **   1: continue to receive (will be set to select again)
 */
@@ -68,18 +69,6 @@ int Request::receive(int sock_fd) {
 void Request::eraseBuf(ssize_t n) { buf_.erase(0, n); }
 
 void Request::eraseBody(ssize_t n) { body_.erase(0, n); }
-
-// check
-int Request::checkResponseType() const {
-  if (!buf_.compare(0, 4, "read", 0, 4)) {
-    return 0;
-  } else if (!buf_.compare(0, 4, "write", 0, 4)) {
-    return 1;
-  } else if (!buf_.compare(0, 3, "cgi", 0, 3)) {
-    return 2;
-  }
-  return 42;
-}
 
 // int Request::parseRequest() {
 //   //parse first line (request line)
