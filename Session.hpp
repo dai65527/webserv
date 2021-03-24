@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/23 18:35:21 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/24 12:11:52 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,15 +36,17 @@ class Session {
   CgiHandler cgi_handler_;
   pid_t cgi_pid_;
 
- public:
   Session();
-  virtual ~Session();
-  Session(int sock_fd_);
   Session(Session const& other);
   Session& operator=(Session const& other);
 
+ public:
+  virtual ~Session();
+  Session(int sock_fd_);
+
   int getSockFd() const;
   int getFileFd() const;
+  // いる？
   const LocationConfig& getConfig() const;
   const SessionStatus& getStatus() const;
   const Request& getRequest() const;
@@ -53,7 +55,7 @@ class Session {
   void setConfig(const std::list<LocationConfig>& config_list);
   int setFdToSelect(fd_set* rfds, fd_set* wfds);
   int checkSelectedAndExecute(fd_set* rfds, fd_set* wfds);
-  void startCreateResponse();
+  void startCreateResponse(HTTPStatusCode status_code);
 
  private:
   int receiveRequest();

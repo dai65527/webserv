@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/07 23:25:56 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 12:36:49 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/24 15:11:47 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,6 @@
 
 CgiHandler::CgiHandler() {}
 CgiHandler::~CgiHandler() {}
-
-CgiHandler::CgiHandler(const CgiHandler& other) {}
-CgiHandler& CgiHandler::operator=(const CgiHandler& other) { return *this; }
 
 pid_t CgiHandler::getPid() const { return pid_; }
 int CgiHandler::getInputFd() const { return input_fd_; }

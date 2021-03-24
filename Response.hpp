@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 20:22:22 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/17 00:02:47 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/24 12:29:17 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,12 +20,10 @@
 
 class Response {
 #ifdef UNIT_TEST
-#define kind public
+ public:
 #else
-#define kind private
+ private:
 #endif
-
-kind:
   std::string raw_response_;
   HTTPStatusCode status_;
   std::string method_;
@@ -40,9 +38,10 @@ kind:
  public:
   Response();
   virtual ~Response();
-  int appendRawData(char* data);
-  int createRawData(char* data);
-  const char* getRawReponse() const;
+  int appendRawData(const char* data, size_t len);
+  int createErrorResponse(HTTPStatusCode http_status);
+  ssize_t sendRawData(int sock_fd);
+  const std::string& getRawReponse() const;
   void incrementBytesAlreadySent(size_t bytes);
 };
 

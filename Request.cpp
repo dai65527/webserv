@@ -3,10 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2021/03/24 12:11:37 by dhasegaw         ###   ########.fr       */
+=======
+/*   Updated: 2021/03/24 11:37:06 by dnakano          ###   ########.fr       */
+>>>>>>> 4c46a406937d855157ca09c8bbcaace3b854d597
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,11 +33,27 @@ const std::map<std::string, std::string>& Request::getHeaders() const {
   return headers_;
 }
 const std::string& Request::getBody() const { return body_; }
+<<<<<<< HEAD
+=======
+
+/*
+** receive
+**
+** receive request using recv syscall
+**
+** return val:
+**  -2: failed to receive (recv syscall failed)
+**  -1: bad request (parse failue)
+**   0: end of request (go to create response)
+**   1: continue to receive (will be set to select again)
+*/
+>>>>>>> 4c46a406937d855157ca09c8bbcaace3b854d597
 
 int Request::receive(int sock_fd) {
   int ret;
   char read_buf[BUFFER_SIZE];
   ret = recv(sock_fd, read_buf, BUFFER_SIZE, 0);
+<<<<<<< HEAD
   if (ret < 0) return -1;
   buf_.append(read_buf, ret);
   ;
@@ -117,6 +137,42 @@ int Request::parseRequest() {
   pos = parseRequestLine();
   // pos = parseHeaderFields(pos);
   return 0;  // TODO prepare different return value
+=======
+  if (ret < 0) {
+    return -2;  // recv failed
+  }
+  buf_.append(read_buf, ret);
+
+  /*
+  ** parseRequest
+  ** returns...
+  **  -1: bad request (parse failue)
+  **   0: end of request (go to create response)
+  **   1: continue to receive (will be set to select again)
+  */
+  // return parseRequest();
+
+  // temporary
+  // return 0: end of request ( ret = 0 )
+  // return 1: request not ended (ret = 1)
+  return ret == 1 ? 0 : 1;
+}
+
+void Request::eraseBuf(ssize_t n) { buf_.erase(0, n); }
+
+void Request::eraseBody(ssize_t n) { body_.erase(0, n); }
+
+// check
+int Request::checkResponseType() const {
+  if (!buf_.compare(0, 4, "read", 0, 4)) {
+    return 0;
+  } else if (!buf_.compare(0, 4, "write", 0, 4)) {
+    return 1;
+  } else if (!buf_.compare(0, 3, "cgi", 0, 3)) {
+    return 2;
+  }
+  return 42;
+>>>>>>> 4c46a406937d855157ca09c8bbcaace3b854d597
 }
 
 // size_t Request::parseHeaderFields(size_t pos) {
@@ -151,10 +207,17 @@ int Request::parseRequest() {
 //     cnt++;
 //     switch (cnt) {
 //       case 1:
+<<<<<<< HEAD
 //         /// str in {GET, PUT, ....}
 //         // if not throw std::runtime_error("invalid method")
 //         method_ = str;
 //         break;
+=======
+//        ///str in {GET, PUT, ....}
+//        //if not throw std::runtime_error("invalid method")
+//        method_ = str;
+//        break ;
+>>>>>>> 4c46a406937d855157ca09c8bbcaace3b854d597
 //       case 2:
 //         uri_ = str;
 //         break;
@@ -178,10 +241,18 @@ int Request::parseRequest() {
 //     if (*itr == '\n') break;
 //     itr++;
 //   }
+<<<<<<< HEAD
 //   buf_.copy(headers_, itr - copy_begin,
 //             copy_begin) if (itr == buf_.end()) return 0;
 
 //   // get request body
+=======
+//   buf_.copy(headers_, itr - copy_begin, copy_begin)
+//   if (itr == buf_.end())
+//     return 0;
+
+//   //get request body
+>>>>>>> 4c46a406937d855157ca09c8bbcaace3b854d597
 //   copy_begin = itr;
 //   while (itr != buf_.end()) {
 //     break;
