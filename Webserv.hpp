@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/01 22:44:35 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/23 17:28:41 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/24 08:12:58 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 #include <list>
 #include <string>
 
-#include "Server.hpp"
 #include "Session.hpp"
 #include "Socket.hpp"
 #include "MainConfig.hpp"
@@ -27,7 +26,6 @@ class Webserv {
  private:
   std::list<Session*> sessions_;
   std::list<Socket*> sockets_;
-  std::list<Server*> servers_;
   MainConfig config_;
   int n_fd_;
   int max_fd_;
