@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 11:45:47 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/24 11:46:47 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -226,7 +226,7 @@ int Session::receiveRequest() {
   retry_count_ = 0;
   if (ret == -1) {
     startCreateResponse(HTTP_400);
-  } else if (ret == 1) { // end of request (should be modified)
+  } else if (ret == 0) {
     startCreateResponse(HTTP_200);
   }
   return 0;
