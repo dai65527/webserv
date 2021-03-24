@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiHandler.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/07 23:25:56 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/23 15:35:52 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/24 12:46:41 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,6 @@
 
 CgiHandler::CgiHandler() {}
 CgiHandler::~CgiHandler() {}
-
-CgiHandler::CgiHandler(const CgiHandler& other) {}
-CgiHandler& CgiHandler::operator=(const CgiHandler& other) {return *this;}
 
 pid_t CgiHandler::getPid() const { return pid_; }
 int CgiHandler::getInputFd() const { return input_fd_; }
@@ -117,7 +114,7 @@ int CgiHandler::readFromCgi(char* buf, size_t size) {
   }
   // check if pipe closed
   if (ret == 0) {
-    close(output_fd_);              // close pipefd
+    close(output_fd_);  // close pipefd
     return 0;
   }
   return ret;
