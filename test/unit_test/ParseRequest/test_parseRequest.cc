@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/24 01:10:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 12:11:45 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/24 18:10:50 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,38 +27,57 @@ class test_parseRequest : public ::testing::Test {
   virtual void TearDown() {}
 };
 
-TEST_F(test_parseRequest, reqlineOK) {
+TEST_F(test_parseRequest, reqlineOK1) {
   request.buf_ = "GET / HTTP/1.1\r\n";
-  EXPECT_NO_THROW(request.parseRequest());
+  EXPECT_EQ(request.parseRequest(), 0);
   EXPECT_EQ(request.method_, "GET");
   EXPECT_EQ(request.uri_, "/");
 }
 
 TEST_F(test_parseRequest, reqlineOK2) {
-  request.buf_ = "HEAD /index.html HTTP/1.1\r\n";
-  EXPECT_NO_THROW(request.parseRequest());
+  request.buf_ = "HEAD /index.html HTTP/10.21\r\n";
+  EXPECT_EQ(request.parseRequest(), 0);
   EXPECT_EQ(request.method_, "HEAD");
   EXPECT_EQ(request.uri_, "/index.html");
 }
 
-TEST_F(test_parseRequest, protocolFail) {
-  request.buf_ = "GET / HTTP/1.2\r\n";
-  EXPECT_THROW(request.parseRequest(), std::runtime_error);
+TEST_F(test_parseRequest, splitted_reqlineOK) {
+  request.buf_ = "HEAD /index.h";
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_ = "tml HTTP/10.21\r\n";
+  EXPECT_EQ(request.parseRequest(), 0);
+  EXPECT_EQ(request.method_, "HEAD");
+  EXPECT_EQ(request.uri_, "/index.html");
 }
 
-TEST_F(test_parseRequest, linefeedFail) {
-  request.buf_ = "GET / HTTP/1.1\n";
-  EXPECT_THROW(request.parseRequest(), std::runtime_error);
-}
-
-TEST_F(test_parseRequest, methodFail) {
-  request.buf_ = "GUT / HTTP/1.1\r\n";
-  EXPECT_THROW(request.parseRequest(), std::runtime_error);
+TEST_F(test_parseRequest, methodFail1) {
+  request.buf_ = " GET / HTTP/1.1\r\n";
+  EXPECT_EQ(request.parseRequest(), -1);
 }
 
 TEST_F(test_parseRequest, methodFail2) {
-  request.buf_ = " GET / HTTP/1.1\r\n";
-  EXPECT_THROW(request.parseRequest(), std::runtime_error);
+  request.buf_ = "GET1 / HTTP/1.1\r\n";
+  EXPECT_EQ(request.parseRequest(), -1);
+}
+
+TEST_F(test_parseRequest, protocolFail1) {
+  request.buf_ = "GET / HTTP1.2\r\n";
+  EXPECT_EQ(request.parseRequest(), -1);
+}
+
+TEST_F(test_parseRequest, protocolFail2) {
+  request.buf_ = "GET / ATTP/1.2\r\n";
+  EXPECT_EQ(request.parseRequest(), -1);
+}
+
+TEST_F(test_parseRequest, protocolFail3) {
+  request.buf_ = "GET / HTTP/12\r\n";
+  EXPECT_EQ(request.parseRequest(), -1);
+}
+
+TEST_F(test_parseRequest, protocolFail4) {
+  request.buf_ = "GET / HTTP/12.\r\n";
+  EXPECT_EQ(request.parseRequest(), -1);
 }
 
 // TEST_F(test_parseRequest, headersOK) {

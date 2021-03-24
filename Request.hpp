@@ -3,14 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2021/03/24 04:29:50 by dhasegaw         ###   ########.fr       */
-=======
-/*   Updated: 2021/03/24 11:09:31 by dnakano          ###   ########.fr       */
->>>>>>> 4c46a406937d855157ca09c8bbcaace3b854d597
+/*   Updated: 2021/03/24 18:10:47 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,15 +26,16 @@ class Request {
  private:
 #endif
   std::string buf_; /*for temporary saving before parsing*/
-  std::string method_;     /* below is the result of parsing*/
+  std::string request_line_;
+  int flg_request_line_;
+  std::string header_field_;
+  std::string method_;
   std::string uri_;
   std::map<std::string, std::string> headers_;
   std::string body_;
 
   Request(Request const& other);
   Request& operator=(Request const& other);
-
-  int parseRequest();
 
  public:
   Request();
@@ -54,19 +51,21 @@ class Request {
   int appendRawData(char* raw_data);
   void eraseBuf(ssize_t n);
   void eraseBody(ssize_t n);
+  int parseRequest();
 
 #ifdef UNIT_TEST
  public:
 #else
  private:
 #endif
-  int parseRequest();
-  size_t parseRequestLine();
-  size_t parseHeaderFields(size_t pos);
+  ssize_t getRequestLine();
+  int parseRequestLine();
   size_t parseMethod();
   size_t parseUri(size_t pos);
-  ssize_t checkRequestLine(size_t pos);
+  int checkRequestLine(size_t pos);
   int checkResponseType() const;
+  int getHeaderField(size_t pos_buf);
+  size_t parseHeaderField(size_t pos);
 };
 
 #endif /* REQUEST_HPP */

@@ -3,14 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2021/03/24 12:11:37 by dhasegaw         ###   ########.fr       */
-=======
-/*   Updated: 2021/03/24 11:37:06 by dnakano          ###   ########.fr       */
->>>>>>> 4c46a406937d855157ca09c8bbcaace3b854d597
+/*   Updated: 2021/03/24 19:56:06 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +15,8 @@
 #include <sys/socket.h>
 
 #include <iostream>
-#include <stdexcept>
 
-Request::Request() {}
+Request::Request() : flg_request_line_(0) {}
 
 Request::~Request() {}
 
@@ -33,8 +28,6 @@ const std::map<std::string, std::string>& Request::getHeaders() const {
   return headers_;
 }
 const std::string& Request::getBody() const { return body_; }
-<<<<<<< HEAD
-=======
 
 /*
 ** receive
@@ -47,26 +40,65 @@ const std::string& Request::getBody() const { return body_; }
 **   0: end of request (go to create response)
 **   1: continue to receive (will be set to select again)
 */
->>>>>>> 4c46a406937d855157ca09c8bbcaace3b854d597
 
 int Request::receive(int sock_fd) {
   int ret;
   char read_buf[BUFFER_SIZE];
   ret = recv(sock_fd, read_buf, BUFFER_SIZE, 0);
-<<<<<<< HEAD
-  if (ret < 0) return -1;
+  if (ret < 0) {
+    return -2;
+  }
   buf_.append(read_buf, ret);
-  ;
   return parseRequest();
 }
 
-void Request::eraseBuf(ssize_t n) { buf_.erase(0, n); }
+/* parseRequest
+** return values:
+**  -1: bad request (parse failue)
+**   0: end of request (go to create response)
+**   1: continue to receive (will be set to select again)
+*/
+int Request::parseRequest() {
+  ssize_t pos_buf = 0;
+  if (!flg_request_line_ && ((pos_buf = getRequestLine()) == -1)) {
+    return 1;  // 1: continue to receive (will be set to select again)
+  }
+  return parseRequestLine();
+}
 
-void Request::eraseBody(ssize_t n) { body_.erase(0, n); }
+/* get request line from the input (beginning to /r/n) */
+ssize_t Request::getRequestLine() {
+  size_t pos = 0;
+  while (buf_.c_str()[pos] != '\0' && buf_[pos] != '\r' && buf_[pos] != '\n') {
+    ++pos;
+  }
+  request_line_.append(buf_, pos);
+  if (buf_.c_str()[pos] == '\0') {
+    return -1;
+  }
+  if (buf_[pos] == '\r') {
+    ++pos;
+  }
+  if (buf_[pos] == '\n') {
+    flg_request_line_ = 1;
+    return pos;
+  } else
+    return -1;
+}
+
+int Request::parseRequestLine() {
+  if (!method_.empty()) {
+    return 0;
+  }
+  ssize_t pos = 0;
+  pos = parseMethod();
+  pos = parseUri(pos);
+  return checkRequestLine(pos);
+}
 
 size_t Request::parseMethod() {
   size_t pos = 0;
-  while (buf_[pos] != ' ' && buf_[pos] != '\r') {
+  while (buf_.c_str()[pos] != '\0' && buf_[pos] != ' ' && buf_[pos] != '\r') {
     ++pos;
   }
   method_ = buf_.substr(0, pos);
@@ -74,88 +106,64 @@ size_t Request::parseMethod() {
 }
 
 size_t Request::parseUri(size_t pos) {
-  while (buf_[pos] == ' ' && buf_[pos] != '\r') {
+  while (buf_.c_str()[pos] != '\0' && buf_[pos] == ' ' && buf_[pos] != '\r') {
     ++pos;
   }
   size_t copy_begin = pos;
-  while (buf_[pos] != ' ' && buf_[pos] != '\r') {
+  while (buf_.c_str()[pos] != '\0' && buf_[pos] != ' ' && buf_[pos] != '\r') {
     ++pos;
   }
   uri_ = buf_.substr(copy_begin, pos - copy_begin);
   return pos;
 }
 
-ssize_t Request::checkRequestLine(size_t pos) {
-  std::string methods[8] = {"GET",    "HEAD",    "POST",    "PUT",
-                            "DELETE", "CONNECT", "OPTIONS", "TRACE"};
-  for (int i = 0; i < 8; ++i) {
-    if (method_ == methods[i]) {
-      break;
-    }
-    if (i == 7) {
-      std::cout << "405 Mehod Not Allowed" << std::endl;  // Todo make response
+int Request::checkRequestLine(size_t pos) {
+  // check method
+  for (std::string::iterator itr = method_.begin(); itr != method_.end();
+       ++itr) {
+    if (!std::isupper(*itr)) {
       return -1;
     }
   }
-  while (buf_[pos] == ' ' && buf_[pos] != '\r') {
+
+  // check URI
+  // 難しいので後回し！
+
+  // check protocol
+  while (buf_.c_str()[pos] != '\0' && buf_[pos] == ' ' && buf_[pos] != '\r') {
     ++pos;
   }
   size_t copy_begin = pos;
   std::string protocol;
-  while (buf_[pos] != ' ' && buf_[pos] != '\r') {
+  while (buf_.c_str()[pos] != '\0' && buf_[pos] != ' ' && buf_[pos] != '\r') {
     ++pos;
   }
   protocol = buf_.substr(copy_begin, pos - copy_begin);
-  if (protocol != "HTTP/1.1") {
+  if (protocol.substr(0, 5) != "HTTP/") {
     return -1;
   }
-  if (buf_[pos] != '\r' || buf_[++pos] != '\n') {
+  int i = 5;
+  while (protocol.c_str()[i] != '\0' && protocol[i] != '.' &&
+         protocol[i] != ' ') {
+    if (!std::isdigit(protocol[i])) {
+      return -1;
+    }
+    i++;
+  }
+  if (protocol[i] != '.') {
     return -1;
   }
-  return pos;
-}
-
-size_t Request::parseRequestLine() {
-  /* parse first line */
-  ssize_t pos;
-  if (method_.empty()) {
-    pos = parseMethod();
+  i++;
+  if (protocol.c_str()[i] == '\0') {
+    return -1;
   }
-  if (uri_.empty()) {
-    pos = parseUri(pos);
+  while (protocol.c_str()[i] != '\0') {
+    if (!std::isdigit(protocol[i])) {
+      return -1;
+    }
+    i++;
   }
-  pos = checkRequestLine(pos);
-  if (pos < 0) {
-    throw std::runtime_error(
-        "Error in request line");  // TODO: different exception?
-  }
-  return pos;
-}
-
-int Request::parseRequest() {
-  size_t pos;
-  pos = parseRequestLine();
-  // pos = parseHeaderFields(pos);
-  return 0;  // TODO prepare different return value
-=======
-  if (ret < 0) {
-    return -2;  // recv failed
-  }
-  buf_.append(read_buf, ret);
-
-  /*
-  ** parseRequest
-  ** returns...
-  **  -1: bad request (parse failue)
-  **   0: end of request (go to create response)
-  **   1: continue to receive (will be set to select again)
-  */
-  // return parseRequest();
-
-  // temporary
-  // return 0: end of request ( ret = 0 )
-  // return 1: request not ended (ret = 1)
-  return ret == 1 ? 0 : 1;
+  return 0;
 }
 
 void Request::eraseBuf(ssize_t n) { buf_.erase(0, n); }
@@ -172,7 +180,6 @@ int Request::checkResponseType() const {
     return 2;
   }
   return 42;
->>>>>>> 4c46a406937d855157ca09c8bbcaace3b854d597
 }
 
 // size_t Request::parseHeaderFields(size_t pos) {
@@ -207,17 +214,14 @@ int Request::checkResponseType() const {
 //     cnt++;
 //     switch (cnt) {
 //       case 1:
-<<<<<<< HEAD
 //         /// str in {GET, PUT, ....}
 //         // if not throw std::runtime_error("invalid method")
 //         method_ = str;
 //         break;
-=======
 //        ///str in {GET, PUT, ....}
 //        //if not throw std::runtime_error("invalid method")
 //        method_ = str;
 //        break ;
->>>>>>> 4c46a406937d855157ca09c8bbcaace3b854d597
 //       case 2:
 //         uri_ = str;
 //         break;
@@ -241,18 +245,15 @@ int Request::checkResponseType() const {
 //     if (*itr == '\n') break;
 //     itr++;
 //   }
-<<<<<<< HEAD
 //   buf_.copy(headers_, itr - copy_begin,
 //             copy_begin) if (itr == buf_.end()) return 0;
 
 //   // get request body
-=======
 //   buf_.copy(headers_, itr - copy_begin, copy_begin)
 //   if (itr == buf_.end())
 //     return 0;
 
 //   //get request body
->>>>>>> 4c46a406937d855157ca09c8bbcaace3b854d597
 //   copy_begin = itr;
 //   while (itr != buf_.end()) {
 //     break;
