@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 21:48:48 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/23 20:29:50 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/24 08:22:03 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,11 +30,6 @@ Webserv::~Webserv() {
 
   for (std::list<Socket*>::iterator itr = sockets_.begin();
        itr != sockets_.end(); ++itr) {
-    delete *itr;
-  }
-
-  for (std::list<Server*>::iterator itr = servers_.begin();
-       itr != servers_.end(); ++itr) {
     delete *itr;
   }
 }
@@ -105,10 +100,11 @@ int Webserv::setToSelect() {
   FD_ZERO(&wfds_);
 
   // set listing socket fd
+  max_fd_ = 0;
   for (std::list<Socket*>::iterator itr = sockets_.begin();
        itr != sockets_.end(); ++itr) {
     FD_SET((*itr)->getFd(), &rfds_);
-    max_fd_ = (*itr)->getFd();
+    max_fd_ = std::max(max_fd_, (*itr)->getFd());
   }
 
   // set sessions fd
@@ -140,6 +136,7 @@ int Webserv::selectAndExecute() {
     }
 
     if (ret == -1) {
+      delete *itr;
       itr = sessions_.erase(itr);
     } else {
       ++itr;
@@ -156,8 +153,7 @@ int Webserv::selectAndExecute() {
       while (n_fd_-- > 0) {
         accepted_fd = (*itr)->acceptRequest();
         if (accepted_fd >= 0) {
-          Session* sess = new Session(accepted_fd);
-          sessions_.push_back(sess);
+          sessions_.push_back(new Session(accepted_fd));
         }
       }
     }
