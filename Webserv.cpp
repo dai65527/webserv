@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   WebServ.cpp                                        :+:      :+:    :+:   */
+/*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 21:48:48 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 12:10:45 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/24 23:03:15 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,7 +152,7 @@ int Webserv::selectAndExecute() {
       while (n_fd_-- > 0) {
         int accepted_fd = (*itr)->acceptRequest();
         if (accepted_fd >= 0) {
-          sessions_.push_back(new Session(accepted_fd));
+          sessions_.push_back(new Session(accepted_fd, config_));
         }
       }
     }
