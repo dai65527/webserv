@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/24 01:10:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 20:23:03 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/24 21:08:51 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ TEST_F(test_parseRequest, reqlineOK1) {
 }
 
 TEST_F(test_parseRequest, reqlineOK2) {
-  request.buf_ = "HEAD /index.html HTTP/10.21\r\n";
+  request.buf_ = "HEAD /index.html HTTP/1.1\r\n";
   EXPECT_EQ(request.parseRequest(), 0);
   EXPECT_EQ(request.method_, "HEAD");
   EXPECT_EQ(request.uri_, "/index.html");
@@ -46,7 +46,7 @@ TEST_F(test_parseRequest, splitted_reqlineOK) {
   EXPECT_EQ(request.parseRequest(), 1);
   EXPECT_EQ(request.method_, "");
   EXPECT_EQ(request.uri_, "");
-  request.buf_.append("tml HTTP/10.21\r\n");
+  request.buf_.append("tml HTTP/1.1\r\n");
   EXPECT_EQ(request.parseRequest(), 0);
   EXPECT_EQ(request.method_, "HEAD");
   EXPECT_EQ(request.uri_, "/index.html");
@@ -64,22 +64,22 @@ TEST_F(test_parseRequest, methodFail2) {
 
 TEST_F(test_parseRequest, protocolFail1) {
   request.buf_ = "GET / HTTP1.2\r\n";
-  EXPECT_EQ(request.parseRequest(), -1);
+  EXPECT_EQ(request.parseRequest(), -2);
 }
 
 TEST_F(test_parseRequest, protocolFail2) {
   request.buf_ = "GET / ATTP/1.2\r\n";
-  EXPECT_EQ(request.parseRequest(), -1);
+  EXPECT_EQ(request.parseRequest(), -2);
 }
 
 TEST_F(test_parseRequest, protocolFail3) {
   request.buf_ = "GET / HTTP/12\r\n";
-  EXPECT_EQ(request.parseRequest(), -1);
+  EXPECT_EQ(request.parseRequest(), -2);
 }
 
 TEST_F(test_parseRequest, protocolFail4) {
   request.buf_ = "GET / HTTP/12.\r\n";
-  EXPECT_EQ(request.parseRequest(), -1);
+  EXPECT_EQ(request.parseRequest(), -2);
 }
 
 // TEST_F(test_parseRequest, headersOK) {

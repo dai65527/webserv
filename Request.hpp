@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 20:22:46 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/24 20:56:42 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include <map>
 #include <string>
+#include "HttpStatusCode.hpp"
 
 #define BUFFER_SIZE 1024
 #define RETRY_TIME_MAX 10

@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 20:24:17 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/24 21:10:40 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,10 +35,11 @@ const std::string& Request::getBody() const { return body_; }
 ** receive request using recv syscall
 **
 ** return val:
-**  -2: failed to receive (recv syscall failed)
-**  -1: bad request (parse failue)
+**  -3: failed to receive (recv syscall failed)
+**  -2: 505 HTTP Version Not Supported
+**  -1: 400 bad request (parse failue)
 **   0: end of request (go to create response)
-**   1: continue to receive (will be set to select again)
+**   1: continue to receive (will beß set to select again)
 */
 
 int Request::receive(int sock_fd) {
@@ -46,7 +47,7 @@ int Request::receive(int sock_fd) {
   char read_buf[BUFFER_SIZE];
   ret = recv(sock_fd, read_buf, BUFFER_SIZE, 0);
   if (ret < 0) {
-    return -2;
+    return -3;
   }
   buf_.append(read_buf, ret);
   return parseRequest();
@@ -54,9 +55,10 @@ int Request::receive(int sock_fd) {
 
 /* parseRequest
 ** return values:
-**  -1: bad request (parse failue)
+**  -2: 505 HTTP Version Not Supported
+**  -1: 400 bad request (parse failue)
 **   0: end of request (go to create response)
-**   1: continue to receive (will be set to select again)
+**   1: continue to receive (will beß set to select again)
 */
 int Request::parseRequest() {
   ssize_t pos_buf = 0;
@@ -119,6 +121,9 @@ size_t Request::parseUri(size_t pos) {
 
 int Request::checkRequestLine(size_t pos) {
   // check method
+  if (method_.empty()) {
+    return -1;
+  }
   for (std::string::iterator itr = method_.begin(); itr != method_.end();
        ++itr) {
     if (!std::isupper(*itr)) {
@@ -139,29 +144,8 @@ int Request::checkRequestLine(size_t pos) {
     ++pos;
   }
   protocol = buf_.substr(copy_begin, pos - copy_begin);
-  if (protocol.substr(0, 5) != "HTTP/") {
-    return -1;
-  }
-  int i = 5;
-  while (protocol.c_str()[i] != '\0' && protocol[i] != '.' &&
-         protocol[i] != ' ') {
-    if (!std::isdigit(protocol[i])) {
-      return -1;
-    }
-    i++;
-  }
-  if (protocol[i] != '.') {
-    return -1;
-  }
-  i++;
-  if (protocol.c_str()[i] == '\0') {
-    return -1;
-  }
-  while (protocol.c_str()[i] != '\0') {
-    if (!std::isdigit(protocol[i])) {
-      return -1;
-    }
-    i++;
+  if (protocol != "HTTP/1.1") {
+    return -2;
   }
   return 0;
 }
