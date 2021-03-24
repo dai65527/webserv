@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/01/05 17:34:06 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/23 19:03:07 by dnakano          ###   ########.fr        #
+#    Updated: 2021/03/24 12:49:48 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -38,15 +38,16 @@ OUTDIR		:=	.
 .PHONY:		all
 all:		$(NAME)
 
-$(NAME):	$(OBJS) $(LIBFT)
-			$(CXX) $(CPPFLAGS) $(OBJS) -o $(NAME)
-
-.PHONY:		unittest
-unittest:	$(LIBFT)
-			$(CXX) -L$(LIBFTDIR) -lft $(SRCS) -o $(NAME) -I$(LIBFTDIR) -D UNIT_TEST
+$(NAME):	$(LIBFT) $(OBJS)
+			$(CXX) -L$(LIBFTDIR) $(patsubst lib%,-l%,$(basename $(LIBFT))) \
+			$(SRCS) -o $(NAME) -I$(LIBFTDIR)
 
 $(LIBFT):
 			make -C $(LIBFTDIR)
+
+.cpp.o:
+			$(CXX) $(CPPFLAGS) -I$(LIBFTDIR) \
+			-c $< -o $(patsubst %.cpp,%.o,$<)
 
 .PHONY:		test
 test:		$(NAME)
