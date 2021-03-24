@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 20:04:59 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/24 20:24:17 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,7 @@ int Request::parseRequest() {
   if (!flg_request_line_ && ((pos_buf = getRequestLine()) == -1)) {
     return 1;  // 1: continue to receive (will be set to select again)
   }
+  // getHeaderField(pos_buf);
   return parseRequestLine();
 }
 
@@ -72,8 +73,6 @@ ssize_t Request::getRequestLine() {
   while (buf_.c_str()[pos] != '\0' && buf_[pos] != '\r' && buf_[pos] != '\n') {
     ++pos;
   }
-  std::cout << "pos: " << pos << std::endl;
-  request_line_.append(buf_, pos);
   if (buf_.c_str()[pos] == '\0') {
     return -1;
   }

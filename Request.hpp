@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 18:10:47 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/24 20:22:46 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@ class Request {
  private:
 #endif
   std::string buf_; /*for temporary saving before parsing*/
-  std::string request_line_;
   int flg_request_line_;
   std::string header_field_;
   std::string method_;
