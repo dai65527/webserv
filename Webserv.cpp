@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 21:48:48 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 08:22:03 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/24 12:10:45 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,10 +148,9 @@ int Webserv::selectAndExecute() {
   for (std::list<Socket*>::iterator itr = sockets_.begin();
        itr != sockets_.end() && n_fd_ > 0; ++itr) {
     if (FD_ISSET((*itr)->getFd(), &rfds_)) {
-      int accepted_fd;
       // accept all incoming connections (rest of n_fd_)
       while (n_fd_-- > 0) {
-        accepted_fd = (*itr)->acceptRequest();
+        int accepted_fd = (*itr)->acceptRequest();
         if (accepted_fd >= 0) {
           sessions_.push_back(new Session(accepted_fd));
         }
