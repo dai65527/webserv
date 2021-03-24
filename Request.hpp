@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 01:51:50 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/24 04:29:50 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,9 +51,10 @@ class Request {
   kind : 
   int parseRequest();
   size_t parseRequestLine();
+  size_t parseHeaderFields(size_t pos);
   size_t parseMethod();
   size_t parseUri(size_t pos);
-  size_t checkRequestLine(size_t pos);
+  ssize_t checkRequestLine(size_t pos);
 };
 
 #endif /* REQUEST_HPP */

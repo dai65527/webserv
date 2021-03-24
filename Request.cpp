@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 02:32:55 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/24 12:11:37 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,8 @@ int Request::receive(int sock_fd) {
   ret = recv(sock_fd, read_buf, BUFFER_SIZE, 0);
   if (ret < 0) return -1;
   buf_.append(read_buf, ret);
-  parseRequest();
-  return ret;
+  ;
+  return parseRequest();
 }
 
 void Request::eraseBuf(ssize_t n) { buf_.erase(0, n); }
@@ -65,7 +65,7 @@ size_t Request::parseUri(size_t pos) {
   return pos;
 }
 
-size_t Request::checkRequestLine(size_t pos) {
+ssize_t Request::checkRequestLine(size_t pos) {
   std::string methods[8] = {"GET",    "HEAD",    "POST",    "PUT",
                             "DELETE", "CONNECT", "OPTIONS", "TRACE"};
   for (int i = 0; i < 8; ++i) {
@@ -74,7 +74,7 @@ size_t Request::checkRequestLine(size_t pos) {
     }
     if (i == 7) {
       std::cout << "405 Mehod Not Allowed" << std::endl;  // Todo make response
-      return 1;
+      return -1;
     }
   }
   while (buf_[pos] == ' ' && buf_[pos] != '\r') {
@@ -87,32 +87,56 @@ size_t Request::checkRequestLine(size_t pos) {
   }
   protocol = buf_.substr(copy_begin, pos - copy_begin);
   if (protocol != "HTTP/1.1") {
-    return 1;
+    return -1;
   }
-  if (buf_[pos] != '\r' && buf_[pos] != '\n') {
-    return 1;
+  if (buf_[pos] != '\r' || buf_[++pos] != '\n') {
+    return -1;
   }
-  return 0;
+  return pos;
 }
 
 size_t Request::parseRequestLine() {
   /* parse first line */
-  size_t pos;
+  ssize_t pos;
   if (method_.empty()) {
     pos = parseMethod();
   }
   if (uri_.empty()) {
     pos = parseUri(pos);
   }
-  if (checkRequestLine(pos)) {
-    throw std::runtime_error("Error in request line"); // TODO: std::exception?
+  pos = checkRequestLine(pos);
+  if (pos < 0) {
+    throw std::runtime_error(
+        "Error in request line");  // TODO: different exception?
   }
   return pos;
 }
 
 int Request::parseRequest() {
-  return (parseRequestLine());
+  size_t pos;
+  pos = parseRequestLine();
+  // pos = parseHeaderFields(pos);
+  return 0;  // TODO prepare different return value
 }
+
+// size_t Request::parseHeaderFields(size_t pos) {
+//   if (buf_[pos])
+//     ++pos;
+//   else
+//     throw std::runtime_error("Error: No headers");
+//   size_t copy_begin = pos;
+//   while (buf_[pos]) {
+//     if ((buf_[pos] == '\r') && (buf_[pos + 1] == '\n') &&
+//         (buf_[pos + 2] == '\r') && (buf_[pos + 3] == '\n'))
+//       break;
+//     ++pos;
+//   }
+//   headers_ = buf_.substr(copy_begin, pos - copy_begin);
+//   pos += 4;
+//   return pos;
+// }
+
+// size_t Request::
 
 // int Request::parseRequest() {
 //   // parse first line (request line)

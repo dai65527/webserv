@@ -6,14 +6,14 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/24 01:10:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 03:50:58 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/24 12:11:45 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #define UNIT_TEST
 
-#include "gtest.h"
 #include "Request.hpp"
+#include "gtest.h"
 
 class test_parseRequest : public ::testing::Test {
  protected:
@@ -27,14 +27,14 @@ class test_parseRequest : public ::testing::Test {
   virtual void TearDown() {}
 };
 
-TEST_F(test_parseRequest, allOK) {
+TEST_F(test_parseRequest, reqlineOK) {
   request.buf_ = "GET / HTTP/1.1\r\n";
   EXPECT_NO_THROW(request.parseRequest());
   EXPECT_EQ(request.method_, "GET");
   EXPECT_EQ(request.uri_, "/");
 }
 
-TEST_F(test_parseRequest, allOK2) {
+TEST_F(test_parseRequest, reqlineOK2) {
   request.buf_ = "HEAD /index.html HTTP/1.1\r\n";
   EXPECT_NO_THROW(request.parseRequest());
   EXPECT_EQ(request.method_, "HEAD");
@@ -61,56 +61,10 @@ TEST_F(test_parseRequest, methodFail2) {
   EXPECT_THROW(request.parseRequest(), std::runtime_error);
 }
 
-// TEST_F(test_parseRequest, failMethod) {
-//   request.buf_ = " GET / HTTP/1.1\r\n";
+// TEST_F(test_parseRequest, headersOK) {
+//   request.buf_ = "HEAD /index.html HTTP/1.1\r\nHost: localhost\r\n\r\n";
 //   EXPECT_NO_THROW(request.parseRequest());
-//   EXPECT_EQ(request.method_, "GET");
-//   EXPECT_EQ(request.uri_, "/");
-// }
-
-// TEST_F(test_parseRequest, uri) {
-//   request.buf_ = "GET / HTTP/1.1";
-//   request.parseRequest();
-  
-// }
-
-// TEST_F(test_parseCgiExtension, normalThree) {
-//   settings.push_back("cgi");
-//   settings.push_back("php");
-//   settings.push_back("perl");
-//   EXPECT_NO_THROW(store.parseCgiExtension(settings));
-//   EXPECT_EQ(store.getCgiExtension(), settings);
-// }
-
-// TEST_F(test_parseCgiExtension, normalOneTwice) {
-//   settings.push_back("cgi");
-//   EXPECT_NO_THROW(store.parseCgiExtension(settings));
-//   settings.front() = "perl";
-//   EXPECT_NO_THROW(store.parseCgiExtension(settings));
-//   std::list<std::string>::const_iterator itr = store.getCgiExtension().begin();
-//   EXPECT_EQ(*itr, "cgi");
-//   EXPECT_EQ(*++itr, "perl");
-// }
-
-// TEST_F(test_parseCgiExtension, normalOneTwice3times) {
-//   settings.push_back("cgi");
-//   EXPECT_NO_THROW(store.parseCgiExtension(settings));
-//   settings.front() = "perl";
-//   EXPECT_NO_THROW(store.parseCgiExtension(settings));
-//   settings.front() = "php";
-//   EXPECT_NO_THROW(store.parseCgiExtension(settings));
-//   std::list<std::string>::const_iterator itr = store.getCgiExtension().begin();
-//   EXPECT_EQ(*itr, "cgi");
-//   EXPECT_EQ(*++itr, "perl");
-//   EXPECT_EQ(*++itr, "php");
-// }
-
-// TEST_F(test_parseCgiExtension, settingInvalidNumber) {
-//   try {
-//     store.parseCgiExtension(settings);
-//   } catch (const std::runtime_error& e) {
-//     EXPECT_STREQ(e.what(), "cgi_extension: invalid number of setting");
-//     flg_thrown = true;
-//   }
-//   EXPECT_TRUE(flg_thrown);
+//   EXPECT_EQ(request.method_, "HEAD");
+//   EXPECT_EQ(request.uri_, "/index.html");
+//   EXPECT_EQ(request.headers_, "Host: localhost");
 // }
