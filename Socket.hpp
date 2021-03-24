@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/01 23:24:47 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/23 19:38:19 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/24 12:38:17 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,8 @@
 class Socket {
  private:
   int fd_;
-  uint16_t port_;
   in_addr_t ip_;
+  uint16_t port_;
   sockaddr_in addr_in_;
   socklen_t addrlen_;
 
