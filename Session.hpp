@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 09:15:03 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/24 12:11:52 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,12 +36,13 @@ class Session {
   CgiHandler cgi_handler_;
   pid_t cgi_pid_;
 
- public:
   Session();
-  virtual ~Session();
-  Session(int sock_fd_);
   Session(Session const& other);
   Session& operator=(Session const& other);
+
+ public:
+  virtual ~Session();
+  Session(int sock_fd_);
 
   int getSockFd() const;
   int getFileFd() const;

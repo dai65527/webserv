@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 11:46:47 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/24 12:22:30 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,19 +20,6 @@
 #include <iostream>
 
 /*
-** default constructor
-*/
-
-Session::Session() : status_(SESSION_NOT_INIT), sock_fd_(0), retry_count_(0){};
-
-/*
-** destructor
-** do nothng
-*/
-
-Session::~Session(){};
-
-/*
 ** constructor
 **
 ** initialize fd and status
@@ -40,9 +27,9 @@ Session::~Session(){};
 */
 
 Session::Session(int sock_fd)
-    : status_(SESSION_FOR_CLIENT_RECV), sock_fd_(sock_fd), retry_count_(0){};
+    : sock_fd_(sock_fd), retry_count_(0), status_(SESSION_FOR_CLIENT_RECV) {}
 
-Session::Session(const Session& ref) { *this = ref; }
+Session::~Session(){};
 
 /*
 ** assignation operator overload
@@ -75,7 +62,7 @@ const Request& Session::getRequest() const { return request_; }
 const Response& Session::getResponse() const { return response_; }
 const CgiHandler& Session::getCgiHandler() const { return cgi_handler_; }
 
-void Session::setConfig(const std::list<LocationConfig>& config_list) {}
+// void Session::setConfig(const std::list<LocationConfig>& config_list) {}
 
 /*
 ** set sessions fd for select
@@ -186,7 +173,7 @@ void Session::startCreateResponse(HTTPStatusCode http_status) {
       fcntl(file_fd_, F_SETFL, O_NONBLOCK);
       status_ = SESSION_FOR_FILE_WRITE;
       break;
-    
+
     // create cgi process
     case 2:
       http_status = cgi_handler_.createCgiProcess();  //
@@ -201,7 +188,8 @@ void Session::startCreateResponse(HTTPStatusCode http_status) {
 
     // oumugaeshi -> error 501
     default:
-      // response_.appendRawData(request_.getBuf().c_str(), request_.getBuf().length());
+      // response_.appendRawData(request_.getBuf().c_str(),
+      // request_.getBuf().length());
       response_.createErrorResponse(HTTP_501);
       status_ = SESSION_FOR_CLIENT_SEND;
   }
