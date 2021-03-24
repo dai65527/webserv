@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 12:22:30 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/24 12:37:36 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -398,7 +398,7 @@ int Session::readFromCgi() {
   }
 
   // append data to response
-  response_.raw_response_.append(read_buf, n);
+  response_.appendRawData(read_buf, n);
 
   return 0;
 }
@@ -406,9 +406,7 @@ int Session::readFromCgi() {
 int Session::sendResponse() {
   ssize_t n;
 
-  std::cout << response_.raw_response_ << std::endl;
-  n = send(sock_fd_, response_.raw_response_.c_str(),
-           response_.raw_response_.length(), 0);
+  n = response_.sendRawData(sock_fd_);
   if (n == -1) {
     std::cout << "[error] failed to send response" << std::endl;
     if (retry_count_ == RETRY_TIME_MAX) {
@@ -419,8 +417,7 @@ int Session::sendResponse() {
     retry_count_++;
     return 0;
   }
-  response_.raw_response_.erase(0, n);  // erase data already sent
-  if (response_.raw_response_.empty()) {
+  if (response_.getRawReponse().empty()) {
     close(sock_fd_);
     return 1;  // return 1 if all data sent (this session will be closed)
   }
