@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/23 20:33:36 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/24 11:45:47 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,65 +154,80 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
   }
 }
 
-void Session::startCreateResponse() {
-  if (!request_.getBuf().compare(0, 3, "cgi", 0, 3)) {
-    int http_status = cgi_handler_.createCgiProcess();  //
-    if (http_status != HTTP_200) {
-      std::cout << "[error] failed to create cgi process" << std::endl;
-      // response_buf_ = "cannot execute cgi";  // TODO: func create error
-      // response
-      status_ = SESSION_FOR_CLIENT_SEND;
-      return;
-    }
-    status_ = SESSION_FOR_CGI_WRITE;
-    return;
-
-    // create response from file
-  } else if (!request_.getBuf().compare(0, 4, "read", 0, 4)) {
-    file_fd_ = open("hello.txt", O_RDONLY);  // toriaezu
-    if (file_fd_ == -1) {
-      // response_buf_ = "404 not found"; //TODO:
-      status_ = SESSION_FOR_CLIENT_SEND;
-      return;
-    }
-    fcntl(file_fd_, F_SETFL, O_NONBLOCK);
-    status_ = SESSION_FOR_FILE_READ;
-    return;
-
-    // write to file
-  } else if (!request_.getBuf().compare(0, 4, "write", 0, 4)) {
-    file_fd_ = open("./test_req.txt", O_RDWR | O_CREAT, 0777);  // toriaezu
-    if (file_fd_ == -1) {
-      // response_buf_ = "503 forbidden";
-      status_ = SESSION_FOR_CLIENT_SEND;
-      return;
-    }
-    fcntl(file_fd_, F_SETFL, O_NONBLOCK);
-    status_ = SESSION_FOR_FILE_WRITE;
-    return;
+void Session::startCreateResponse(HTTPStatusCode http_status) {
+  if (http_status != HTTP_200) {
+    // error msg
+    response_.createErrorResponse(http_status);
+    status_ = SESSION_FOR_CLIENT_SEND;
   }
 
-  response_.raw_response_.append(
-      request_.getBuf());  // TODO: create function to make response
-  status_ = SESSION_FOR_CLIENT_SEND;
-  return;
+  switch (request_.checkResponseType()) {
+    // read from file
+    case 0:
+      file_fd_ = open("hello.txt", O_RDONLY);  // toriaezu
+      if (file_fd_ == -1) {
+        std::cout << "[error] open failure" << std::endl;
+        response_.createErrorResponse(HTTP_404);
+        status_ = SESSION_FOR_CLIENT_SEND;
+        break;
+      }
+      fcntl(file_fd_, F_SETFL, O_NONBLOCK);
+      status_ = SESSION_FOR_FILE_READ;
+      break;
+
+    // write to file
+    case 1:
+      file_fd_ = open("./test_req.txt", O_RDWR | O_CREAT, 0644);  // toriaezu
+      if (file_fd_ == -1) {
+        response_.createErrorResponse(HTTP_503);
+        status_ = SESSION_FOR_CLIENT_SEND;
+        break;
+      }
+      fcntl(file_fd_, F_SETFL, O_NONBLOCK);
+      status_ = SESSION_FOR_FILE_WRITE;
+      break;
+    
+    // create cgi process
+    case 2:
+      http_status = cgi_handler_.createCgiProcess();  //
+      if (http_status != HTTP_200) {
+        std::cout << "[error] failed to create cgi process" << std::endl;
+        response_.createErrorResponse(http_status);
+        status_ = SESSION_FOR_CLIENT_SEND;
+        break;
+      }
+      status_ = SESSION_FOR_CGI_WRITE;
+      break;
+
+    // oumugaeshi -> error 501
+    default:
+      // response_.appendRawData(request_.getBuf().c_str(), request_.getBuf().length());
+      response_.createErrorResponse(HTTP_501);
+      status_ = SESSION_FOR_CLIENT_SEND;
+  }
 }
 
+// return -1 on failure
 int Session::receiveRequest() {
   int ret;
-  std::cout << "sock_fd in session: " << sock_fd_ << std::endl;
+
+  // receive returns...
+  // -2:failed to receive, -1:bad request, 0:received all, 1:continue
   ret = request_.receive(sock_fd_);
-  if (ret == -1) {
+  if (ret == -2) {
     if (retry_count_ == RETRY_TIME_MAX) {
-      return -1;
+      // then try to send return internal server error
+      startCreateResponse(HTTP_500);
+    } else {
+      retry_count_++;
     }
-    retry_count_++;
     return 0;
   }
   retry_count_ = 0;
-  if (ret == 1 /* this will be resulted from content of request */) {
-    startCreateResponse();
-    return 1;
+  if (ret == -1) {
+    startCreateResponse(HTTP_400);
+  } else if (ret == 1) { // end of request (should be modified)
+    startCreateResponse(HTTP_200);
   }
   return 0;
 }
@@ -303,7 +318,7 @@ int Session::readFromFile() {
   }
 
   // append data to response
-  response_.raw_response_.append(read_buf, n);
+  response_.appendRawData(read_buf, n);
 
   return 0;
 }
