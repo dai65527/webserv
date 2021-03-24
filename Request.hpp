@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 20:56:42 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/24 21:24:41 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include <map>
 #include <string>
+
 #include "HttpStatusCode.hpp"
 
 #define BUFFER_SIZE 1024
@@ -33,6 +34,7 @@ class Request {
   std::string uri_;
   std::map<std::string, std::string> headers_;
   std::string body_;
+  HTTPStatusCode status_code_;
 
   Request(Request const& other);
   Request& operator=(Request const& other);
@@ -46,6 +48,7 @@ class Request {
   const std::string& getUri() const;
   const std::map<std::string, std::string>& getHeaders() const;
   const std::string& getBody() const;
+  HTTPStatusCode getStatusCode() const;
 
   int receive(int sock_fd);
   int appendRawData(char* raw_data);

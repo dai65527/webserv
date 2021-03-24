@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 21:10:40 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/24 21:24:51 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ const std::map<std::string, std::string>& Request::getHeaders() const {
   return headers_;
 }
 const std::string& Request::getBody() const { return body_; }
+HTTPStatusCode Request::getStatusCode() const { return status_code_; };
 
 /*
 ** receive
@@ -58,15 +59,21 @@ int Request::receive(int sock_fd) {
 **  -2: 505 HTTP Version Not Supported
 **  -1: 400 bad request (parse failue)
 **   0: end of request (go to create response)
-**   1: continue to receive (will beß set to select again)
+**   1: continue to receive (will be set to select again)
 */
 int Request::parseRequest() {
   ssize_t pos_buf = 0;
   if (!flg_request_line_ && ((pos_buf = getRequestLine()) == -1)) {
     return 1;  // 1: continue to receive (will be set to select again)
   }
+  int ret;
   // getHeaderField(pos_buf);
-  return parseRequestLine();
+  ret = parseRequestLine();
+  if (ret == -1)
+    status_code_ = HTTP_400;
+  else if (ret == -2)
+    status_code_ = HTTP_505;
+  return ret;
 }
 
 /* get request line from the input (beginning to /r/n) */
