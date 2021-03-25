@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/25 00:27:44 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/25 09:22:52 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,9 @@ class Session {
   void startWritingToFile();
   void startCgiProcess();
   int writeToFile();
+  std::string findFile() const;
+  std::string findRoot() const;
+  std::string findFileFromDir(const std::string& dirpath) const;
   int readFromFile();
   int writeToCgi();
   int readFromCgi();

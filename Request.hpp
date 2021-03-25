@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 11:09:31 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/25 08:12:34 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ class Request {
 #else
  private:
 #endif
+ public:      // just for test!!!!
   std::string buf_; /*for temporary saving before parsing*/
   std::string method_;     /* below is the result of parsing*/
   std::string uri_;

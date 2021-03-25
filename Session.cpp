@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/25 00:27:24 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/25 09:22:00 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,14 +170,39 @@ void Session::startCreateResponse() {
 }
 
 void Session::startReadingFromFile() {
-  file_fd_ = open("hello.txt", O_RDONLY);  // toriaezu
+  // findfile
+  std::string filepath = findFile();
+  if (filepath.empty()) {
+    createErrorResponse(HTTP_404);
+    return;
+  }
+
+  file_fd_ = open(filepath.c_str(), O_RDONLY);  // toriaezu
   if (file_fd_ == -1) {
     std::cout << "[error] open failure" << std::endl;
-    createErrorResponse(HTTP_404);
+    createErrorResponse(HTTP_500);
     return;
   }
   fcntl(file_fd_, F_SETFL, O_NONBLOCK);
   status_ = SESSION_FOR_FILE_READ;
+}
+
+std::string Session::findFile() const {
+  struct stat pathstat;
+  std::string rootpath = findRoot();
+  std::string filepath = rootpath + request_.getUri();
+
+  if (stat(filepath.c_str(), &pathstat) == -1) {
+    return "";  // no file or error
+  }
+
+  if (S_ISREG(pathstat.st_mode)) {
+    return filepath;  // file found
+  } else if (S_ISDIR(pathstat.st_mode)) {
+    return findFileFromDir(filepath);  // find from directive as "index"
+  } else {
+    return "";  // treat as file not found
+  }
 }
 
 void Session::startDirectoryListing() {
@@ -206,16 +231,28 @@ void Session::startCgiProcess() {
 
 // check
 int Session::checkResponseType() {
-  if (!request_.getBuf().compare(0, 4, "read", 0, 4)) {
+  // if (!request_.getBuf().compare(0, 4, "read", 0, 4)) {
+  //   return 0;
+  // } else if (!request_.getBuf().compare(0, 5, "write", 0, 5)) {
+  //   return 1;
+  // } else if (!request_.getBuf().compare(0, 3, "cgi", 0, 3)) {
+  //   return 2;
+  // }
+
+  // for test
+  request_.method_ = "GET";
+  request_.uri_ = "/index.html";
+  request_.headers_["host"] == "localhost";
+
+  // check method
+  if (request_.getMethod() == "GET" /* need to check avaliavlity */) {
     return 0;
-  } else if (!request_.getBuf().compare(0, 5, "write", 0, 5)) {
-    return 1;
-  } else if (!request_.getBuf().compare(0, 3, "cgi", 0, 3)) {
-    return 2;
+  } else {
+    createErrorResponse(HTTP_505);
   }
-  createErrorResponse(HTTP_400);
+
   status_ = SESSION_FOR_CLIENT_SEND;
-  return 42;
+  return -1;
 }
 
 // return -1 on failure
