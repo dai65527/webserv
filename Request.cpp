@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 00:20:47 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/26 00:40:55 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -212,6 +212,10 @@ int Request::checkRequestLine(size_t pos) {
 
 int Request::parseHeaderField(size_t pos) {
   while (buf_.c_str()[pos] != '\0') {
+    //  while (buf_.c_str()[pos] != '\0' &&
+    //        (buf_[pos] == '\t' || buf_[pos] == ' ')) {
+    //   ++pos;
+    // } keyの前に空白を許すかちょっと微妙（RFC的にはダメだが）
     size_t begin = pos;
     while (buf_.c_str()[pos] != '\0' && buf_[pos] != '\r') {
       ++pos;
@@ -229,6 +233,8 @@ int Request::parseHeaderField(size_t pos) {
       if (buf_.substr(pos, 4) == "\r\n\r\n") {
         break;
       }
+      else
+        pos += 2;
     }
   }
   return 0;
