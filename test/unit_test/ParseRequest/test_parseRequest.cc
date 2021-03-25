@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/24 01:10:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 00:41:22 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/26 00:52:32 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,17 @@ TEST_F(test_parseRequest, headersOK2) {
   request.buf_ =
       "HEAD /index.html HTTP/1.1\r\nHost: "
       "localhost\r\nLocation:Yokohama\r\n\r\n";
+  EXPECT_EQ(request.parseRequest(), 0);
+  EXPECT_EQ(request.method_, "HEAD");
+  EXPECT_EQ(request.uri_, "/index.html");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+  EXPECT_EQ(request.headers_["location"], "Yokohama");
+}
+
+TEST_F(test_parseRequest, splittedheadersOK) {
+  request.buf_ = "HEAD /index.html HTTP/1.1\r\nHost: ";
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("localhost\r\nLocation:Yokohama\r\n\r\n");
   EXPECT_EQ(request.parseRequest(), 0);
   EXPECT_EQ(request.method_, "HEAD");
   EXPECT_EQ(request.uri_, "/index.html");

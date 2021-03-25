@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 00:40:55 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/26 00:44:40 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,7 +107,7 @@ int Request::parseRequest() {
     if ((pos_buf = getHeaderField(pos_buf)) == -1) {
       return 1;  // 1: continue to receive (will be set to select again)
     }
-    ret = parseHeaderField(pos_begin_header_);
+    ret = parseHeaderField(pos_begin_header_);//headerのエラーチェックは未了
   }
   return 0;
 }
