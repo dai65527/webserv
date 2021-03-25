@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/25 09:22:00 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/25 12:04:15 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,6 +202,79 @@ std::string Session::findFile() const {
     return findFileFromDir(filepath);  // find from directive as "index"
   } else {
     return "";  // treat as file not found
+  }
+}
+
+std::string Session::findRoot() const {
+  const ServerConfig* server_config = findServer();
+
+  // TODO: need to check location but later
+
+  if (server_config->getRoot().empty()) {
+    return main_config_.getRoot();
+  } else {
+    return server_config->getRoot();
+  }
+}
+
+// find matching server directive
+const ServerConfig* Session::findServer() const {
+  // get ip and port
+  sockaddr_in addr;
+  socklen_t addrlen = sizeof(sockaddr_in);
+  getsockname(sock_fd_, reinterpret_cast<struct sockaddr*>(&addr), &addrlen);
+  in_addr_t ip = addr.sin_addr.s_addr;
+  uint16_t port = addr.sin_port;
+
+  // iterate for all server directive in main_config
+  std::list<ServerConfig>::const_iterator itr_server;
+  std::list<ServerConfig>::const_iterator end_server =
+      main_config_.getServers().end();
+  std::list<ServerConfig>::const_iterator itr_server_matched = end_server;
+  for (itr_server = main_config_.getServers().begin(); itr_server != end_server;
+       ++itr_server) {
+    // check port and host
+    std::list<std::pair<in_addr_t, uint16_t> >::const_iterator itr_listen;
+    std::list<std::pair<in_addr_t, uint16_t> >::const_iterator end_listen =
+        itr_server->getListen().end();
+    bool flg_matched = false;
+    for (itr_listen = itr_server->getListen().begin(); itr_listen != end_listen;
+         ++itr_listen) {
+      if ((itr_listen->first == INADDR_ANY || itr_listen->first == ip) &&
+          itr_listen->second == port) {
+        flg_matched = true;
+        break;
+      }
+    }
+
+    if (flg_matched) {
+      // check server_name
+      std::list<std::string>::const_iterator itr_sn;
+      std::list<std::string>::const_iterator end_sn =
+          itr_server->getServerName().end();
+      for (itr_sn = itr_server->getServerName().begin(); itr_sn != end_sn;
+           ++itr_sn) {
+        std::map<std::string, std::string>::const_iterator itr_host =
+            request_.getHeaders().find("host");
+        // return if server name matched
+        if (itr_host == request_.getHeaders().end() ||
+            itr_host->second == *itr_sn) {
+          return &(*itr_server);
+        }
+      }
+
+      // save first server and go next
+      if (itr_server_matched == end_server) {
+        itr_server_matched = itr_server;
+      }
+    }
+  }
+
+  // return first server if no server name matched to request host header
+  if (itr_server_matched == end_server) {
+    return NULL;
+  } else {
+    return &(*itr_server_matched);
   }
 }
 

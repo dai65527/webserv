@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/25 09:22:52 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/25 12:04:54 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,7 @@ class Session {
   std::string findFile() const;
   std::string findRoot() const;
   std::string findFileFromDir(const std::string& dirpath) const;
+  const ServerConfig* Session::findServer() const;
   int readFromFile();
   int writeToCgi();
   int readFromCgi();
