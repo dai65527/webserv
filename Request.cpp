@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 21:24:51 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/26 00:20:47 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,29 @@
 
 #include <sys/socket.h>
 
+#include <algorithm>
 #include <iostream>
 
-Request::Request() : flg_request_line_(0) {}
+Request::Request() : flg_request_line_(0), flg_header_field_(0), pos_prev_(0) {
+  headers_["accept-charsets"] = "";
+  headers_["accept-language"] = "";
+  headers_["allow"] = "";
+  headers_["authorization"] = "";
+  headers_["content-language"] = "";
+  headers_["content-length"] = "";
+  headers_["content-location"] = "";
+  headers_["content-type"] = "";
+  headers_["date"] = "";
+  headers_["host"] = "";
+  headers_["last-modified"] = "";
+  headers_["location"] = "";
+  headers_["referer"] = "";
+  headers_["retry-after"] = "";
+  headers_["server"] = "";
+  headers_["transfer-encoding"] = "";
+  headers_["user-agent"] = "";
+  headers_["www-authenticate"] = "";
+}
 
 Request::~Request() {}
 
@@ -62,27 +82,44 @@ int Request::receive(int sock_fd) {
 **   1: continue to receive (will be set to select again)
 */
 int Request::parseRequest() {
-  ssize_t pos_buf = 0;
-  if (!flg_request_line_ && ((pos_buf = getRequestLine()) == -1)) {
-    return 1;  // 1: continue to receive (will be set to select again)
-  }
+  ssize_t pos_buf;
   int ret;
-  // getHeaderField(pos_buf);
-  ret = parseRequestLine();
-  if (ret == -1)
-    status_code_ = HTTP_400;
-  else if (ret == -2)
-    status_code_ = HTTP_505;
-  return ret;
+  if (!flg_request_line_) {
+    if ((pos_buf = getRequestLine()) == -1) {
+      return 1;  // 1: continue to receive (will be set to select again)
+    }
+    ret = parseRequestLine();
+    switch (ret) {
+      case -1:
+        status_code_ = HTTP_400;
+        return -1;
+      case -2:
+        status_code_ = HTTP_505;
+        return -2;
+      default:
+        pos_begin_header_ = ++pos_buf;
+        pos_prev_ = pos_begin_header_;
+        break;
+    }
+  }
+  if (buf_.c_str()[pos_begin_header_] != '\0' && !flg_header_field_) {
+    pos_buf = pos_prev_;
+    if ((pos_buf = getHeaderField(pos_buf)) == -1) {
+      return 1;  // 1: continue to receive (will be set to select again)
+    }
+    ret = parseHeaderField(pos_begin_header_);
+  }
+  return 0;
 }
 
 /* get request line from the input (beginning to /r/n) */
 ssize_t Request::getRequestLine() {
-  size_t pos = 0;
+  size_t pos = pos_prev_;
   while (buf_.c_str()[pos] != '\0' && buf_[pos] != '\r' && buf_[pos] != '\n') {
     ++pos;
   }
   if (buf_.c_str()[pos] == '\0') {
+    pos_prev_ = pos;
     return -1;
   }
   if (buf_[pos] == '\r') {
@@ -91,8 +128,24 @@ ssize_t Request::getRequestLine() {
   if (buf_[pos] == '\n') {
     flg_request_line_ = 1;
     return pos;
-  } else
+  } else {
+    pos_prev_ = pos;
     return -1;
+  }
+}
+
+ssize_t Request::getHeaderField(size_t pos) {
+  while (buf_.c_str()[pos] != 0) {
+    if (buf_[pos] == '\r') {
+      if (buf_.substr(pos, 4) == "\r\n\r\n") {
+        flg_header_field_ = 1;
+        return pos + 4;
+      }
+    }
+    ++pos;
+  }
+  pos_prev_ = pos;
+  return -1;
 }
 
 int Request::parseRequestLine() {
@@ -157,6 +210,30 @@ int Request::checkRequestLine(size_t pos) {
   return 0;
 }
 
+int Request::parseHeaderField(size_t pos) {
+  while (buf_.c_str()[pos] != '\0') {
+    size_t begin = pos;
+    while (buf_.c_str()[pos] != '\0' && buf_[pos] != '\r') {
+      ++pos;
+    }
+    std::string key = buf_.substr(begin, buf_.find(":", begin) - begin);
+    for (std::string::iterator itr = key.begin(); itr != key.end(); ++itr)
+      *itr = std::tolower(*itr);
+    begin += key.length() + 1;
+    while (buf_.c_str()[begin] != '\0' &&
+           (buf_[begin] == '\t' || buf_[begin] == ' ')) {
+      ++begin;
+    }
+    headers_[key] = buf_.substr(begin, pos - begin);
+    if (buf_[pos] == '\r') {
+      if (buf_.substr(pos, 4) == "\r\n\r\n") {
+        break;
+      }
+    }
+  }
+  return 0;
+}
+
 void Request::eraseBuf(ssize_t n) { buf_.erase(0, n); }
 
 void Request::eraseBody(ssize_t n) { body_.erase(0, n); }
@@ -172,83 +249,3 @@ int Request::checkResponseType() const {
   }
   return 42;
 }
-
-// size_t Request::parseHeaderFields(size_t pos) {
-//   if (buf_[pos])
-//     ++pos;
-//   else
-//     throw std::runtime_error("Error: No headers");
-//   size_t copy_begin = pos;
-//   while (buf_[pos]) {
-//     if ((buf_[pos] == '\r') && (buf_[pos + 1] == '\n') &&
-//         (buf_[pos + 2] == '\r') && (buf_[pos + 3] == '\n'))
-//       break;
-//     ++pos;
-//   }
-//   headers_ = buf_.substr(copy_begin, pos - copy_begin);
-//   pos += 4;
-//   return pos;
-// }
-
-// size_t Request::
-
-// int Request::parseRequest() {
-//   // parse first line (request line)
-//   std::string str;
-//   std::string::iterator itr = buf_.begin();
-//   std::string::iterator copy_begin;
-//   int cnt = 0;
-//   while (*itr != '\n') {
-//     copy_begin = itr;
-//     while (*itr != ' ' || *itr != '\n') itr++;
-//     buf_.copy(str, itr - copy_begin, copy_begin);
-//     cnt++;
-//     switch (cnt) {
-//       case 1:
-//         /// str in {GET, PUT, ....}
-//         // if not throw std::runtime_error("invalid method")
-//         method_ = str;
-//         break;
-//        ///str in {GET, PUT, ....}
-//        //if not throw std::runtime_error("invalid method")
-//        method_ = str;
-//        break ;
-//       case 2:
-//         uri_ = str;
-//         break;
-//       case 3:
-//         if (str.compare("HTTP/1.1"))
-//           // throw std::runtime_error("invalid protoclol version")
-//           break;
-//       default:
-//           // throw std::runtime_error("invalid request line")
-//           ;
-//     }
-//     itr++;
-//   }
-//   if (itr == buf_.end())
-//     return 0;  // HTTP/1.1 requires at least host: ???->error
-//   itr++;
-
-//   // get request header field)
-//   copy_begin = itr;
-//   while (itr != buf_.end()) {
-//     if (*itr == '\n') break;
-//     itr++;
-//   }
-//   buf_.copy(headers_, itr - copy_begin,
-//             copy_begin) if (itr == buf_.end()) return 0;
-
-//   // get request body
-//   buf_.copy(headers_, itr - copy_begin, copy_begin)
-//   if (itr == buf_.end())
-//     return 0;
-
-//   //get request body
-//   copy_begin = itr;
-//   while (itr != buf_.end()) {
-//     break;
-//     itr++;
-//   }
-//   buf_.copy(body_, itr - copy_begin, copy_begin) return 0;
-// }

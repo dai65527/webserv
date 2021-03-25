@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/24 01:10:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 21:08:51 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/25 23:47:59 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,10 +82,10 @@ TEST_F(test_parseRequest, protocolFail4) {
   EXPECT_EQ(request.parseRequest(), -2);
 }
 
-// TEST_F(test_parseRequest, headersOK) {
-//   request.buf_ = "HEAD /index.html HTTP/1.1\r\nHost: localhost\r\n\r\n";
-//   EXPECT_NO_THROW(request.parseRequest());
-//   EXPECT_EQ(request.method_, "HEAD");
-//   EXPECT_EQ(request.uri_, "/index.html");
-//   EXPECT_EQ(request.headers_, "Host: localhost");
-// }
+TEST_F(test_parseRequest, headersOK) {
+  request.buf_ = "HEAD /index.html HTTP/1.1\r\nHost: localhost\r\n\r\n";
+  EXPECT_EQ(request.parseRequest(), 0);
+  EXPECT_EQ(request.method_, "HEAD");
+  EXPECT_EQ(request.uri_, "/index.html");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+}

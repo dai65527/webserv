@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 21:24:41 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/25 23:24:27 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,9 @@ class Request {
 #endif
   std::string buf_; /*for temporary saving before parsing*/
   int flg_request_line_;
+  int flg_header_field_;
+  ssize_t pos_prev_;
+  ssize_t pos_begin_header_;
   std::string header_field_;
   std::string method_;
   std::string uri_;
@@ -67,8 +70,8 @@ class Request {
   size_t parseUri(size_t pos);
   int checkRequestLine(size_t pos);
   int checkResponseType() const;
-  int getHeaderField(size_t pos_buf);
-  size_t parseHeaderField(size_t pos);
+  ssize_t getHeaderField(size_t pos);
+  int parseHeaderField(size_t pos);
 };
 
 #endif /* REQUEST_HPP */
