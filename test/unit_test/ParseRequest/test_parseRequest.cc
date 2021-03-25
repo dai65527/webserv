@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/24 01:10:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 00:52:32 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/26 01:11:43 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,27 +27,27 @@ class test_parseRequest : public ::testing::Test {
   virtual void TearDown() {}
 };
 
-TEST_F(test_parseRequest, reqlineOK1) {
+TEST_F(test_parseRequest, reqlineOK1butNoHost) {
   request.buf_ = "GET / HTTP/1.1\r\n";
-  EXPECT_EQ(request.parseRequest(), 0);
+  EXPECT_EQ(request.parseRequest(), -1);
   EXPECT_EQ(request.method_, "GET");
   EXPECT_EQ(request.uri_, "/");
 }
 
-TEST_F(test_parseRequest, reqlineOK2) {
+TEST_F(test_parseRequest, reqlineOK2butNoHost) {
   request.buf_ = "HEAD /index.html HTTP/1.1\r\n";
-  EXPECT_EQ(request.parseRequest(), 0);
+  EXPECT_EQ(request.parseRequest(), -1);
   EXPECT_EQ(request.method_, "HEAD");
   EXPECT_EQ(request.uri_, "/index.html");
 }
 
-TEST_F(test_parseRequest, splitted_reqlineOK) {
+TEST_F(test_parseRequest, splitted_reqlineOKbutNoHost) {
   request.buf_ = "HEAD /index.h";
   EXPECT_EQ(request.parseRequest(), 1);
   EXPECT_EQ(request.method_, "");
   EXPECT_EQ(request.uri_, "");
   request.buf_.append("tml HTTP/1.1\r\n");
-  EXPECT_EQ(request.parseRequest(), 0);
+  EXPECT_EQ(request.parseRequest(), -1);
   EXPECT_EQ(request.method_, "HEAD");
   EXPECT_EQ(request.uri_, "/index.html");
 }

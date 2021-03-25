@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 00:44:40 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/26 01:10:20 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,7 +107,12 @@ int Request::parseRequest() {
     if ((pos_buf = getHeaderField(pos_buf)) == -1) {
       return 1;  // 1: continue to receive (will be set to select again)
     }
-    ret = parseHeaderField(pos_begin_header_);//headerのエラーチェックは未了
+    parseHeaderField(pos_begin_header_);
+  }
+  ret = checkHeaderField();
+  if (ret == -1) {
+    status_code_ = HTTP_400;
+    return -1;
   }
   return 0;
 }
@@ -232,10 +237,16 @@ int Request::parseHeaderField(size_t pos) {
     if (buf_[pos] == '\r') {
       if (buf_.substr(pos, 4) == "\r\n\r\n") {
         break;
-      }
-      else
+      } else
         pos += 2;
     }
+  }
+  return 0;
+}
+
+int Request::checkHeaderField() {
+  if (headers_["host"].empty()) {
+    return -1;
   }
   return 0;
 }

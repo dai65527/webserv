@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/25 23:24:27 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/26 01:05:00 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,7 @@ class Request {
   int checkResponseType() const;
   ssize_t getHeaderField(size_t pos);
   int parseHeaderField(size_t pos);
+  int checkHeaderField();
 };
 
 #endif /* REQUEST_HPP */
