@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 17:00:08 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/26 17:05:40 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,7 +166,7 @@ size_t Request::parseUri(size_t pos) {
     ++pos;
   }
   uri_ = buf_.substr(copy_begin, pos - copy_begin);
-  if (buf_[pos] == '?') {
+  if (buf_[pos] == '?') { /* parse query */
     while (buf_[pos] != '\0' && buf_[pos] != ' ' && buf_[pos] != '\r') {
       size_t begin = ++pos;
       while (buf_[pos] != '\0' && buf_[pos] != ' ' && buf_[pos] != '\r' &&
