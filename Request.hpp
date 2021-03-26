@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 12:21:15 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/26 15:43:47 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ class Request {
   std::string header_field_;
   std::string method_;
   std::string uri_;
+  std::map<std::string, std::string> query_;
   std::map<std::string, std::string> headers_;
   std::string body_;
 

@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 15:29:24 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/26 17:00:08 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,9 +75,10 @@ int Request::parseRequest() {
       case -2:
         return -2;
       default:
-      if (!buf_.compare(pos_buf, 3, "\n\r\n")) { /* in case of NO header field*/
-        return -1;
-      }
+        if (!buf_.compare(pos_buf, 3,
+                          "\n\r\n")) { /* in case of NO header field*/
+          return -1;
+        }
         pos_begin_header_ = ++pos_buf;
         pos_prev_ = pos_begin_header_;
         break;
@@ -93,11 +94,11 @@ int Request::parseRequest() {
       return -1;
     }
   }
-ret = checkHeaderField();
-if (ret == -1) {
-  return -1;
-}
-return 0;
+  ret = checkHeaderField();
+  if (ret == -1) {
+    return -1;
+  }
+  return 0;
 }
 
 /* get request line from the input (beginning to /r/n) */
@@ -160,16 +161,36 @@ size_t Request::parseUri(size_t pos) {
     ++pos;
   }
   size_t copy_begin = pos;
-  while (buf_.c_str()[pos] != '\0' && buf_[pos] != ' ' && buf_[pos] != '\r') {
+  while (buf_.c_str()[pos] != '\0' && buf_[pos] != ' ' && buf_[pos] != '\r' &&
+         buf_[pos] != '?') {
     ++pos;
   }
   uri_ = buf_.substr(copy_begin, pos - copy_begin);
+  if (buf_[pos] == '?') {
+    while (buf_[pos] != '\0' && buf_[pos] != ' ' && buf_[pos] != '\r') {
+      size_t begin = ++pos;
+      while (buf_[pos] != '\0' && buf_[pos] != ' ' && buf_[pos] != '\r' &&
+             buf_[pos] != '&') {
+        ++pos;
+      }
+      size_t pos_equal = buf_.find("=", begin);
+      if (pos_equal == std::string::npos) {
+        continue;
+      }
+      std::string key = buf_.substr(begin, pos_equal - begin);
+      ++pos_equal;
+      query_[key] = buf_.substr(pos_equal, pos - pos_equal);
+      if (buf_[pos] != '&') {
+        break;
+      }
+    }
+  }
   return pos;
 }
 
 int Request::checkRequestLine(size_t pos) {
   // check method
-  if (method_.empty()) {
+  if (method_.empty() || uri_.empty()) {
     return -1;
   }
   for (std::string::iterator itr = method_.begin(); itr != method_.end();
@@ -192,7 +213,10 @@ int Request::checkRequestLine(size_t pos) {
     ++pos;
   }
   protocol = buf_.substr(copy_begin, pos - copy_begin);
-  if (protocol != "HTTP/1.1") {
+  if (protocol.empty()) {
+    return -1;
+  }
+  else if (protocol != "HTTP/1.1") {
     return -2;
   }
   return 0;

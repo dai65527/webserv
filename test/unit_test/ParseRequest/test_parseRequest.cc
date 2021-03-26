@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/24 01:10:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 15:32:39 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/26 17:02:19 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,4 +184,85 @@ TEST_F(test_parseRequest, splittedheadersagain3) {
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
   EXPECT_EQ(request.headers_["content-length"], "300");
+}
+
+TEST_F(test_parseRequest, queryOK1) {
+  request.buf_ = "HEAD /index.html?a=b HTTP/1.1\r\nHost: ";
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("localhost\r\nLocation:\t  \tYokoh");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("ama\r\nlanguage: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("en-US\r\nContent-length: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("300\r\n\r\n");
+  EXPECT_EQ(request.parseRequest(), 0);
+  EXPECT_EQ(request.method_, "HEAD");
+  EXPECT_EQ(request.uri_, "/index.html");
+  EXPECT_EQ(request.query_["a"], "b");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+  EXPECT_EQ(request.headers_["location"], "Yokohama");
+  EXPECT_EQ(request.headers_["language"], "en-US");
+  EXPECT_EQ(request.headers_["content-length"], "300");
+}
+
+TEST_F(test_parseRequest, queryOK2) {
+  request.buf_ = "HEAD /index.html?a=b&hoge=fuga HTTP/1.1\r\nHost: ";
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("localhost\r\nLocation:\t  \tYokoh");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("ama\r\nlanguage: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("en-US\r\nContent-length: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("300\r\n\r\n");
+  EXPECT_EQ(request.parseRequest(), 0);
+  EXPECT_EQ(request.method_, "HEAD");
+  EXPECT_EQ(request.uri_, "/index.html");
+  EXPECT_EQ(request.query_["a"], "b");
+  EXPECT_EQ(request.query_["hoge"], "fuga");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+  EXPECT_EQ(request.headers_["location"], "Yokohama");
+  EXPECT_EQ(request.headers_["language"], "en-US");
+  EXPECT_EQ(request.headers_["content-length"], "300");
+}
+
+TEST_F(test_parseRequest, queryOK3) {
+  request.buf_ = "HEAD /index.html?a=b&hoge= HTTP/1.1\r\nHost: ";
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("localhost\r\nLocation:\t  \tYokoh");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("ama\r\nlanguage: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("en-US\r\nContent-length: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("300\r\n\r\n");
+  EXPECT_EQ(request.parseRequest(), 0);
+  EXPECT_EQ(request.method_, "HEAD");
+  EXPECT_EQ(request.uri_, "/index.html");
+  EXPECT_EQ(request.query_["a"], "b");
+  EXPECT_EQ(request.query_["hoge"], "");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+  EXPECT_EQ(request.headers_["location"], "Yokohama");
+  EXPECT_EQ(request.headers_["language"], "en-US");
+  EXPECT_EQ(request.headers_["content-length"], "300");
+}
+
+TEST_F(test_parseRequest, requestErrorNoProtocol) {
+  request.buf_ = "HEAD /index.html\r\n\r\n";
+  EXPECT_EQ(request.parseRequest(), -1);
+  EXPECT_EQ(request.method_, "HEAD");
+  EXPECT_EQ(request.uri_, "/index.html");
+}
+
+TEST_F(test_parseRequest, requestErrorNoURI) {
+  request.buf_ = "HEAD HTTP/1.1\r\n";
+  EXPECT_EQ(request.parseRequest(), -1);
+  EXPECT_EQ(request.method_, "HEAD");
+  EXPECT_EQ(request.uri_, "HTTP/1.1");
+}
+
+TEST_F(test_parseRequest, requestNothing) {
+  request.buf_ = "\r\n";
+  EXPECT_EQ(request.parseRequest(), -1);
 }
