@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/24 01:10:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 01:11:43 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/26 15:32:39 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,14 +28,14 @@ class test_parseRequest : public ::testing::Test {
 };
 
 TEST_F(test_parseRequest, reqlineOK1butNoHost) {
-  request.buf_ = "GET / HTTP/1.1\r\n";
+  request.buf_ = "GET / HTTP/1.1\r\n\r\n";
   EXPECT_EQ(request.parseRequest(), -1);
   EXPECT_EQ(request.method_, "GET");
   EXPECT_EQ(request.uri_, "/");
 }
 
 TEST_F(test_parseRequest, reqlineOK2butNoHost) {
-  request.buf_ = "HEAD /index.html HTTP/1.1\r\n";
+  request.buf_ = "HEAD /index.html HTTP/1.1\r\n\r\n";
   EXPECT_EQ(request.parseRequest(), -1);
   EXPECT_EQ(request.method_, "HEAD");
   EXPECT_EQ(request.uri_, "/index.html");
@@ -46,7 +46,7 @@ TEST_F(test_parseRequest, splitted_reqlineOKbutNoHost) {
   EXPECT_EQ(request.parseRequest(), 1);
   EXPECT_EQ(request.method_, "");
   EXPECT_EQ(request.uri_, "");
-  request.buf_.append("tml HTTP/1.1\r\n");
+  request.buf_.append("tml HTTP/1.1\r\n\r\n");
   EXPECT_EQ(request.parseRequest(), -1);
   EXPECT_EQ(request.method_, "HEAD");
   EXPECT_EQ(request.uri_, "/index.html");
@@ -112,25 +112,76 @@ TEST_F(test_parseRequest, splittedheadersOK) {
   EXPECT_EQ(request.headers_["location"], "Yokohama");
 }
 
-// TEST_F(test_parseRequest, headersOK3) {
-//   request.buf_ =
-//       "HEAD /index.html HTTP/1.1\r\nHost: localhost\r\n "
-//       " Location:Yokohama\r\n\r\n";
-//   EXPECT_EQ(request.parseRequest(), 0);
-//   EXPECT_EQ(request.method_, "HEAD");
-//   EXPECT_EQ(request.uri_, "/index.html");
-//   EXPECT_EQ(request.headers_["host"], "localhost");
-//   EXPECT_EQ(request.headers_["location"], "Yokohama");
-// }
+TEST_F(test_parseRequest, splittedheadersagain) {
+  request.buf_ = "HEAD /index.html HTTP/1.1\r\nHost: ";
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("localhost\r\nLocation:\t  \tYokoh");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("ama\r\nlanguage: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("en-US\r\n\r\n");
+  EXPECT_EQ(request.parseRequest(), 0);
+  EXPECT_EQ(request.method_, "HEAD");
+  EXPECT_EQ(request.uri_, "/index.html");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+  EXPECT_EQ(request.headers_["location"], "Yokohama");
+  EXPECT_EQ(request.headers_["language"], "en-US");
+}
 
-// TEST_F(test_parseRequest, headersOK4) {
-//   request.buf_ =
-//       "HEAD /index.html HTTP/1.1\r\nHost: localhost\r\n "
-//       " Location:Yokohama\r\n\r\n"
-//       " Content-Length:Yokohama\r\n\r\n";
-//   EXPECT_EQ(request.parseRequest(), 0);
-//   EXPECT_EQ(request.method_, "HEAD");
-//   EXPECT_EQ(request.uri_, "/index.html");
-//   EXPECT_EQ(request.headers_["host"], "localhost");
-//   EXPECT_EQ(request.headers_["location"], "Yokohama");
-// }
+TEST_F(test_parseRequest, splittedheadersagain2) {
+  request.buf_ = "HEAD /index.html HTTP/1.1\r\nHost: ";
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("localhost\r\nLocation:\t  \tYokoh");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("ama\r\nlanguage: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("en-US\r\nContent-length: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("300\r\n\r\n");
+  EXPECT_EQ(request.parseRequest(), 0);
+  EXPECT_EQ(request.method_, "HEAD");
+  EXPECT_EQ(request.uri_, "/index.html");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+  EXPECT_EQ(request.headers_["location"], "Yokohama");
+  EXPECT_EQ(request.headers_["language"], "en-US");
+  EXPECT_EQ(request.headers_["content-length"], "300");
+}
+
+TEST_F(test_parseRequest, headerWithoutColon) {
+  request.buf_ = "HEAD /index.html HTTP/1.1\r\nHost ";
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("localhost\r\nLocation:Yokohama\r\n\r\n");
+  EXPECT_EQ(request.parseRequest(), -1);//error
+  EXPECT_EQ(request.method_, "HEAD");
+  EXPECT_EQ(request.uri_, "/index.html");
+}
+
+TEST_F(test_parseRequest, headerWithSpaceBeforeHostKey) {
+  request.buf_ = "HEAD /index.html HTTP/1.1\r\n Host:";
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("localhost\r\nLocation:Yokohama\r\n\r\n");
+  EXPECT_EQ(request.parseRequest(), -1);//error
+  EXPECT_EQ(request.method_, "HEAD");
+  EXPECT_EQ(request.uri_, "/index.html");
+  EXPECT_EQ(request.headers_[" host"], "localhost");
+  EXPECT_EQ(request.headers_["location"], "Yokohama");
+}
+
+TEST_F(test_parseRequest, splittedheadersagain3) {
+  request.buf_ = "HEAD /index.html HTTP/1.1\r\n Host: ";
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("localhost\r\nLocation:\t  \tYokoh");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("ama\r\nlanguage: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("en-US\r\nContent-length: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("300\r\n\r\n");
+  EXPECT_EQ(request.parseRequest(), -1);
+  EXPECT_EQ(request.method_, "HEAD");
+  EXPECT_EQ(request.uri_, "/index.html");
+  EXPECT_EQ(request.headers_[" host"], "localhost");
+  EXPECT_EQ(request.headers_["location"], "Yokohama");
+  EXPECT_EQ(request.headers_["language"], "en-US");
+  EXPECT_EQ(request.headers_["content-length"], "300");
+}

@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 12:24:35 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/26 15:29:24 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,12 +75,15 @@ int Request::parseRequest() {
       case -2:
         return -2;
       default:
+      if (!buf_.compare(pos_buf, 3, "\n\r\n")) { /* in case of NO header field*/
+        return -1;
+      }
         pos_begin_header_ = ++pos_buf;
         pos_prev_ = pos_begin_header_;
         break;
     }
   }
-  if (buf_.c_str()[pos_begin_header_] != '\0' && parse_progress_ == 1) {
+  if (parse_progress_ == 1) {
     pos_buf = pos_prev_;
     if ((pos_buf = findHeaderFieldEnd(pos_buf)) == -1) {
       return 1;  // 1: continue to receive (will be set to select again)
@@ -122,7 +125,7 @@ ssize_t Request::findRequestLineEnd() {
 ssize_t Request::findHeaderFieldEnd(size_t pos) {
   while (buf_.c_str()[pos] != 0) {
     if (buf_[pos] == '\r') {
-      if (buf_.compare(pos, 4, "\r\n\r\n")) {
+      if (!buf_.compare(pos, 4, "\r\n\r\n")) {
         parse_progress_ = 2;
         return pos + 4;
       }
