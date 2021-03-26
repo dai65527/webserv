@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 14:14:08 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/26 14:26:52 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -299,6 +299,12 @@ void Session::startReadingFromFile() {
     return;
   }
   fcntl(file_fd_, F_SETFL, O_NONBLOCK);
+
+  // create response header
+  response_.appendRawData("HTTP/1.1 200 0K\r\n", 17);
+  response_.appendRawData("Content-Type: text/html; charset=UTF-8\r\n", 40);
+  response_.appendRawData("\r\n", 2);
+
   status_ = SESSION_FOR_FILE_READ;
 }
 
@@ -537,10 +543,7 @@ int Session::readFromFile() {
       // close file and make error responce
       std::cout << "[error] close file" << std::endl;
       close(file_fd_);
-      // response_buf_ =
-      // "500 internal server error";  // TODO: make response func
-
-      // to send error response to client
+      createErrorResponse(HTTP_503);
       status_ = SESSION_FOR_CLIENT_SEND;
       return 0;
     }
@@ -553,7 +556,7 @@ int Session::readFromFile() {
 
   // check if reached eof
   if (n == 0) {
-    close(file_fd_);                    // close pipefd
+    close(file_fd_);                    // close
     status_ = SESSION_FOR_CLIENT_SEND;  // set for send response
     return 0;
   }

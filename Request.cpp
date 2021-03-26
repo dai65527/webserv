@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 22:59:59 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/26 16:13:11 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ int Request::receive(int sock_fd) {
   char read_buf[BUFFER_SIZE];
   ret = recv(sock_fd, read_buf, BUFFER_SIZE, 0);
   if (ret < 0) {
-    return -2;  // recv failed
+    return -3;  // recv failed
   }
   buf_.append(read_buf, ret);
 
@@ -63,7 +63,10 @@ int Request::receive(int sock_fd) {
   // temporary
   // return 0: end of request ( ret = 0 )
   // return 1: request not ended (ret = 1)
-  return ret == 1 ? 0 : 1;
+  if (buf_.find("\r\n\r\n") != std::string::npos) {
+    return 0;
+  }
+  return 1;
 }
 
 void Request::eraseBuf(ssize_t n) { buf_.erase(0, n); }
