@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 17:05:40 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/26 22:16:15 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,9 @@ const std::string& Request::getMethod() const { return method_; }
 const std::string& Request::getUri() const { return uri_; }
 const std::map<std::string, std::string>& Request::getHeaders() const {
   return headers_;
+}
+const std::map<std::string, std::string>& Request::getQuery() const {
+  return query_;
 }
 const std::string& Request::getBody() const { return body_; }
 
@@ -157,7 +160,7 @@ size_t Request::parseMethod() {
 }
 
 size_t Request::parseUri(size_t pos) {
-  while (buf_.c_str()[pos] != '\0' && buf_[pos] == ' ' && buf_[pos] != '\r') {
+  while (buf_.c_str()[pos] == ' ') {
     ++pos;
   }
   size_t copy_begin = pos;
@@ -215,8 +218,7 @@ int Request::checkRequestLine(size_t pos) {
   protocol = buf_.substr(copy_begin, pos - copy_begin);
   if (protocol.empty()) {
     return -1;
-  }
-  else if (protocol != "HTTP/1.1") {
+  } else if (protocol != "HTTP/1.1") {
     return -2;
   }
   return 0;
