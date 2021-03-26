@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 22:56:32 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/27 00:12:19 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,8 @@ const std::string& Request::getBody() const { return body_; }
 **   1: continue to receive (will beß set to select again)
 */
 
+#include <unistd.h>
+
 int Request::receive(int sock_fd) {
   int ret;
   char read_buf[BUFFER_SIZE];
@@ -53,6 +55,8 @@ int Request::receive(int sock_fd) {
   if (ret < 0) {
     return -3;  // recv failed
   }
+  write(1, read_buf, ret);
+  write(1, "\n", 1);
   buf_.append(read_buf, ret);
   return parseRequest();
 }
@@ -136,7 +140,6 @@ ssize_t Request::findHeaderFieldEnd(size_t pos) {
     }
     ++pos;
   }
-  pos_prev_ = pos;
   return -1;
 }
 
