@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 17:59:57 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/26 23:23:37 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,42 +100,44 @@ int Session::setFdToSelect(fd_set* rfds, fd_set* wfds) {
 */
 
 int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
-  if (FD_ISSET(sock_fd_, rfds)) {
+  if (status_ == SESSION_FOR_CLIENT_RECV && FD_ISSET(sock_fd_, rfds)) {
     if (receiveRequest() == -1) {
       return (-1);
     } else {
       std::cout << "[webserv] received request data" << std::endl;
       return (1);
     }
-  } else if (FD_ISSET(file_fd_, rfds)) {
+  } else if (status_ == SESSION_FOR_FILE_READ && FD_ISSET(file_fd_, rfds)) {
     if (readFromFile() == -1) {
       return (-1);
     } else {
       std::cout << "[webserv] read data from file" << std::endl;
       return (1);
     }
-  } else if (FD_ISSET(file_fd_, wfds)) {
+  } else if (status_ == SESSION_FOR_FILE_READ && FD_ISSET(file_fd_, wfds)) {
     if (writeToFile() == -1) {
       return (-1);
     } else {
       std::cout << "[webserv] write data to file" << std::endl;
       return (1);
     }
-  } else if (FD_ISSET(cgi_handler_.getInputFd(), wfds)) {
+  } else if (status_ == SESSION_FOR_CGI_WRITE &&
+             FD_ISSET(cgi_handler_.getInputFd(), wfds)) {
     if (writeToCgi() == -1) {
       return (-1);
     } else {
       std::cout << "[webserv] wrote data to cgi" << std::endl;
       return (1);
     }
-  } else if (FD_ISSET(cgi_handler_.getOutputFd(), rfds)) {
+  } else if (status_ == SESSION_FOR_CGI_READ &&
+             FD_ISSET(cgi_handler_.getOutputFd(), rfds)) {
     if (readFromCgi() == -1) {
       return (-1);
     } else {
       std::cout << "[webserv] read data from cgi" << std::endl;
       return (1);
     }
-  } else if (FD_ISSET(sock_fd_, wfds)) {
+  } else if (status_ == SESSION_FOR_CLIENT_SEND && FD_ISSET(sock_fd_, wfds)) {
     if (sendResponse() != 0) {
       std::cout << "[webserv] sent response data" << std::endl;
       return (-1);
@@ -160,7 +162,7 @@ int Session::receiveRequest() {
   int ret;
 
   // receive returns...
-  // -3:failed to receive, -2:http505, -1:http404, 0:received all, 1:continue
+  // -3:failed to receive, -2:http505, -1:http400, 0:received all, 1:continue
   ret = request_.receive(sock_fd_);
   if (ret == -3) {
     if (retry_count_ == RETRY_TIME_MAX) {
@@ -573,7 +575,6 @@ void Session::startDirectoryListing() {
   response_.appendRawData("autoindex!!!!!!!!!!!!!!!!!!", 27);
   status_ = SESSION_FOR_CLIENT_SEND;
 }
-
 
 /*
 ** cgi handlers (TODO!!)
