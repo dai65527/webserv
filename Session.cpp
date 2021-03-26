@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 13:28:57 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/26 14:14:08 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -295,7 +295,7 @@ void Session::startReadingFromFile() {
   file_fd_ = open(filepath.c_str(), O_RDONLY);  // toriaezu
   if (file_fd_ == -1) {
     std::cout << "[error] open failure" << std::endl;
-    createErrorResponse(HTTP_500);
+    createErrorResponse(HTTP_403);
     return;
   }
   fcntl(file_fd_, F_SETFL, O_NONBLOCK);
@@ -329,69 +329,6 @@ std::string Session::findRoot() const {
   }
 }
 
-/*
-// find matching server directive
-const ServerConfig* Session::findServer() const {
-  // get ip and port
-  sockaddr_in addr;
-  socklen_t addrlen = sizeof(sockaddr_in);
-  getsockname(sock_fd_, reinterpret_cast<struct sockaddr*>(&addr), &addrlen);
-  in_addr_t ip = addr.sin_addr.s_addr;
-  uint16_t port = addr.sin_port;
-
-  // iterate for all server directive in main_config
-  std::list<ServerConfig>::const_iterator itr_server;
-  std::list<ServerConfig>::const_iterator end_server =
-      main_config_.getServers().end();
-  std::list<ServerConfig>::const_iterator itr_server_matched = end_server;
-  for (itr_server = main_config_.getServers().begin(); itr_server != end_server;
-       ++itr_server) {
-    // check port and host
-    std::list<std::pair<in_addr_t, uint16_t> >::const_iterator itr_listen;
-    std::list<std::pair<in_addr_t, uint16_t> >::const_iterator end_listen =
-        itr_server->getListen().end();
-    bool flg_matched = false;
-    for (itr_listen = itr_server->getListen().begin(); itr_listen != end_listen;
-         ++itr_listen) {
-      if ((itr_listen->first == INADDR_ANY || itr_listen->first == ip) &&
-          itr_listen->second == port) {
-        flg_matched = true;
-        break;
-      }
-    }
-
-    if (flg_matched) {
-      // check server_name
-      std::list<std::string>::const_iterator itr_sn;
-      std::list<std::string>::const_iterator end_sn =
-          itr_server->getServerName().end();
-      for (itr_sn = itr_server->getServerName().begin(); itr_sn != end_sn;
-           ++itr_sn) {
-        std::map<std::string, std::string>::const_iterator itr_host =
-            request_.getHeaders().find("host");
-        // return if server name matched
-        if (itr_host == request_.getHeaders().end() ||
-            itr_host->second == *itr_sn) {
-          return &(*itr_server);
-        }
-      }
-
-      // save first server and go next
-      if (itr_server_matched == end_server) {
-        itr_server_matched = itr_server;
-      }
-    }
-  }
-
-  // return first server if no server name matched to request host header
-  if (itr_server_matched == end_server) {
-    return NULL;
-  } else {
-    return &(*itr_server_matched);
-  }
-}
-*/
-
 std::string Session::findFileFromDir(const std::string& dirpath) const {
   // open directory to seek index file
   DIR* dir = opendir(dirpath.c_str());
@@ -407,13 +344,51 @@ std::string Session::findFileFromDir(const std::string& dirpath) const {
       return "";
     }
     // case found
-    // if (S_ISREG(filestat.st_mode) && isIndex(dent->d_name)) {
-    //   return dent->d_name;
-    // }
+    if (S_ISREG(filestat.st_mode) && isIndex(dent->d_name)) {
+      return dent->d_name;
+    }
   }
 
   // file not found
   return "";
+}
+
+bool Session::isIndex(const std::string& filename) const {
+  std::list<std::string>::const_iterator itr;
+  std::list<std::string>::const_iterator itr_end;
+
+  // find from index list of main_config_
+  itr_end = main_config_.getIndex().end();
+  for (itr = main_config_.getIndex().begin(); itr != itr_end; ++itr) {
+    if (*itr == filename) {
+      return true;
+    }
+  }
+
+  // find from index list of server_config_
+  if (server_config_ == NULL) {
+    return false;
+  }
+  itr_end = server_config_->getIndex().end();
+  for (itr = server_config_->getIndex().begin(); itr != itr_end; ++itr) {
+    if (*itr == filename) {
+      return true;
+    }
+  }
+
+  // find from index list of location_config_
+  if (location_config_ == NULL) {
+    return false;
+  }
+  itr_end = location_config_->getIndex().end();
+  for (itr = location_config_->getIndex().begin(); itr != itr_end; ++itr) {
+    if (*itr == filename) {
+      return true;
+    }
+  }
+
+  // not found
+  return false;
 }
 
 void Session::startDirectoryListing() {
