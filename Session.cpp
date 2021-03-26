@@ -6,12 +6,13 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/25 12:04:15 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/26 12:21:38 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Session.hpp"
 
+#include <dirent.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -30,7 +31,9 @@ Session::Session(int sock_fd, const MainConfig& main_config)
     : sock_fd_(sock_fd),
       retry_count_(0),
       status_(SESSION_FOR_CLIENT_RECV),
-      main_config_(main_config) {}
+      main_config_(main_config),
+      server_config_(NULL),
+      location_config_(NULL) {}
 
 Session::~Session(){};
 
@@ -145,6 +148,9 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
 }
 
 void Session::startCreateResponse() {
+  // set server and location config according to request
+  setupServerAndLocationConfig();
+
   // if error, will create error response and set status_ inside.
   switch (checkResponseType()) {
     // read from file
@@ -169,52 +175,13 @@ void Session::startCreateResponse() {
   }
 }
 
-void Session::startReadingFromFile() {
-  // findfile
-  std::string filepath = findFile();
-  if (filepath.empty()) {
-    createErrorResponse(HTTP_404);
+void Session::setupServerAndLocationConfig() {
+  server_config_ = findServer();
+  if (server_config_ == NULL) {
+    createErrorResponse(HTTP_400);
     return;
   }
-
-  file_fd_ = open(filepath.c_str(), O_RDONLY);  // toriaezu
-  if (file_fd_ == -1) {
-    std::cout << "[error] open failure" << std::endl;
-    createErrorResponse(HTTP_500);
-    return;
-  }
-  fcntl(file_fd_, F_SETFL, O_NONBLOCK);
-  status_ = SESSION_FOR_FILE_READ;
-}
-
-std::string Session::findFile() const {
-  struct stat pathstat;
-  std::string rootpath = findRoot();
-  std::string filepath = rootpath + request_.getUri();
-
-  if (stat(filepath.c_str(), &pathstat) == -1) {
-    return "";  // no file or error
-  }
-
-  if (S_ISREG(pathstat.st_mode)) {
-    return filepath;  // file found
-  } else if (S_ISDIR(pathstat.st_mode)) {
-    return findFileFromDir(filepath);  // find from directive as "index"
-  } else {
-    return "";  // treat as file not found
-  }
-}
-
-std::string Session::findRoot() const {
-  const ServerConfig* server_config = findServer();
-
-  // TODO: need to check location but later
-
-  if (server_config->getRoot().empty()) {
-    return main_config_.getRoot();
-  } else {
-    return server_config->getRoot();
-  }
+  location_config_ = findLocation();
 }
 
 // find matching server directive
@@ -278,6 +245,169 @@ const ServerConfig* Session::findServer() const {
   }
 }
 
+bool Session::isLocationMatch(const std::string& loc_route,
+                              const std::string& uri_path) const {
+  return (!uri_path.compare(0, loc_route.length(), loc_route) &&
+          (loc_route.back() == '/' || uri_path[loc_route.length()] == '/' ||
+           uri_path.c_str()[loc_route.length()] == '\0'));
+}
+
+const LocationConfig* Session::findLocation() const {
+  // cannot find location if no server_config
+  if (server_config_ == NULL) {
+    return NULL;
+  }
+
+  // find location config best match
+  const LocationConfig* location_config = NULL;
+  std::list<LocationConfig>::const_iterator itr_loc;
+  std::list<LocationConfig>::const_iterator end_loc =
+      server_config_->getLocations().end();
+  for (itr_loc = server_config_->getLocations().begin(); itr_loc != end_loc;
+       ++itr_loc) {
+    if (isLocationMatch(itr_loc->getRoute(), request_.getUri())) {
+      // use route longer if more than one location route match
+      if (location_config == NULL || location_config->getRoute().length() <
+                                         itr_loc->getRoute().length()) {
+        location_config = &(*itr_loc);
+      }
+    }
+  }
+  return location_config;
+}
+
+void Session::startReadingFromFile() {
+  // findfile
+  std::string filepath = findFile();
+  if (filepath.empty()) {
+    createErrorResponse(HTTP_404);
+    return;
+  }
+
+  file_fd_ = open(filepath.c_str(), O_RDONLY);  // toriaezu
+  if (file_fd_ == -1) {
+    std::cout << "[error] open failure" << std::endl;
+    createErrorResponse(HTTP_500);
+    return;
+  }
+  fcntl(file_fd_, F_SETFL, O_NONBLOCK);
+  status_ = SESSION_FOR_FILE_READ;
+}
+
+std::string Session::findFile() const {
+  struct stat pathstat;
+  std::string rootpath = findRoot();
+  std::string filepath = rootpath + request_.getUri();
+
+  if (stat(filepath.c_str(), &pathstat) == -1) {
+    return "";  // no file or error
+  }
+
+  if (S_ISREG(pathstat.st_mode)) {
+    return filepath;  // file found
+  } else if (S_ISDIR(pathstat.st_mode)) {
+    return findFileFromDir(filepath);  // find from directive as "index"
+  } else {
+    return "";  // treat as file not found
+  }
+}
+
+std::string Session::findRoot() const {
+  // TODO: need to check location but later
+  if (server_config_->getRoot().empty()) {
+    return main_config_.getRoot();
+  } else {
+    return server_config_->getRoot();
+  }
+}
+
+/*
+// find matching server directive
+const ServerConfig* Session::findServer() const {
+  // get ip and port
+  sockaddr_in addr;
+  socklen_t addrlen = sizeof(sockaddr_in);
+  getsockname(sock_fd_, reinterpret_cast<struct sockaddr*>(&addr), &addrlen);
+  in_addr_t ip = addr.sin_addr.s_addr;
+  uint16_t port = addr.sin_port;
+
+  // iterate for all server directive in main_config
+  std::list<ServerConfig>::const_iterator itr_server;
+  std::list<ServerConfig>::const_iterator end_server =
+      main_config_.getServers().end();
+  std::list<ServerConfig>::const_iterator itr_server_matched = end_server;
+  for (itr_server = main_config_.getServers().begin(); itr_server != end_server;
+       ++itr_server) {
+    // check port and host
+    std::list<std::pair<in_addr_t, uint16_t> >::const_iterator itr_listen;
+    std::list<std::pair<in_addr_t, uint16_t> >::const_iterator end_listen =
+        itr_server->getListen().end();
+    bool flg_matched = false;
+    for (itr_listen = itr_server->getListen().begin(); itr_listen != end_listen;
+         ++itr_listen) {
+      if ((itr_listen->first == INADDR_ANY || itr_listen->first == ip) &&
+          itr_listen->second == port) {
+        flg_matched = true;
+        break;
+      }
+    }
+
+    if (flg_matched) {
+      // check server_name
+      std::list<std::string>::const_iterator itr_sn;
+      std::list<std::string>::const_iterator end_sn =
+          itr_server->getServerName().end();
+      for (itr_sn = itr_server->getServerName().begin(); itr_sn != end_sn;
+           ++itr_sn) {
+        std::map<std::string, std::string>::const_iterator itr_host =
+            request_.getHeaders().find("host");
+        // return if server name matched
+        if (itr_host == request_.getHeaders().end() ||
+            itr_host->second == *itr_sn) {
+          return &(*itr_server);
+        }
+      }
+
+      // save first server and go next
+      if (itr_server_matched == end_server) {
+        itr_server_matched = itr_server;
+      }
+    }
+  }
+
+  // return first server if no server name matched to request host header
+  if (itr_server_matched == end_server) {
+    return NULL;
+  } else {
+    return &(*itr_server_matched);
+  }
+}
+*/
+
+std::string Session::findFileFromDir(const std::string& dirpath) const {
+  // open directory to seek index file
+  DIR* dir = opendir(dirpath.c_str());
+  if (dir == NULL) {
+    return "";
+  }
+
+  // check each file
+  struct dirent* dent;
+  while ((dent = readdir(dir))) {
+    struct stat filestat;
+    if (stat(dent->d_name, &filestat) == -1) {
+      return "";
+    }
+    // case found
+    // if (S_ISREG(filestat.st_mode) && isIndex(dent->d_name)) {
+    //   return dent->d_name;
+    // }
+  }
+
+  // file not found
+  return "";
+}
+
 void Session::startDirectoryListing() {
   response_.appendRawData("autoindex!!!!!!!!!!!!!!!!!!", 27);
   status_ = SESSION_FOR_CLIENT_SEND;
@@ -315,7 +445,7 @@ int Session::checkResponseType() {
   // for test
   request_.method_ = "GET";
   request_.uri_ = "/index.html";
-  request_.headers_["host"] == "localhost";
+  request_.headers_["host"] = "localhost";
 
   // check method
   if (request_.getMethod() == "GET" /* need to check avaliavlity */) {
