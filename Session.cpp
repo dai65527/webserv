@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 17:05:10 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/26 17:59:57 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,15 +62,10 @@ Session& Session::operator=(const Session& rhs) {
 
 int Session::getSockFd() const { return sock_fd_; }
 int Session::getFileFd() const { return file_fd_; }
-// const LocationConfig& Session::getConfig() const {return config_;}
 const SessionStatus& Session::getStatus() const { return status_; }
-const Request& Session::getRequest() const { return request_; }
-const Response& Session::getResponse() const { return response_; }
-const CgiHandler& Session::getCgiHandler() const { return cgi_handler_; }
-
-// void Session::setConfig(const std::list<LocationConfig>& config_list) {}
 
 /*
+** setFdToSelect
 ** set sessions fd for select
 */
 
@@ -98,6 +93,11 @@ int Session::setFdToSelect(fd_set* rfds, fd_set* wfds) {
       return 0; /* return 0 means that max_fd always becomes initial value*/
   }
 }
+
+/*
+** checkSelectedAndExecute
+** check the session is selected by select syscall using FD_ISSET.
+*/
 
 int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
   if (FD_ISSET(sock_fd_, rfds)) {
@@ -147,6 +147,44 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
   }
 }
 
+/*
+** PRIVATE FUNCTIONS
+*/
+
+/*
+** request handler
+*/
+
+// call receive and parse request and client
+int Session::receiveRequest() {
+  int ret;
+
+  // receive returns...
+  // -3:failed to receive, -2:http505, -1:http404, 0:received all, 1:continue
+  ret = request_.receive(sock_fd_);
+  if (ret == -3) {
+    if (retry_count_ == RETRY_TIME_MAX) {
+      // then try to send return internal server error
+      createErrorResponse(HTTP_500);
+    } else {
+      retry_count_++;
+    }
+    return 0;
+  }
+  retry_count_ = 0;
+  if (ret == -1 || ret == -2) {
+    createErrorResponse(ret == -1 ? HTTP_400 : HTTP_505);
+  } else if (ret == 0) {
+    startCreateResponse();
+  }
+  return 0;  // continue to receive
+}
+
+/*
+** response creation manager
+*/
+
+// check request, load proper config and start creating response
 void Session::startCreateResponse() {
   // set server and location config according to request
   setupServerAndLocationConfig();
@@ -175,6 +213,71 @@ void Session::startCreateResponse() {
   }
 }
 
+// check request and config and decide response type (set status_)
+// not yet implimented enough (now is for test)
+int Session::checkResponseType() {
+  // if (!request_.getBuf().compare(0, 4, "read", 0, 4)) {
+  //   return 0;
+  // } else if (!request_.getBuf().compare(0, 5, "write", 0, 5)) {
+  //   return 1;
+  // } else if (!request_.getBuf().compare(0, 3, "cgi", 0, 3)) {
+  //   return 2;
+  // }
+
+  // for test
+  request_.method_ = "GET";
+  request_.uri_ = "/index.html";
+  request_.headers_["host"] = "localhost";
+
+  // check method
+  if (request_.getMethod() == "GET" /* need to check avaliavlity */) {
+    return 0;
+  } else {
+    createErrorResponse(HTTP_505);
+  }
+
+  status_ = SESSION_FOR_CLIENT_SEND;
+  return -1;
+}
+
+// create error response message
+// yet not enough
+void Session::createErrorResponse(HTTPStatusCode http_status) {
+  // TODO: ちゃんとする
+  response_.appendRawData("error: ", 7);
+  response_.appendRawData(std::to_string(http_status).c_str(), 3);
+  status_ = SESSION_FOR_CLIENT_SEND;
+}
+
+// send response
+int Session::sendResponse() {
+  ssize_t n;
+
+  n = response_.sendRawData(sock_fd_);
+  if (n == -1) {
+    std::cout << "[error] failed to send response" << std::endl;
+    if (retry_count_ == RETRY_TIME_MAX) {
+      std::cout << "[error] close connection" << std::endl;
+      close(sock_fd_);
+      return -1;  // return -1 if error (this session will be closed)
+    }
+    retry_count_++;
+    return 0;
+  }
+  if (response_.getRawReponse().empty()) {
+    close(sock_fd_);
+    return 1;  // return 1 if all data sent (this session will be closed)
+  }
+  retry_count_ = 0;  // reset retry_count if success
+  return 0;
+}
+
+/*
+** config loaders
+** find and store proper server and location config to member variables
+*/
+
+// find and store proper server and location config to member variables
 void Session::setupServerAndLocationConfig() {
   server_config_ = findServer();
   if (server_config_ == NULL) {
@@ -184,6 +287,7 @@ void Session::setupServerAndLocationConfig() {
   location_config_ = findLocation();
 }
 
+// util of findServer
 static bool isServerNameMatch(const std::string& host_header,
                               const std::string& server_name) {
   size_t pos_colon = host_header.find(':');
@@ -194,7 +298,7 @@ static bool isServerNameMatch(const std::string& host_header,
   return host_header == server_name;
 }
 
-// find matching server directive
+// find matching server directive to request
 const ServerConfig* Session::findServer() const {
   // get ip and port
   sockaddr_in addr;
@@ -265,6 +369,7 @@ const ServerConfig* Session::findServer() const {
   }
 }
 
+// util of findLocation
 bool Session::isLocationMatch(const std::string& loc_route,
                               const std::string& uri_path) const {
   return (!uri_path.compare(0, loc_route.length(), loc_route) &&
@@ -272,6 +377,7 @@ bool Session::isLocationMatch(const std::string& loc_route,
            uri_path.c_str()[loc_route.length()] == '\0'));
 }
 
+// find matching location config to request
 const LocationConfig* Session::findLocation() const {
   // cannot find location if no server_config
   if (server_config_ == NULL) {
@@ -296,6 +402,11 @@ const LocationConfig* Session::findLocation() const {
   return location_config;
 }
 
+/*
+** File Readers
+*/
+
+// find and open file and create response header
 void Session::startReadingFromFile() {
   // findfile
   std::string filepath = findFile();
@@ -312,7 +423,7 @@ void Session::startReadingFromFile() {
   }
   fcntl(file_fd_, F_SETFL, O_NONBLOCK);
 
-  // create response header
+  // [TEMP] create response header
   response_.appendRawData("HTTP/1.1 200 0K\r\n", 17);
   response_.appendRawData("Content-Type: text/html; charset=UTF-8\r\n", 40);
   response_.appendRawData("\r\n", 2);
@@ -320,6 +431,7 @@ void Session::startReadingFromFile() {
   status_ = SESSION_FOR_FILE_READ;
 }
 
+// find requested file
 std::string Session::findFile() const {
   struct stat pathstat;
   std::string rootpath = findRoot();
@@ -338,6 +450,7 @@ std::string Session::findFile() const {
   }
 }
 
+// find root config (called from findFile())
 std::string Session::findRoot() const {
   // TODO: need to check location but later
   if (server_config_->getRoot().empty()) {
@@ -347,6 +460,7 @@ std::string Session::findRoot() const {
   }
 }
 
+// find file as index directive (called from findFile())
 std::string Session::findFileFromDir(const std::string& dirpath) const {
   // open directory to seek index file
   DIR* dir = opendir(dirpath.c_str());
@@ -371,6 +485,7 @@ std::string Session::findFileFromDir(const std::string& dirpath) const {
   return "";
 }
 
+// find check the filename is set by index directive
 bool Session::isIndex(const std::string& filename) const {
   std::list<std::string>::const_iterator itr;
   std::list<std::string>::const_iterator itr_end;
@@ -409,136 +524,7 @@ bool Session::isIndex(const std::string& filename) const {
   return false;
 }
 
-void Session::startDirectoryListing() {
-  response_.appendRawData("autoindex!!!!!!!!!!!!!!!!!!", 27);
-  status_ = SESSION_FOR_CLIENT_SEND;
-}
-
-void Session::startWritingToFile() {
-  file_fd_ = open("./test_req.txt", O_RDWR | O_CREAT, 0644);  // toriaezu
-  if (file_fd_ == -1) {
-    createErrorResponse(HTTP_404);
-    status_ = SESSION_FOR_CLIENT_SEND;
-  }
-  fcntl(file_fd_, F_SETFL, O_NONBLOCK);
-  status_ = SESSION_FOR_FILE_WRITE;
-}
-
-void Session::startCgiProcess() {
-  HTTPStatusCode http_status = cgi_handler_.createCgiProcess();
-  if (http_status != HTTP_200) {
-    std::cout << "[error] failed to create cgi process" << std::endl;
-    createErrorResponse(http_status);
-  }
-  status_ = SESSION_FOR_CGI_WRITE;
-}
-
-// check
-int Session::checkResponseType() {
-  // if (!request_.getBuf().compare(0, 4, "read", 0, 4)) {
-  //   return 0;
-  // } else if (!request_.getBuf().compare(0, 5, "write", 0, 5)) {
-  //   return 1;
-  // } else if (!request_.getBuf().compare(0, 3, "cgi", 0, 3)) {
-  //   return 2;
-  // }
-
-  // for test
-  request_.method_ = "GET";
-  request_.uri_ = "/index.html";
-  request_.headers_["host"] = "localhost";
-
-  // check method
-  if (request_.getMethod() == "GET" /* need to check avaliavlity */) {
-    return 0;
-  } else {
-    createErrorResponse(HTTP_505);
-  }
-
-  status_ = SESSION_FOR_CLIENT_SEND;
-  return -1;
-}
-
-// return -1 on failure
-int Session::receiveRequest() {
-  int ret;
-
-  // receive returns...
-  // -3:failed to receive, -2:http505, -1:http404, 0:received all, 1:continue
-  ret = request_.receive(sock_fd_);
-  if (ret == -3) {
-    if (retry_count_ == RETRY_TIME_MAX) {
-      // then try to send return internal server error
-      createErrorResponse(HTTP_500);
-    } else {
-      retry_count_++;
-    }
-    return 0;
-  }
-  retry_count_ = 0;
-  if (ret == -1 || ret == -2) {
-    createErrorResponse(ret == -1 ? HTTP_400 : HTTP_505);
-  } else if (ret == 0) {
-    startCreateResponse();
-  }
-  return 0;  // continue to receive
-}
-
-void Session::createErrorResponse(HTTPStatusCode http_status) {
-  // TODO: ちゃんとする
-  response_.appendRawData("error: ", 7);
-  response_.appendRawData(std::to_string(http_status).c_str(), 3);
-  status_ = SESSION_FOR_CLIENT_SEND;
-}
-
-int Session::writeToFile() {
-  ssize_t n;
-
-  // write to file
-  n = write(file_fd_, request_.getBuf().c_str(), request_.getBuf().length());
-
-  // retry several times even if write failed
-  if (n == -1) {
-    std::cout << "[error] failed to write to file" << std::endl;
-
-    // give up if reached retry count to maximum
-    if (retry_count_ == RETRY_TIME_MAX) {
-      retry_count_ = 0;
-
-      // close connection
-      std::cout << "[error] close file" << std::endl;
-      // close(file_fd_);
-
-      // send response to notify request failed
-      //  response_buf_ = "500 server error"; /* (tmp setter) error msg
-      //  generator in Request class*/
-      status_ = SESSION_FOR_CLIENT_SEND;  // to send response to client
-      return 0;
-    }
-
-    retry_count_++;
-    return 0;
-  }
-
-  // reset retry conunt on success
-  retry_count_ = 0;
-
-  // erase written data
-  request_.eraseBuf(n);
-
-  // written all data
-  if (request_.getBuf().empty()) {
-    close(file_fd_);
-
-    // create response to notify the client
-    // response_buf_ = "201 created";
-    status_ = SESSION_FOR_CLIENT_SEND;  // to send response to client
-    return 0;
-  }
-  // to next read
-  return 0;
-}
-
+// read from filefd_ and store to response buf
 int Session::readFromFile() {
   ssize_t n;
   char read_buf[BUFFER_SIZE];
@@ -579,6 +565,30 @@ int Session::readFromFile() {
   return 0;
 }
 
+/*
+** directory listing creators (todo!!)
+*/
+
+void Session::startDirectoryListing() {
+  response_.appendRawData("autoindex!!!!!!!!!!!!!!!!!!", 27);
+  status_ = SESSION_FOR_CLIENT_SEND;
+}
+
+
+/*
+** cgi handlers (TODO!!)
+*/
+
+void Session::startCgiProcess() {
+  HTTPStatusCode http_status = cgi_handler_.createCgiProcess();
+  if (http_status != HTTP_200) {
+    std::cout << "[error] failed to create cgi process" << std::endl;
+    createErrorResponse(http_status);
+  }
+  status_ = SESSION_FOR_CGI_WRITE;
+}
+
+// write to cgi process (TODO!!)
 int Session::writeToCgi() {
   ssize_t n;
 
@@ -624,6 +634,7 @@ int Session::writeToCgi() {
   return 0;
 }
 
+// read from to cgi process (TODO!!)
 int Session::readFromCgi() {
   ssize_t n;
   char read_buf[BUFFER_SIZE];
@@ -671,24 +682,64 @@ int Session::readFromCgi() {
   return 0;
 }
 
-int Session::sendResponse() {
+/*
+** file writers (TODO!!)
+*/
+
+void Session::startWritingToFile() {
+  file_fd_ = open("./test_req.txt", O_RDWR | O_CREAT, 0644);  // toriaezu
+  if (file_fd_ == -1) {
+    createErrorResponse(HTTP_404);
+    status_ = SESSION_FOR_CLIENT_SEND;
+  }
+  fcntl(file_fd_, F_SETFL, O_NONBLOCK);
+  status_ = SESSION_FOR_FILE_WRITE;
+}
+
+int Session::writeToFile() {
   ssize_t n;
 
-  n = response_.sendRawData(sock_fd_);
+  // write to file
+  n = write(file_fd_, request_.getBuf().c_str(), request_.getBuf().length());
+
+  // retry several times even if write failed
   if (n == -1) {
-    std::cout << "[error] failed to send response" << std::endl;
+    std::cout << "[error] failed to write to file" << std::endl;
+
+    // give up if reached retry count to maximum
     if (retry_count_ == RETRY_TIME_MAX) {
-      std::cout << "[error] close connection" << std::endl;
-      close(sock_fd_);
-      return -1;  // return -1 if error (this session will be closed)
+      retry_count_ = 0;
+
+      // close connection
+      std::cout << "[error] close file" << std::endl;
+      // close(file_fd_);
+
+      // send response to notify request failed
+      //  response_buf_ = "500 server error"; /* (tmp setter) error msg
+      //  generator in Request class*/
+      status_ = SESSION_FOR_CLIENT_SEND;  // to send response to client
+      return 0;
     }
+
     retry_count_++;
     return 0;
   }
-  if (response_.getRawReponse().empty()) {
-    close(sock_fd_);
-    return 1;  // return 1 if all data sent (this session will be closed)
+
+  // reset retry conunt on success
+  retry_count_ = 0;
+
+  // erase written data
+  request_.eraseBuf(n);
+
+  // written all data
+  if (request_.getBuf().empty()) {
+    close(file_fd_);
+
+    // create response to notify the client
+    // response_buf_ = "201 created";
+    status_ = SESSION_FOR_CLIENT_SEND;  // to send response to client
+    return 0;
   }
-  retry_count_ = 0;  // reset retry_count if success
+  // to next read
   return 0;
 }

@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 10:53:33 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/26 17:36:22 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,45 +46,54 @@ class Session {
   Session(Session const& other);
   Session& operator=(Session const& other);
 
+  // request
   int receiveRequest();
-  void startReadingFromFile();
-  void startDirectoryListing();
-  void startWritingToFile();
-  void startCgiProcess();
-  int writeToFile();
-  std::string findFile() const;
-  std::string findRoot() const;
-  std::string findFileFromDir(const std::string& dirpath) const;
-  int readFromFile();
-  int writeToCgi();
-  int readFromCgi();
-  int sendResponse();
-  void createErrorResponse(HTTPStatusCode http_status);
 
+  // response
+  void startCreateResponse();
+  int checkResponseType();
+  void createErrorResponse(HTTPStatusCode http_status);
+  int sendResponse();
+
+  // load config
   void setupServerAndLocationConfig();
   const ServerConfig* findServer() const;
   const LocationConfig* findLocation() const;
   bool isLocationMatch(const std::string& loc_route,
                             const std::string& uri_path) const;
+
+  // read from file
+  void startReadingFromFile();
+  std::string findFileFromDir(const std::string& dirpath) const;
+  std::string findFile() const;
+  std::string findRoot() const;
   bool isIndex(const std::string& filename) const;
+  int readFromFile();
+
+  // directrory listing
+  void startDirectoryListing();
+
+  // write to file
+  void startWritingToFile();
+  int writeToFile();
+
+  // cgi process
+  void startCgiProcess();
+  int writeToCgi();
+  int readFromCgi();
 
  public:
   virtual ~Session();
   Session(int sock_fd_, const MainConfig& main_config);
 
+  // getters
   int getSockFd() const;
   int getFileFd() const;
-  // いる？
-  const LocationConfig& getConfig() const;
   const SessionStatus& getStatus() const;
-  const Request& getRequest() const;
-  const Response& getResponse() const;
-  const CgiHandler& getCgiHandler() const;
-  void setConfig(const std::list<LocationConfig>& config_list);
+
+  // functions called from Webserv
   int setFdToSelect(fd_set* rfds, fd_set* wfds);
   int checkSelectedAndExecute(fd_set* rfds, fd_set* wfds);
-  void startCreateResponse();
-  int checkResponseType();
 };
 
 #endif /* SESSION_HPP */
