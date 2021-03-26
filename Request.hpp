@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 01:05:00 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/26 12:21:15 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,6 @@
 
 #include <map>
 #include <string>
-
-#include "HttpStatusCode.hpp"
 
 #define BUFFER_SIZE 1024
 #define RETRY_TIME_MAX 10
@@ -28,8 +26,7 @@ class Request {
  private:
 #endif
   std::string buf_; /*for temporary saving before parsing*/
-  int flg_request_line_;
-  int flg_header_field_;
+  int parse_progress_;
   ssize_t pos_prev_;
   ssize_t pos_begin_header_;
   std::string header_field_;
@@ -37,7 +34,6 @@ class Request {
   std::string uri_;
   std::map<std::string, std::string> headers_;
   std::string body_;
-  HTTPStatusCode status_code_;
 
   Request(Request const& other);
   Request& operator=(Request const& other);
@@ -51,7 +47,6 @@ class Request {
   const std::string& getUri() const;
   const std::map<std::string, std::string>& getHeaders() const;
   const std::string& getBody() const;
-  HTTPStatusCode getStatusCode() const;
 
   int receive(int sock_fd);
   int appendRawData(char* raw_data);
@@ -64,13 +59,13 @@ class Request {
 #else
  private:
 #endif
-  ssize_t getRequestLine();
+  ssize_t findRequestLineEnd();
   int parseRequestLine();
   size_t parseMethod();
   size_t parseUri(size_t pos);
   int checkRequestLine(size_t pos);
   int checkResponseType() const;
-  ssize_t getHeaderField(size_t pos);
+  ssize_t findHeaderFieldEnd(size_t pos);
   int parseHeaderField(size_t pos);
   int checkHeaderField();
 };
