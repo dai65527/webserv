@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/26 11:49:53 by dnakano          ###   ########.fr        #
+#    Updated: 2021/03/26 13:29:22 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,7 +33,8 @@ SRCDIR		:=	../../..
 INCLUDEDIR	:=	../../..
 TESTSRCNAME	:=	test_main.cc \
 				test_isLocationMatch.cc \
-				test_findLocation.cc
+				test_findLocation.cc \
+				test_findServer.cc
 TESTSRCDIR	:=	.
 ### config ###
 

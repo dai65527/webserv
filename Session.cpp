@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 12:21:38 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/26 13:28:57 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -189,9 +189,17 @@ const ServerConfig* Session::findServer() const {
   // get ip and port
   sockaddr_in addr;
   socklen_t addrlen = sizeof(sockaddr_in);
+#ifndef UNIT_TEST
   getsockname(sock_fd_, reinterpret_cast<struct sockaddr*>(&addr), &addrlen);
   in_addr_t ip = addr.sin_addr.s_addr;
   uint16_t port = addr.sin_port;
+#else
+  // just for unit_test
+  (void)addr;
+  (void)addrlen;
+  in_addr_t ip = 0x12345678;
+  uint16_t port = 0x1234;
+#endif /* UNIT_TEST */
 
   // iterate for all server directive in main_config
   std::list<ServerConfig>::const_iterator itr_server;
