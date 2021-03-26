@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 14:26:52 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/26 17:05:10 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,6 +184,16 @@ void Session::setupServerAndLocationConfig() {
   location_config_ = findLocation();
 }
 
+static bool isServerNameMatch(const std::string& host_header,
+                              const std::string& server_name) {
+  size_t pos_colon = host_header.find(':');
+  if (pos_colon != std::string::npos) {
+    // ignore after ':'
+    return !host_header.compare(0, pos_colon, server_name);
+  }
+  return host_header == server_name;
+}
+
 // find matching server directive
 const ServerConfig* Session::findServer() const {
   // get ip and port
@@ -199,6 +209,7 @@ const ServerConfig* Session::findServer() const {
   (void)addrlen;
   in_addr_t ip = 0x12345678;
   uint16_t port = 0x1234;
+  const_cast<Request&>(request_).headers_["host"] = "localhost:8080";
 #endif /* UNIT_TEST */
 
   // iterate for all server directive in main_config
@@ -233,7 +244,8 @@ const ServerConfig* Session::findServer() const {
             request_.getHeaders().find("host");
         // return if server name matched
         if (itr_host == request_.getHeaders().end() ||
-            itr_host->second == *itr_sn) {
+            isServerNameMatch(itr_host->second, *itr_sn)) {
+          // itr_host->second == *itr_sn) {
           return &(*itr_server);
         }
       }
@@ -275,8 +287,8 @@ const LocationConfig* Session::findLocation() const {
        ++itr_loc) {
     if (isLocationMatch(itr_loc->getRoute(), request_.getUri())) {
       // use route longer if more than one location route match
-      if (location_config == NULL || location_config->getRoute().length() <
-                                         itr_loc->getRoute().length()) {
+      if (location_config == NULL ||
+          location_config->getRoute().length() < itr_loc->getRoute().length()) {
         location_config = &(*itr_loc);
       }
     }

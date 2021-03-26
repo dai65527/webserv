@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/26 13:54:29 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/26 16:49:25 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,6 +213,34 @@ TEST_F(test_findServer, findFromFiveDuplicateANY2) {
   server[0].server_name_.push_back("SelectMe");
   config.addServer(server[0]);
   server[1].addToListen(INADDR_ANY, 0x1234);
+  config.addServer(server[1]);
+
+  session = new Session(0, config);
+  res = session->findServer();
+  EXPECT_EQ(res->server_name_.front(), "SelectMe");
+}
+
+TEST_F(test_findServer, findFromFiveDuplicateANYwithServerName) {
+  const ServerConfig* res;
+  server[0].addToListen(INADDR_ANY, 0x1234);
+  server[0].server_name_.push_back("SelectMe");
+  server[0].server_name_.push_back("localhost");
+  config.addServer(server[0]);
+  server[1].addToListen(0x12345678, 0x1234);
+  config.addServer(server[1]);
+
+  session = new Session(0, config);
+  res = session->findServer();
+  EXPECT_EQ(res->server_name_.front(), "SelectMe");
+}
+
+TEST_F(test_findServer, findFromFiveDuplicateANYwithServerName2) {
+  const ServerConfig* res;
+  server[0].addToListen(INADDR_ANY, 0x1234);
+  config.addServer(server[0]);
+  server[1].addToListen(0x12345678, 0x1234);
+  server[1].server_name_.push_back("SelectMe");
+  server[1].server_name_.push_back("localhost");
   config.addServer(server[1]);
 
   session = new Session(0, config);
