@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 23:23:37 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/27 22:54:47 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -441,7 +441,8 @@ std::string Session::findFile() const {
   if (S_ISREG(pathstat.st_mode)) {
     return filepath;  // file found
   } else if (S_ISDIR(pathstat.st_mode)) {
-    return findFileFromDir(filepath);  // find from directive as "index"
+    std::string res = findFileFromDir(filepath);
+    return res.empty() ? "" : filepath + res;  // find from directive as "index"
   } else {
     return "";  // treat as file not found
   }
@@ -469,7 +470,7 @@ std::string Session::findFileFromDir(const std::string& dirpath) const {
   struct dirent* dent;
   while ((dent = readdir(dir))) {
     struct stat filestat;
-    if (stat(dent->d_name, &filestat) == -1) {
+    if (stat((dirpath + dent->d_name).c_str(), &filestat) == -1) {
       return "";
     }
     // case found
@@ -477,6 +478,7 @@ std::string Session::findFileFromDir(const std::string& dirpath) const {
       return dent->d_name;
     }
   }
+  closedir(dir);
 
   // file not found
   return "";
