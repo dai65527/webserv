@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/27 23:15:56 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/27 23:53:17 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,7 +162,8 @@ int Session::receiveRequest() {
   int ret;
 
   // receive returns...
-  // -4:failed to receive, -3:http411 Length Required -2:http505, -1:http400, 0:received all, 1:continue
+  // -4:failed to receive, -3:http411 Length Required -2:http505, -1:http400,
+  // 0:received all, 1:continue
   ret = request_.receive(sock_fd_);
   if (ret == -4) {
     if (retry_count_ == RETRY_TIME_MAX) {
@@ -174,8 +175,12 @@ int Session::receiveRequest() {
     return 0;
   }
   retry_count_ = 0;
-  if (ret == -1 || ret == -2) {
-    createErrorResponse(ret == -1 ? HTTP_400 : HTTP_505);
+  if (ret == -1) {
+    createErrorResponse(HTTP_400);
+  } else if (ret == -2) {
+    createErrorResponse(HTTP_505);
+  } else if (ret == -3) {
+    createErrorResponse(HTTP_411);
   } else if (ret == 0) {
     startCreateResponse();
   }

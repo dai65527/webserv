@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/27 23:13:24 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/27 23:36:08 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,7 +98,8 @@ int Request::parseRequest() {
     }
     pos_begin_body_ = pos_buf;
   }
-  if (parse_progress_ == 2) {
+  if (headers_.find("content-length") != headers_.end() && parse_progress_ == 2) {
+    // findBodyEnd
   }
   return 0;
 }
