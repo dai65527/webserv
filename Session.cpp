@@ -226,11 +226,6 @@ int Session::checkResponseType() {
   //   return 2;
   // }
 
-  // for test
-  request_.method_ = "GET";
-  request_.uri_ = "/index.html";
-  request_.headers_["host"] = "localhost";
-
   // check method
   if (request_.getMethod() == "GET" /* need to check avaliavlity */) {
     return 0;
