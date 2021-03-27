@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/27 21:51:59 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/27 22:03:18 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,20 +74,14 @@ int Request::parseRequest() {
       return 1;  // 1: continue to receive (will be set to select again)
     }
     ret = parseRequestLine();
-    switch (ret) {
-      case -1:
-        return -1;
-      case -2:
-        return -2;
-      default:
-        if (!buf_.compare(pos_buf, 3,
-                          "\n\r\n")) { /* in case of NO header field*/
-          return -1;
-        }
-        pos_begin_header_ = ++pos_buf;
-        pos_prev_ = pos_begin_header_;
-        break;
+    if (ret < 0) {
+      return ret;
     }
+    if (!buf_.compare(pos_buf, 3, "\n\r\n")) { /* in case of NO header field*/
+      return -1;
+    }
+    pos_begin_header_ = ++pos_buf;
+    pos_prev_ = pos_begin_header_;
   }
   if (parse_progress_ == 1) {
     pos_buf = pos_prev_;
@@ -95,12 +89,11 @@ int Request::parseRequest() {
       return 1;  // 1: continue to receive (will be set to select again)
     }
     ret = parseHeaderField(pos_begin_header_);
-    if (ret == -1) {
-      return -1;
+    if (ret < 0) {
+      return ret;
     }
   }
-  ret = checkHeaderField();
-  return ret;
+  return 0;
 }
 
 /* get request line from the input (beginning to /r/n) */
@@ -249,7 +242,7 @@ int Request::parseHeaderField(size_t pos) {
       }
     }
   }
-  return 0;
+  return checkHeaderField();
 }
 
 int Request::checkHeaderField() {
