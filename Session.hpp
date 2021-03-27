@@ -6,31 +6,37 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 12:11:52 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/26 17:36:22 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SESSION_HPP
 #define SESSION_HPP
 
-#include <sys/types.h>
-#include <unistd.h>
 #include <signal.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "CgiHandler.hpp"
 #include "LocationConfig.hpp"
+#include "MainConfig.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
 #include "SessionStatus.hpp"
 
 class Session {
  private:
+#ifdef UNIT_TEST
+ public:
+#endif
   int sock_fd_;
   int file_fd_;
   int retry_count_;
   SessionStatus status_;
-  LocationConfig* config_;
+  const MainConfig& main_config_;
+  const ServerConfig* server_config_;
+  const LocationConfig* location_config_;
   Request request_;
   Response response_;
   CgiHandler cgi_handler_;
@@ -40,30 +46,54 @@ class Session {
   Session(Session const& other);
   Session& operator=(Session const& other);
 
- public:
-  virtual ~Session();
-  Session(int sock_fd_);
-
-  int getSockFd() const;
-  int getFileFd() const;
-  // いる？
-  const LocationConfig& getConfig() const;
-  const SessionStatus& getStatus() const;
-  const Request& getRequest() const;
-  const Response& getResponse() const;
-  const CgiHandler& getCgiHandler() const;
-  void setConfig(const std::list<LocationConfig>& config_list);
-  int setFdToSelect(fd_set* rfds, fd_set* wfds);
-  int checkSelectedAndExecute(fd_set* rfds, fd_set* wfds);
-  void startCreateResponse(HTTPStatusCode status_code);
-
- private:
+  // request
   int receiveRequest();
-  int writeToFile();
+
+  // response
+  void startCreateResponse();
+  int checkResponseType();
+  void createErrorResponse(HTTPStatusCode http_status);
+  int sendResponse();
+
+  // load config
+  void setupServerAndLocationConfig();
+  const ServerConfig* findServer() const;
+  const LocationConfig* findLocation() const;
+  bool isLocationMatch(const std::string& loc_route,
+                            const std::string& uri_path) const;
+
+  // read from file
+  void startReadingFromFile();
+  std::string findFileFromDir(const std::string& dirpath) const;
+  std::string findFile() const;
+  std::string findRoot() const;
+  bool isIndex(const std::string& filename) const;
   int readFromFile();
+
+  // directrory listing
+  void startDirectoryListing();
+
+  // write to file
+  void startWritingToFile();
+  int writeToFile();
+
+  // cgi process
+  void startCgiProcess();
   int writeToCgi();
   int readFromCgi();
-  int sendResponse();
+
+ public:
+  virtual ~Session();
+  Session(int sock_fd_, const MainConfig& main_config);
+
+  // getters
+  int getSockFd() const;
+  int getFileFd() const;
+  const SessionStatus& getStatus() const;
+
+  // functions called from Webserv
+  int setFdToSelect(fd_set* rfds, fd_set* wfds);
+  int checkSelectedAndExecute(fd_set* rfds, fd_set* wfds);
 };
 
 #endif /* SESSION_HPP */

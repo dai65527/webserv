@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 22:16:15 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/27 00:12:19 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,19 +40,23 @@ const std::string& Request::getBody() const { return body_; }
 **
 ** return val:
 **  -3: failed to receive (recv syscall failed)
-**  -2: 505 HTTP Version Not Supported
+**  -2: 505 http version not supported
 **  -1: 400 bad request (parse failue)
 **   0: end of request (go to create response)
 **   1: continue to receive (will beß set to select again)
 */
+
+#include <unistd.h>
 
 int Request::receive(int sock_fd) {
   int ret;
   char read_buf[BUFFER_SIZE];
   ret = recv(sock_fd, read_buf, BUFFER_SIZE, 0);
   if (ret < 0) {
-    return -3;
+    return -3;  // recv failed
   }
+  write(1, read_buf, ret);
+  write(1, "\n", 1);
   buf_.append(read_buf, ret);
   return parseRequest();
 }
@@ -136,7 +140,6 @@ ssize_t Request::findHeaderFieldEnd(size_t pos) {
     }
     ++pos;
   }
-  pos_prev_ = pos;
   return -1;
 }
 
