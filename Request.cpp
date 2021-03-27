@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/27 23:36:08 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/28 02:40:56 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,10 +96,16 @@ int Request::parseRequest() {
     if (ret < 0) {
       return ret;
     }
+    if (headers_.find("content-length") != headers_.end() && !atoi(headers_["content-length"].c_str())) {
+      return 0; //in case of 0 byte for content-length, body should not been read
+    }
     pos_begin_body_ = pos_buf;
   }
-  if (headers_.find("content-length") != headers_.end() && parse_progress_ == 2) {
-    // findBodyEnd
+  if (headers_.find("content-length") != headers_.end() &&
+      parse_progress_ == 2) {
+    if (findBodyEndAndStore(pos_begin_body_) < 0) {
+      return 1;
+    }
   }
   return 0;
 }
@@ -133,6 +139,18 @@ ssize_t Request::findHeaderFieldEnd(size_t pos) {
         parse_progress_ = 2;
         return pos + 4;
       }
+    }
+    ++pos;
+  }
+  return -1;
+}
+
+ssize_t Request::findBodyEndAndStore(size_t pos) {
+  while (buf_.c_str()[pos] != 0) {
+    if (pos - pos_begin_body_ == static_cast<unsigned long>(std::atoi(
+                                     headers_["content-length"].c_str()))) {
+      body_ = buf_.substr(pos_begin_body_, pos - pos_begin_body_);
+      return 0;
     }
     ++pos;
   }
@@ -259,6 +277,16 @@ int Request::checkHeaderField() {
   }
   if (method_ == "POST" && headers_.find("content-length") == headers_.end()) {
     return -3;
+  }
+  /*in case of content-length is negative or non digit */
+  if (headers_.find("content-length") != headers_.end()) {
+    for (std::string::iterator itr = headers_["content-length"].begin();
+         itr != headers_["content-length"].end(); ++itr) {
+      if (!isdigit(*itr)) {
+        return -1;
+      }
+    }
+    return 0;
   }
   return 0;
 }
