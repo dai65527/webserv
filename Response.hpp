@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 20:22:22 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 12:29:17 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/24 22:46:19 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,10 +39,8 @@ class Response {
   Response();
   virtual ~Response();
   int appendRawData(const char* data, size_t len);
-  int createErrorResponse(HTTPStatusCode http_status);
   ssize_t sendRawData(int sock_fd);
   const std::string& getRawReponse() const;
-  void incrementBytesAlreadySent(size_t bytes);
 };
 
 #endif /* RESPONSE_HPP */

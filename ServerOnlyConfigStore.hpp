@@ -29,6 +29,9 @@
 
 class ServerOnlyConfigStore {
  protected:
+#ifdef UNIT_TEST
+ public:
+#endif /* UNIT_TEST */
   std::list<std::pair<in_addr_t, uint16_t> > listen_;  // listen directive
   std::list<std::string> server_name_;                 // server_name directive
   std::map<std::string, in_addr_t> host_ip_map_;       // host ip map
@@ -37,10 +40,6 @@ class ServerOnlyConfigStore {
   void storeEtcHostsToHostIpMap();
   in_addr_t getIpFromHostIpMap(const char* str);
   in_addr_t parseIp(const char* str);
-
-#ifdef UNIT_TEST
- public:
-#endif /* UNIT_TEST */
 
   /*
   ** persers
