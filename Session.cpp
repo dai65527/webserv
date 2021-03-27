@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/27 22:54:47 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/27 23:15:56 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,9 +162,9 @@ int Session::receiveRequest() {
   int ret;
 
   // receive returns...
-  // -3:failed to receive, -2:http505, -1:http400, 0:received all, 1:continue
+  // -4:failed to receive, -3:http411 Length Required -2:http505, -1:http400, 0:received all, 1:continue
   ret = request_.receive(sock_fd_);
-  if (ret == -3) {
+  if (ret == -4) {
     if (retry_count_ == RETRY_TIME_MAX) {
       // then try to send return internal server error
       createErrorResponse(HTTP_500);
