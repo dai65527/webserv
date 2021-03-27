@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/24 01:10:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 17:04:39 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/27 21:46:38 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -285,4 +285,44 @@ TEST_F(test_parseRequest, requestErrorNoURI) {
 TEST_F(test_parseRequest, requestNothing) {
   request.buf_ = "\r\n";
   EXPECT_EQ(request.parseRequest(), -1);
+}
+
+TEST_F(test_parseRequest, postOK) {
+  request.buf_ = "POST /index.html?a HTTP/1.1\r\nHost: ";
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("localhost\r\nLocation:\t  \tYokoh");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("ama\r\nlanguage: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("en-US\r\nContent-length: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("300\r\n\r\n");
+  EXPECT_EQ(request.parseRequest(), 0);
+  EXPECT_EQ(request.method_, "POST");
+  EXPECT_EQ(request.uri_, "/index.html");
+  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+  EXPECT_EQ(request.headers_["location"], "Yokohama");
+  EXPECT_EQ(request.headers_["language"], "en-US");
+  EXPECT_EQ(request.headers_["content-length"], "300");
+}
+
+TEST_F(test_parseRequest, postWithoutLength) {
+  request.buf_ = "POST /index.html?a HTTP/1.1\r\nHost: ";
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("localhost\r\nLocation:\t  \tYokoh");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("ama\r\nlanguage: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("en-US\r\nContent-type: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  request.buf_.append("awesome\r\n\r\n");
+  EXPECT_EQ(request.parseRequest(), -3);
+  EXPECT_EQ(request.method_, "POST");
+  EXPECT_EQ(request.uri_, "/index.html");
+  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+  EXPECT_EQ(request.headers_["location"], "Yokohama");
+  EXPECT_EQ(request.headers_["language"], "en-US");
+  EXPECT_EQ(request.headers_["content-type"], "awesome");
 }

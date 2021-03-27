@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 22:16:15 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/27 21:51:59 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,8 @@ const std::string& Request::getBody() const { return body_; }
 ** receive request using recv syscall
 **
 ** return val:
-**  -3: failed to receive (recv syscall failed)
+**  -4: failed to receive (recv syscall failed)
+**  -3: 411 Length Required
 **  -2: 505 HTTP Version Not Supported
 **  -1: 400 bad request (parse failue)
 **   0: end of request (go to create response)
@@ -51,7 +52,7 @@ int Request::receive(int sock_fd) {
   char read_buf[BUFFER_SIZE];
   ret = recv(sock_fd, read_buf, BUFFER_SIZE, 0);
   if (ret < 0) {
-    return -3;
+    return -4;
   }
   buf_.append(read_buf, ret);
   return parseRequest();
@@ -59,6 +60,7 @@ int Request::receive(int sock_fd) {
 
 /* parseRequest
 ** return values:
+**  -3: 411 Length Required
 **  -2: 505 HTTP Version Not Supported
 **  -1: 400 bad request (parse failue)
 **   0: end of request (go to create response)
@@ -98,10 +100,7 @@ int Request::parseRequest() {
     }
   }
   ret = checkHeaderField();
-  if (ret == -1) {
-    return -1;
-  }
-  return 0;
+  return ret;
 }
 
 /* get request line from the input (beginning to /r/n) */
@@ -136,7 +135,6 @@ ssize_t Request::findHeaderFieldEnd(size_t pos) {
     }
     ++pos;
   }
-  pos_prev_ = pos;
   return -1;
 }
 
@@ -257,6 +255,9 @@ int Request::parseHeaderField(size_t pos) {
 int Request::checkHeaderField() {
   if (headers_.find("host") == headers_.end()) {
     return -1;
+  }
+  if (method_ == "POST" && headers_.find("content-length") == headers_.end()) {
+    return -3;
   }
   return 0;
 }
