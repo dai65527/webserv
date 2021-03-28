@@ -230,7 +230,7 @@ int Session::checkResponseType() {
 }
 
 // check HTTP Request method are avairable
-bool Session::isAllowed(HTTPMethodFlag method) const {
+bool Session::isMethodAllowed(HTTPMethodFlag method) const {
   if (location_config_) {
     return (location_config_->getLimitExcept() & method);
   }

@@ -48,7 +48,7 @@ class Session {
 
   // request
   int receiveRequest();
-  bool isAllowed(HTTPMethodFlag method) const;
+  bool isMethodAllowed(HTTPMethodFlag method) const;
 
   // response
   void startCreateResponse();
