@@ -80,6 +80,7 @@ class Session {
 
   // cgi process
   void startCgiProcess();
+  std::string findCgiPathFromUri() const;
   int writeToCgi();
   int readFromCgi();
 

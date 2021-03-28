@@ -580,6 +580,48 @@ void Session::startDirectoryListing() {
 ** cgi handlers (TODO!!)
 */
 
+std::string Session::findCgiPathFromUri() const {
+  size_t pos;
+  std::string cgipath;
+  std::list<std::string>::const_iterator itr;
+  std::list<std::string>::const_iterator end;
+
+  // to check uri like "/hoge/fuga/fuga.cgi"
+  std::string uri = request_.getUri() + "/";
+
+  // find from location config
+  if (location_config_ && !location_config_->getCgiExtension().empty()) {
+    end = location_config_->getCgiExtension().end();
+    for (itr = location_config_->getCgiExtension().begin(); itr != end; ++itr) {
+      if ((pos = uri.find("." + *itr + "/")) != std::string::npos) {
+        return uri.substr(0, pos + itr->length() + 1);
+      }
+    }
+  }
+
+  // find from server config
+  if (server_config_ && !server_config_->getCgiExtension().empty()) {
+    end = server_config_->getCgiExtension().end();
+    for (itr = server_config_->getCgiExtension().begin(); itr != end; ++itr) {
+      if ((pos = uri.find("." + *itr + "/")) != std::string::npos) {
+        return uri.substr(0, pos + itr->length() + 1);
+      }
+    }
+  }
+
+  // find from main config
+  if (!main_config_.getCgiExtension().empty()) {
+    end = main_config_.getCgiExtension().end();
+    for (itr = main_config_.getCgiExtension().begin(); itr != end; ++itr) {
+      if ((pos = uri.find("." + *itr + "/")) != std::string::npos) {
+        return uri.substr(0, pos + itr->length() + 1);
+      }
+    }
+  }
+
+  return "";
+}
+
 void Session::startCgiProcess() {
   HTTPStatusCode http_status = cgi_handler_.createCgiProcess();
   if (http_status != HTTP_200) {
