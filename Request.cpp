@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/29 00:02:17 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/29 02:18:26 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ const std::map<std::string, std::string>& Request::getHeaders() const {
 const std::map<std::string, std::string>& Request::getQuery() const {
   return query_;
 }
+size_t Request::getContentLength() const { return content_length_;}
 
 /*
 ** receive
@@ -100,6 +101,7 @@ int Request::parseRequest() {
                  // read
     }
     pos_begin_body_ = pos_buf;
+    return 42;
   }
   if (content_length_ > 0 && parse_progress_ == 2) {
     if (findBodyEndAndStore(pos_begin_body_) < 0) {

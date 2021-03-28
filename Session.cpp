@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/27 23:53:17 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/29 02:35:05 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,10 +162,11 @@ int Session::receiveRequest() {
   int ret;
 
   // receive returns...
-  // -4:failed to receive, -3:http411 Length Required -2:http505, -1:http400,
+  // -1:failed to receive, -3:http411 Length Required -2:http505, -4:http400,
+  // 42:finished parsing header then check max body size
   // 0:received all, 1:continue
   ret = request_.receive(sock_fd_);
-  if (ret == -4) {
+  if (ret == -1) {
     if (retry_count_ == RETRY_TIME_MAX) {
       // then try to send return internal server error
       createErrorResponse(HTTP_500);
@@ -175,7 +176,7 @@ int Session::receiveRequest() {
     return 0;
   }
   retry_count_ = 0;
-  if (ret == -1) {
+  if (ret == -4) {
     createErrorResponse(HTTP_400);
   } else if (ret == -2) {
     createErrorResponse(HTTP_505);
@@ -183,6 +184,12 @@ int Session::receiveRequest() {
     createErrorResponse(HTTP_411);
   } else if (ret == 0) {
     startCreateResponse();
+  } else if (ret == 42) {
+    setupServerAndLocationConfig();
+    if (request_.getContentLength() > main_config_.getClientMaxBodySize()) {
+      createErrorResponse(HTTP_413);
+    }
+    return 0;
   }
   return 0;  // continue to receive
 }
