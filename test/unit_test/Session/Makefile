@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/28 12:26:20 by dnakano          ###   ########.fr        #
+#    Updated: 2021/03/28 17:19:49 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -35,7 +35,8 @@ TESTSRCNAME	:=	test_main.cc \
 				test_isLocationMatch.cc \
 				test_findLocation.cc \
 				test_findServer.cc \
-				test_isAllowed.cc
+				test_isMethodAllowed.cc \
+				test_findCgiPathFromUri.cc
 TESTSRCDIR	:=	.
 ### config ###
 
