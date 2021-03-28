@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/27 22:54:47 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/28 10:59:06 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -218,23 +218,22 @@ void Session::startCreateResponse() {
 // check request and config and decide response type (set status_)
 // not yet implimented enough (now is for test)
 int Session::checkResponseType() {
-  // if (!request_.getBuf().compare(0, 4, "read", 0, 4)) {
-  //   return 0;
-  // } else if (!request_.getBuf().compare(0, 5, "write", 0, 5)) {
-  //   return 1;
-  // } else if (!request_.getBuf().compare(0, 3, "cgi", 0, 3)) {
-  //   return 2;
-  // }
-
   // check method
-  if (request_.getMethod() == "GET" /* need to check avaliavlity */) {
-    return 0;
-  } else {
-    createErrorResponse(HTTP_505);
-  }
+  // if (request_.getMethod() == "GET" && isAllowed(HTTP_GET)) {
+  //   return 0;
+  // } else {
+  //   createErrorResponse(HTTP_505);
+  // }
 
   status_ = SESSION_FOR_CLIENT_SEND;
   return -1;
+}
+
+// check HTTP Request method are avairable
+bool Session::isAllowed(HTTPMethodFlag method) const {
+  return (main_config_.getLimitExcept() & method ||
+          (server_config_ && server_config_->getLimitExcept() & method) ||
+          (location_config_ && location_config_->getLimitExcept() & method));
 }
 
 // create error response message
