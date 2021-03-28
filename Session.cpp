@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/28 10:59:06 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/28 12:27:16 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -231,9 +231,13 @@ int Session::checkResponseType() {
 
 // check HTTP Request method are avairable
 bool Session::isAllowed(HTTPMethodFlag method) const {
-  return (main_config_.getLimitExcept() & method ||
-          (server_config_ && server_config_->getLimitExcept() & method) ||
-          (location_config_ && location_config_->getLimitExcept() & method));
+  if (location_config_) {
+    return (location_config_->getLimitExcept() & method);
+  }
+  if (server_config_) {
+    return (server_config_->getLimitExcept() & method);
+  }
+  return (main_config_.getLimitExcept() & method);
 }
 
 // create error response message

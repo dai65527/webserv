@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/28 10:56:12 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/28 12:26:43 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ class Session {
 
   // request
   int receiveRequest();
-  bool Session::isAllowed(HTTPMethodFlag method) const;
+  bool isAllowed(HTTPMethodFlag method) const;
 
   // response
   void startCreateResponse();
