@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/28 02:40:56 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/28 22:56:58 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,10 +39,10 @@ const std::string& Request::getBody() const { return body_; }
 ** receive request using recv syscall
 **
 ** return val:
-**  -4: failed to receive (recv syscall failed)
+**  -4: 400 bad request (parse failue)
 **  -3: 411 Length Required
 **  -2: 505 HTTP Version Not Supported
-**  -1: 400 bad request (parse failue)
+**  -1: failed to receive (recv syscall failed)
 **   0: end of request (go to create response)
 **   1: continue to receive (will beß set to select again)
 */
@@ -54,7 +54,7 @@ int Request::receive(int sock_fd) {
   char read_buf[BUFFER_SIZE];
   ret = recv(sock_fd, read_buf, BUFFER_SIZE, 0);
   if (ret < 0) {
-    return -4;
+    return -1;
   }
   write(1, read_buf, ret);
   write(1, "\n", 1);
@@ -64,9 +64,9 @@ int Request::receive(int sock_fd) {
 
 /* parseRequest
 ** return values:
+**  -4: 400 bad request (parse failue)
 **  -3: 411 Length Required
 **  -2: 505 HTTP Version Not Supported
-**  -1: 400 bad request (parse failue)
 **   0: end of request (go to create response)
 **   1: continue to receive (will be set to select again)
 */
@@ -82,7 +82,7 @@ int Request::parseRequest() {
       return ret;
     }
     if (!buf_.compare(pos_buf, 3, "\n\r\n")) { /* in case of NO header field*/
-      return -1;
+      return -4;
     }
     pos_begin_header_ = ++pos_buf;
     pos_prev_ = pos_begin_header_;
@@ -211,12 +211,12 @@ size_t Request::parseUri(size_t pos) {
 int Request::checkRequestLine(size_t pos) {
   // check method
   if (method_.empty() || uri_.empty()) {
-    return -1;
+    return -4;
   }
   for (std::string::iterator itr = method_.begin(); itr != method_.end();
        ++itr) {
     if (!std::isupper(*itr)) {
-      return -1;
+      return -4;
     }
   }
 
@@ -234,7 +234,7 @@ int Request::checkRequestLine(size_t pos) {
   }
   protocol = buf_.substr(copy_begin, pos - copy_begin);
   if (protocol.empty()) {
-    return -1;
+    return -4;
   } else if (protocol != "HTTP/1.1") {
     return -2;
   }
@@ -249,7 +249,7 @@ int Request::parseHeaderField(size_t pos) {
     }
     size_t pos_colon = buf_.find(":", begin);
     if (pos_colon == std::string::npos) {
-      return -1;
+      return -4;
     }
     std::string key = buf_.substr(begin, pos_colon - begin);
     for (std::string::iterator itr = key.begin(); itr != key.end(); ++itr)
@@ -273,7 +273,7 @@ int Request::parseHeaderField(size_t pos) {
 
 int Request::checkHeaderField() {
   if (headers_.find("host") == headers_.end()) {
-    return -1;
+    return -4;
   }
   if (method_ == "POST" && headers_.find("content-length") == headers_.end()) {
     return -3;
@@ -283,7 +283,7 @@ int Request::checkHeaderField() {
     for (std::string::iterator itr = headers_["content-length"].begin();
          itr != headers_["content-length"].end(); ++itr) {
       if (!isdigit(*itr)) {
-        return -1;
+        return -4;
       }
     }
     return 0;
