@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/28 12:26:43 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/28 22:48:18 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ class Session {
 
   // response
   void startCreateResponse();
-  int checkResponseType();
+  void startCreateResponseToGet();
   void createErrorResponse(HTTPStatusCode http_status);
   int sendResponse();
 
@@ -64,23 +64,24 @@ class Session {
                             const std::string& uri_path) const;
 
   // read from file
-  void startReadingFromFile();
+  void startReadingFromFile(const std::string& filepath);
   std::string findFileFromDir(const std::string& dirpath) const;
-  std::string findFile() const;
+  std::string findFile(const std::string& uri) const;
   std::string findRoot() const;
   bool isIndex(const std::string& filename) const;
   int readFromFile();
 
   // directrory listing
-  void startDirectoryListing();
+  void startDirectoryListing(const std::string& filepath);
 
   // write to file
   void startWritingToFile();
   int writeToFile();
 
   // cgi process
-  void startCgiProcess();
+  void createCgiProcess(const std::string& filepath, const std::string& cgiuri);
   std::string findCgiPathFromUri() const;
+  bool isCgiFile(const std::string& filepath) const;
   int writeToCgi();
   int readFromCgi();
 
