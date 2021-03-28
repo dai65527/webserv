@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/28 22:56:58 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/29 00:02:17 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <iostream>
 
-Request::Request() : parse_progress_(0), pos_prev_(0) {}
+Request::Request() : parse_progress_(0), pos_prev_(0), content_length_(0) {}
 
 Request::~Request() {}
 
@@ -31,7 +31,6 @@ const std::map<std::string, std::string>& Request::getHeaders() const {
 const std::map<std::string, std::string>& Request::getQuery() const {
   return query_;
 }
-const std::string& Request::getBody() const { return body_; }
 
 /*
 ** receive
@@ -96,13 +95,13 @@ int Request::parseRequest() {
     if (ret < 0) {
       return ret;
     }
-    if (headers_.find("content-length") != headers_.end() && !atoi(headers_["content-length"].c_str())) {
-      return 0; //in case of 0 byte for content-length, body should not been read
+    if (content_length_ == 0) {
+      return 0;  // in case of 0 byte for content-length, body should not been
+                 // read
     }
     pos_begin_body_ = pos_buf;
   }
-  if (headers_.find("content-length") != headers_.end() &&
-      parse_progress_ == 2) {
+  if (content_length_ > 0 && parse_progress_ == 2) {
     if (findBodyEndAndStore(pos_begin_body_) < 0) {
       return 1;
     }
@@ -147,9 +146,9 @@ ssize_t Request::findHeaderFieldEnd(size_t pos) {
 
 ssize_t Request::findBodyEndAndStore(size_t pos) {
   while (buf_.c_str()[pos] != 0) {
-    if (pos - pos_begin_body_ == static_cast<unsigned long>(std::atoi(
-                                     headers_["content-length"].c_str()))) {
-      body_ = buf_.substr(pos_begin_body_, pos - pos_begin_body_);
+    if (pos - pos_begin_body_ == content_length_) {
+      buf_.erase(0, pos_begin_body_);
+      buf_.erase(pos - pos_begin_body_, pos);
       return 0;
     }
     ++pos;
@@ -275,25 +274,26 @@ int Request::checkHeaderField() {
   if (headers_.find("host") == headers_.end()) {
     return -4;
   }
-  if (method_ == "POST" && headers_.find("content-length") == headers_.end()) {
+  std::map<std::string, std::string>::iterator itr_content_length =
+      headers_.find("content-length");
+  if (method_ == "POST" && itr_content_length == headers_.end()) {
     return -3;
   }
   /*in case of content-length is negative or non digit */
-  if (headers_.find("content-length") != headers_.end()) {
-    for (std::string::iterator itr = headers_["content-length"].begin();
-         itr != headers_["content-length"].end(); ++itr) {
+  if (itr_content_length != headers_.end()) {
+    for (std::string::iterator itr = itr_content_length->second.begin();
+         itr != itr_content_length->second.end(); ++itr) {
       if (!isdigit(*itr)) {
         return -4;
       }
     }
+    content_length_ = static_cast<size_t>(atoi(itr_content_length->second.c_str()));
     return 0;
   }
   return 0;
 }
 
 void Request::eraseBuf(ssize_t n) { buf_.erase(0, n); }
-
-void Request::eraseBody(ssize_t n) { body_.erase(0, n); }
 
 // check
 int Request::checkResponseType() const {
