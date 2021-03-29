@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/29 12:38:37 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/30 08:07:06 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,11 @@
 
 #include "webserv_settings.hpp"
 
-Response::Response() { initResponseCodeMessage(); }
+std::map<HTTPStatusCode, std::string> Response::response_code_message_;
+
+Response::Response() : send_progress_(0), bytes_already_sent_(0) {
+  initResponseCodeMessage();
+}
 
 Response::~Response() {}
 
@@ -31,6 +35,8 @@ int Response::createStatusLine(HTTPStatusCode http_status_) {
   // common header
   addHeader("Server", WEBSERV_NAME);
   // TODO: time header
+
+  return 0;
 }
 
 int Response::addHeader(const std::string& key, const std::string& value) {
@@ -45,38 +51,101 @@ int Response::createDefaultErrorResponse(HTTPStatusCode http_status_) {
   // create status line and common header
   createStatusLine(http_status_);
 
+  // add Headers
+  addHeader("Content-Type", "text/html");
+  addHeader("Connection", "close");
+
   // create body
   std::string status_msg =
       std::to_string(http_status_) + " " + response_code_message_[http_status_];
   body_.clear();
   body_.append("<html>\r\n");
-  body_.append("<head><title>" + status_msg + "</ title></ head>\r\n");
+  body_.append("<head><title>" + status_msg + "</title></ head>\r\n");
   body_.append("<body bgcolor = \"white\">\r\n");
   body_.append("<center><h1>" + status_msg + "</h1></center>\r\n");
   body_.append("<hr><center> nginDX </center>\r\n");
   body_.append("</body></html>\r\n");
 
-  // add Headers
-  addHeader("Content-Type", "text/html");
-  addHeader("ContentLength", std::to_string(http_status_));
-  addHeader("Connection", "close");
-}
-
-int Response::appendRawData(const char* data, size_t len) {
-  raw_response_.append(data, len);
   return 0;
 }
 
-const std::string& Response::getRawReponse() const { return raw_response_; }
+int Response::appendToBody(const char* data, size_t len) {
+  body_.append(data, len);
+  return 0;
+}
 
-ssize_t Response::sendRawData(int sock_fd) {
-  ssize_t n = send(sock_fd, raw_response_.c_str(), raw_response_.length(), 0);
+int Response::appendToBody(const std::string& data) {
+  body_.append(data);
+  return 0;
+}
 
-  // delete sent data
-  if (n > 0) {
-    raw_response_.erase(0, n);
+ssize_t Response::sendData(int sock_fd) {
+  ssize_t n;  // response of send syscall
+  switch (send_progress_) {
+    case 0:  // first time to send
+      createCompleteHeader();
+      send_progress_ = 1;
+      bytes_already_sent_ = 0;
+      // no break, to next progress
+
+    case 1:  // sending headers
+      n = send(sock_fd, status_header_.c_str() + bytes_already_sent_,
+               status_header_.length() - bytes_already_sent_, 0);
+      if (n < 0) {
+        return -1;
+      }
+
+      // count byte already sent
+      bytes_already_sent_ += n;
+      if (bytes_already_sent_ < status_header_.length()) {
+        return 1;  // continue to send
+      }
+
+      // sent all header
+      status_header_.clear();  // clear for next request
+      bytes_already_sent_ = 0;
+
+      // no body to send
+      if (body_.empty()) {
+        send_progress_ = 0;  // init for next request
+        return 0;            // end
+      }
+
+      // to next process (send body)
+      send_progress_ = 2;
+      printf("hoge\n");
+      return 1;
+
+    case 2:  // sending body
+      n = send(sock_fd, body_.c_str() + bytes_already_sent_,
+               body_.length() - bytes_already_sent_, 0);
+      if (n < 0) {
+        return -1;
+      }
+
+      // count byte already sent
+      bytes_already_sent_ += n;
+      if (bytes_already_sent_ < body_.length()) {
+        return 1;  // continue to send
+      }
+
+      // sent all header
+      body_.clear();       // clear for next request
+      send_progress_ = 0;  // init for next request
+      bytes_already_sent_ = 0;
+      break;
+
+    default:
+      break;
   }
-  return n;
+  return 0;
+}
+
+// create headers which cannot be defined before create body
+int Response::createCompleteHeader() {
+  addHeader("Content-Length", std::to_string(body_.length()));
+  status_header_.append("\r\n");
+  return 0;
 }
 
 void Response::initResponseCodeMessage() {
