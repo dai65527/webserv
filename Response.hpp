@@ -29,8 +29,11 @@ class Response {
   std::string method_;
   std::string uri_;
   std::map<std::string, std::string> headers_;
-  std::string body_;
-  size_t bytes_already_sent_;
+
+  // map (status code) -> message (ex: HTTP_404 -> "Not Found")
+  static std::map<HTTPStatusCode, std::string> response_code_message_;
+
+  void initResponseCodeMessage();
 
   Response(Response const& other);
   Response& operator=(Response const& other);
