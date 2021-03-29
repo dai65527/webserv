@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/26 17:36:22 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/29 09:06:38 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,9 +42,14 @@ class Session {
   CgiHandler cgi_handler_;
   pid_t cgi_pid_;
 
+  // map (status code) -> message (ex: HTTP_404 -> "Not Found")
+  static std::map<HTTPStatusCode, std::string> response_code_message_;
+
   Session();
   Session(Session const& other);
   Session& operator=(Session const& other);
+
+  static void initResponseCodeMessage();
 
   // request
   int receiveRequest();
