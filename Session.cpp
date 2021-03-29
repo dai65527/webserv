@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/29 22:09:14 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/29 22:28:14 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -387,7 +387,6 @@ const ServerConfig* Session::findServer() const {
   (void)addrlen;
   in_addr_t ip = 0x12345678;
   uint16_t port = 0x1234;
-  // const_cast<Request&>(request_).headers_["host"] = "localhost:8080";
 #endif /* UNIT_TEST */
 
   // iterate for all server directive in main_config
@@ -421,9 +420,8 @@ const ServerConfig* Session::findServer() const {
         std::map<std::string, std::string>::const_iterator itr_host =
             request_.getHeaders().find("host");
         // return if server name matched
-        if (itr_host == request_.getHeaders().end() ||
+        if (itr_host != request_.getHeaders().end() &&
             isServerNameMatch(itr_host->second, *itr_sn)) {
-          // itr_host->second == *itr_sn) {
           return &(*itr_server);
         }
       }
