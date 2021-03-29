@@ -551,6 +551,8 @@ server, location
 nginxのlimit_exceptと異なり、ブロックを取らず、全てのクライアントに対して指定されたメソッド以外を禁止する。
 http://nginx.org/en/docs/http/ngx_http_core_module.html#limit_except
 
+server、location contextに記述された場合は、上位のディレクティブの設定を引き継がない。
+
 #### 文法
 
 ```
