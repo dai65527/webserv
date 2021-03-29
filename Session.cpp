@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/29 19:11:36 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/29 22:48:32 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -283,7 +283,7 @@ void Session::createErrorResponse(HTTPStatusCode http_status) {
 int Session::sendResponse() {
   ssize_t n;
 
-  n = response_.sendRawData(sock_fd_);
+  n = response_.sendData(sock_fd_);
   if (n == -1) {
     std::cout << "[error] failed to send response" << std::endl;
     if (retry_count_ == RETRY_TIME_MAX) {
@@ -294,7 +294,7 @@ int Session::sendResponse() {
     retry_count_++;
     return 0;
   }
-  if (response_.getRawReponse().empty()) {
+  if (n == 0) {
     close(sock_fd_);
     return 1;  // return 1 if all data sent (this session will be closed)
   }
@@ -453,12 +453,16 @@ void Session::startReadingFromFile(const std::string& filepath) {
     return;
   }
 
-  // [TEMP] create response header
-  response_.appendRawData("HTTP/1.1 200 0K\r\n", 17);
-  response_.appendRawData("Content-Type: text/html; charset=UTF-8\r\n", 40);
-  response_.appendRawData("\r\n", 2);
+  // create response header
+  addResponseHeaderOfFile(filepath);          // add response header
 
   status_ = SESSION_FOR_FILE_READ;
+}
+
+void Session::addResponseHeaderOfFile(const std::string& filepath) {
+  (void)filepath;
+  response_.createStatusLine(HTTP_200);
+  response_.addHeader("Content-Type", "text/html");
 }
 
 // find requested file
@@ -566,12 +570,10 @@ int Session::readFromFile() {
 
   // retry seveal times even if read failed
   if (n == -1) {
-    std::cout << "[error] failed to read from file" << std::endl;
     if (retry_count_ == RETRY_TIME_MAX) {
       retry_count_ = 0;
 
       // close file and make error responce
-      std::cout << "[error] close file" << std::endl;
       close(file_fd_);
       createErrorResponse(HTTP_503);
       status_ = SESSION_FOR_CLIENT_SEND;
@@ -584,7 +586,7 @@ int Session::readFromFile() {
   // reset retry conunt on success
   retry_count_ = 0;
 
-  // check if reached eof
+  // if read all data, close file and create response header
   if (n == 0) {
     close(file_fd_);                    // close
     status_ = SESSION_FOR_CLIENT_SEND;  // set for send response
@@ -592,7 +594,7 @@ int Session::readFromFile() {
   }
 
   // append data to response
-  response_.appendRawData(read_buf, n);
+  response_.appendToBody(read_buf, n);
 
   return 0;
 }
@@ -602,14 +604,13 @@ int Session::readFromFile() {
 */
 
 void Session::startDirectoryListing(const std::string& filepath) {
-  response_.appendRawData("HTTP/1.1 200 0K\r\n", 17);
-  response_.appendRawData("Content-Type: text/html; charset=UTF-8\r\n", 40);
-  response_.appendRawData("\r\n", 2);
+  response_.createStatusLine(HTTP_200);
+  response_.addHeader("Content-Type", "text/html");
 
   // [TEMP] response
-  response_.appendRawData("<h1>autoindex not yet implemented: ", 35);
-  response_.appendRawData(filepath.c_str(), filepath.length());
-  response_.appendRawData("</h1>\n", 6);
+  response_.appendToBody("<h1>autoindex not yet implemented: ", 35);
+  response_.appendToBody(filepath.c_str(), filepath.length());
+  response_.appendToBody("</h1>\n", 6);
   status_ = SESSION_FOR_CLIENT_SEND;
 }
 
@@ -709,15 +710,14 @@ void Session::createCgiProcess(const std::string& filepath,
   // }
 
   // [TEMP] create response header
-  response_.appendRawData("HTTP/1.1 200 0K\r\n", 17);
-  response_.appendRawData("Content-Type: text/html; charset=UTF-8\r\n", 40);
-  response_.appendRawData("\r\n", 2);
+  response_.createStatusLine(HTTP_200);
+  response_.addHeader("Content-Type", "text/html");
 
   // [TEMP] response
   (void)cgiuri;
-  response_.appendRawData("<h1>cgi not yet implemented: ", 29);
-  response_.appendRawData(filepath.c_str(), filepath.length());
-  response_.appendRawData("</h1>\n", 6);
+  response_.appendToBody("<h1>cgi not yet implemented: ", 29);
+  response_.appendToBody(filepath.c_str(), filepath.length());
+  response_.appendToBody("</h1>\n", 6);
   // status_ = SESSION_FOR_CGI_WRITE;
   status_ = SESSION_FOR_CLIENT_SEND; // TEMP!!!!
 }
@@ -811,7 +811,7 @@ int Session::readFromCgi() {
   }
 
   // append data to response
-  response_.appendRawData(read_buf, n);
+  response_.appendToBody(read_buf, n);
 
   return 0;
 }
