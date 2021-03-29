@@ -14,7 +14,7 @@
 
 #include <sys/socket.h>
 
-Response::Response() {}
+#include "webserv_settings.hpp"
 
 Response::Response() { initResponseCodeMessage(); }
 
