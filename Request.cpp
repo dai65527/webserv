@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/29 22:10:00 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/29 22:32:05 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,27 +67,27 @@ int Request::receive(int sock_fd) {
 }
 
 /* parseRequest
-** return values:
-**  -4: 400 bad request (parse failue)
-**  -3: 411 Length Required
-**  -2: 505 HTTP Version Not Supported
-**   0: end of request (go to create response)
-**   1: continue to receive (will be set to select again)
-**   42:parse all header to find config
+** return values: (negatives are ERRPR)
+** REQ_FIN_PARSE_HEADER 2 //finished parsing header
+** REQ_CONTINUE_RECV 1 //continue to receive
+** REQ_FIN_RECV 0 // finished receiving
+** REQ_ERR_HTTP_VERSION -2 //HTTP505
+** REQ_ERR_LEN_REQUIRED -3 //HTTP411
+** REQ_ERR_BAD_REQUEST -4 //HTTP400
 */
 int Request::parseRequest() {
   ssize_t pos_buf;
   int ret;
   if (parse_progress_ == 0) {  // 0: parse not started yet
     if ((pos_buf = findRequestLineEnd()) == -1) {
-      return CONTINUE_RECV;
+      return REQ_CONTINUE_RECV;
     }
     ret = parseRequestLine();
     if (ret < 0) {
       return ret;
     }
     if (!buf_.compare(pos_buf, 3, "\n\r\n")) { /* in case of NO header field*/
-      return ERR_BAD_REQUEST;
+      return REQ_ERR_BAD_REQUEST;
     }
     pos_begin_header_ = ++pos_buf;
     pos_prev_ = pos_begin_header_;
@@ -95,25 +95,25 @@ int Request::parseRequest() {
   if (parse_progress_ == 1) {  // 1: finished parse request line then header
     pos_buf = pos_prev_;
     if ((pos_buf = findHeaderFieldEnd(pos_buf)) == -1) {
-      return CONTINUE_RECV;
+      return REQ_CONTINUE_RECV;
     }
     ret = parseHeaderField(pos_begin_header_);
     if (ret < 0) {
       return ret;
     }
     if (content_length_ == 0) {
-      return FIN_PARSE_HEADER;
+      return REQ_FIN_PARSE_HEADER;
     }
     pos_begin_body_ = pos_buf;
-    return FIN_PARSE_HEADER;
+    return REQ_FIN_PARSE_HEADER;
   }
   if (content_length_ > 0 &&
       parse_progress_ == 2) {  // 2: finished parse header then body
     if (findBodyEndAndStore(pos_begin_body_) < 0) {
-      return CONTINUE_RECV;
+      return REQ_CONTINUE_RECV;
     }
   }
-  return FIN_RECV;
+  return REQ_FIN_RECV;
 }
 
 /* get request line from the input (beginning to /r/n) */

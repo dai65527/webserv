@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/29 22:28:14 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/29 22:32:32 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,11 +186,11 @@ int Session::receiveRequest() {
 */
 int Session::checkReceiveReturn(int ret) {
   /* firstly check the return value is ERROR or NOT*/
-  if (ret == ERR_BAD_REQUEST) {
+  if (ret == REQ_ERR_BAD_REQUEST) {
     createErrorResponse(HTTP_400);
-  } else if (ret == ERR_HTTP_VERSION) {
+  } else if (ret == REQ_ERR_HTTP_VERSION) {
     createErrorResponse(HTTP_505);
-  } else if (ret == ERR_LEN_REQUIRED) {
+  } else if (ret == REQ_ERR_LEN_REQUIRED) {
     createErrorResponse(HTTP_411);
   }
   /*
@@ -199,7 +199,7 @@ int Session::checkReceiveReturn(int ret) {
   ** else if it'is larger than client max body size return HTTP413(Payload Too
   *Large)
   */
-  else if (ret == FIN_PARSE_HEADER) {
+  else if (ret == REQ_FIN_PARSE_HEADER) {
 #ifndef UNIT_TEST
     setupServerAndLocationConfig();  // To get server and location config
 #endif
@@ -225,7 +225,7 @@ int Session::checkReceiveReturn(int ret) {
       return 4133;  // just for unit test
 #endif
       /* Finished receiving then start create response*/
-    } else if (ret == FIN_RECV) {
+    } else if (ret == REQ_FIN_RECV) {
       startCreateResponse();
     }
   }
