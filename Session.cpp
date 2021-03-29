@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/29 12:47:39 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/29 19:11:36 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@
 #include <unistd.h>
 
 #include <iostream>
+
+#include "webserv_utils.hpp"
 
 /*
 ** constructor
@@ -191,50 +193,77 @@ void Session::startCreateResponse() {
   // set server and location config according to request
   setupServerAndLocationConfig();
 
-  // if error, will create error response and set status_ inside.
-  switch (checkResponseType()) {
-    // read from file
-    case 0:
-      startReadingFromFile();
-      break;
-
-    // write to file
-    case 1:
-      startDirectoryListing();
-      break;
-
-    // write to file
-    case 2:
-      startWritingToFile();
-      break;
-
-    // create cgi process
-    case 3:
-      startCgiProcess();
-      break;
+  // case GET
+  if ((request_.getMethod() == "GET" && isMethodAllowed(HTTP_GET)) ||
+      (request_.getMethod() == "HEAD" && isMethodAllowed(HTTP_HEAD))) {
+    startCreateResponseToGet();
+    return;
   }
-}
 
-// check request and config and decide response type (set status_)
-// not yet implimented enough (now is for test)
-int Session::checkResponseType() {
-  // if (!request_.getBuf().compare(0, 4, "read", 0, 4)) {
-  //   return 0;
-  // } else if (!request_.getBuf().compare(0, 5, "write", 0, 5)) {
-  //   return 1;
-  // } else if (!request_.getBuf().compare(0, 3, "cgi", 0, 3)) {
-  //   return 2;
+  // case POST (for now, just try to use cgi in startReadingFromFile)
+  // if (request_.getMethod() == "POST" && !isMethodAllowed(HTTP_POST)) {
+  // startReadingFromFile();  // header will checked in startReadingFromFile
+  // return;
   // }
 
-  // check method
-  if (request_.getMethod() == "GET" /* need to check avaliavlity */) {
-    return 0;
-  } else {
-    createErrorResponse(HTTP_505);
+  // case others (PUT, DELETE and TRACE)
+  // not inpl them for now
+  createErrorResponse(HTTP_405);
+}
+
+// create Response to GET
+void Session::startCreateResponseToGet() {
+  std::string filepath;
+  struct stat pathstat;
+
+  // check path includes cgi extension
+  const std::string cgiuri = findCgiPathFromUri();
+  if (!cgiuri.empty()) {
+    filepath = findRoot() + cgiuri;
+    if (filepath.empty()) {
+      createErrorResponse(HTTP_404);
+    } else {
+      createCgiProcess(filepath, cgiuri);
+    }
+    return;
   }
 
-  status_ = SESSION_FOR_CLIENT_SEND;
-  return -1;
+  // find file
+  filepath = findRoot() + request_.getUri();
+  if (stat(filepath.c_str(), &pathstat) == -1) {
+    createErrorResponse(HTTP_404);
+    return;
+  }
+
+  // check file type
+  if (S_ISREG(pathstat.st_mode)) {
+    if (isCgiFile(filepath)) {
+      createCgiProcess(filepath, "");
+    } else {
+      startReadingFromFile(filepath);
+    }
+    return;
+  } else if (S_ISDIR(pathstat.st_mode)) {
+    std::string res = findFileFromDir(filepath);
+    if (res.empty()) {
+      startDirectoryListing(filepath);
+    } else {
+      startReadingFromFile(filepath + res);
+    }
+    return;
+  }
+  createErrorResponse(HTTP_404);
+}
+
+// check HTTP Request method are avairable
+bool Session::isMethodAllowed(HTTPMethodFlag method) const {
+  if (location_config_) {
+    return (location_config_->getLimitExcept() & method);
+  }
+  if (server_config_) {
+    return (server_config_->getLimitExcept() & method);
+  }
+  return (main_config_.getLimitExcept() & method);
 }
 
 // create error response message
@@ -408,21 +437,21 @@ const LocationConfig* Session::findLocation() const {
 */
 
 // find and open file and create response header
-void Session::startReadingFromFile() {
-  // findfile
-  std::string filepath = findFile();
-  if (filepath.empty()) {
-    createErrorResponse(HTTP_404);
-    return;
-  }
-
+void Session::startReadingFromFile(const std::string& filepath) {
+  // openfile
   file_fd_ = open(filepath.c_str(), O_RDONLY);  // toriaezu
   if (file_fd_ == -1) {
-    std::cout << "[error] open failure" << std::endl;
     createErrorResponse(HTTP_403);
     return;
   }
+
+  // set to non block
   fcntl(file_fd_, F_SETFL, O_NONBLOCK);
+  if (file_fd_ == -1) {
+    close(file_fd_);
+    createErrorResponse(HTTP_503);
+    return;
+  }
 
   // [TEMP] create response header
   response_.appendRawData("HTTP/1.1 200 0K\r\n", 17);
@@ -433,10 +462,10 @@ void Session::startReadingFromFile() {
 }
 
 // find requested file
-std::string Session::findFile() const {
+std::string Session::findFile(const std::string& uri) const {
   struct stat pathstat;
   std::string rootpath = findRoot();
-  std::string filepath = rootpath + request_.getUri();
+  std::string filepath = rootpath + uri;
 
   if (stat(filepath.c_str(), &pathstat) == -1) {
     return "";  // no file or error
@@ -572,8 +601,15 @@ int Session::readFromFile() {
 ** directory listing creators (todo!!)
 */
 
-void Session::startDirectoryListing() {
-  response_.appendRawData("autoindex!!!!!!!!!!!!!!!!!!", 27);
+void Session::startDirectoryListing(const std::string& filepath) {
+  response_.appendRawData("HTTP/1.1 200 0K\r\n", 17);
+  response_.appendRawData("Content-Type: text/html; charset=UTF-8\r\n", 40);
+  response_.appendRawData("\r\n", 2);
+
+  // [TEMP] response
+  response_.appendRawData("<h1>autoindex not yet implemented: ", 35);
+  response_.appendRawData(filepath.c_str(), filepath.length());
+  response_.appendRawData("</h1>\n", 6);
   status_ = SESSION_FOR_CLIENT_SEND;
 }
 
@@ -581,13 +617,109 @@ void Session::startDirectoryListing() {
 ** cgi handlers (TODO!!)
 */
 
-void Session::startCgiProcess() {
-  HTTPStatusCode http_status = cgi_handler_.createCgiProcess();
-  if (http_status != HTTP_200) {
-    std::cout << "[error] failed to create cgi process" << std::endl;
-    createErrorResponse(http_status);
+std::string Session::findCgiPathFromUri() const {
+  size_t pos;
+  std::string cgipath;
+  std::list<std::string>::const_iterator itr;
+  std::list<std::string>::const_iterator end;
+
+  // to check uri like "/hoge/fuga/fuga.cgi"
+  std::string uri = request_.getUri() + "/";
+
+  // find from location config
+  if (location_config_ && !location_config_->getCgiExtension().empty()) {
+    end = location_config_->getCgiExtension().end();
+    for (itr = location_config_->getCgiExtension().begin(); itr != end; ++itr) {
+      if ((pos = uri.find("." + *itr + "/")) != std::string::npos) {
+        return uri.substr(0, pos + itr->length() + 1);
+      }
+    }
   }
-  status_ = SESSION_FOR_CGI_WRITE;
+
+  // find from server config
+  if (server_config_ && !server_config_->getCgiExtension().empty()) {
+    end = server_config_->getCgiExtension().end();
+    for (itr = server_config_->getCgiExtension().begin(); itr != end; ++itr) {
+      if ((pos = uri.find("." + *itr + "/")) != std::string::npos) {
+        return uri.substr(0, pos + itr->length() + 1);
+      }
+    }
+  }
+
+  // find from main config
+  if (!main_config_.getCgiExtension().empty()) {
+    end = main_config_.getCgiExtension().end();
+    for (itr = main_config_.getCgiExtension().begin(); itr != end; ++itr) {
+      if ((pos = uri.find("." + *itr + "/")) != std::string::npos) {
+        return uri.substr(0, pos + itr->length() + 1);
+      }
+    }
+  }
+
+  return "";
+}
+
+bool Session::isCgiFile(const std::string& filepath) const {
+  size_t pos;
+  std::list<std::string>::const_iterator itr;
+  std::list<std::string>::const_iterator end;
+
+  // find from location config
+  if (location_config_ && !location_config_->getCgiExtension().empty()) {
+    end = location_config_->getCgiExtension().end();
+    for (itr = location_config_->getCgiExtension().begin(); itr != end; ++itr) {
+      if ((pos = filepath.find("." + *itr)) != std::string::npos &&
+          (pos + itr->length() + 1 == filepath.length())) {
+        return true;
+      }
+    }
+  }
+
+  // find from server config
+  if (server_config_ && !server_config_->getCgiExtension().empty()) {
+    end = server_config_->getCgiExtension().end();
+    for (itr = server_config_->getCgiExtension().begin(); itr != end; ++itr) {
+      if ((pos = filepath.find("." + *itr)) != std::string::npos &&
+          (pos + itr->length() + 1 == filepath.length())) {
+        return true;
+      }
+    }
+  }
+
+  // find from main config
+  if (!main_config_.getCgiExtension().empty()) {
+    end = main_config_.getCgiExtension().end();
+    for (itr = main_config_.getCgiExtension().begin(); itr != end; ++itr) {
+      if ((pos = filepath.find("." + *itr)) != std::string::npos &&
+          (pos + itr->length() + 1 == filepath.length())) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+void Session::createCgiProcess(const std::string& filepath,
+                               const std::string& cgiuri) {
+  // HTTPStatusCode http_status = cgi_handler_.createCgiProcess();
+  // if (http_status != HTTP_200) {
+  //   std::cout << "[error] failed to create cgi process" << std::endl;
+  //   createErrorResponse(http_status);
+  // }
+
+  // [TEMP] create response header
+  response_.appendRawData("HTTP/1.1 200 0K\r\n", 17);
+  response_.appendRawData("Content-Type: text/html; charset=UTF-8\r\n", 40);
+  response_.appendRawData("\r\n", 2);
+
+  // [TEMP] response
+  (void)cgiuri;
+  response_.appendRawData("<h1>cgi not yet implemented: ", 29);
+  response_.appendRawData(filepath.c_str(), filepath.length());
+  response_.appendRawData("</h1>\n", 6);
+  // status_ = SESSION_FOR_CGI_WRITE;
+  status_ = SESSION_FOR_CLIENT_SEND; // TEMP!!!!
 }
 
 // write to cgi process (TODO!!)

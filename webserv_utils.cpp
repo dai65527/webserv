@@ -6,9 +6,14 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 08:14:01 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/19 08:39:36 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/28 16:03:22 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#include <string>
 
 #include "HttpStatusCode.hpp"
 #include "libft.h"
@@ -149,4 +154,13 @@ HTTPStatusCode isHttpStatusCode(int code) {
     default:
       return HTTP_NOMATCH;
   }
+}
+
+bool isDirectory(const std::string& path) {
+  struct stat pathstat;
+
+  if (stat(path.c_str(), &pathstat) == 0) {
+    return false;
+  }
+  return S_ISDIR(pathstat.st_mode);
 }

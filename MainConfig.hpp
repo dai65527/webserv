@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/12 18:58:53 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/21 17:46:38 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/28 12:17:06 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,9 @@
 
 class MainConfig : public CommonConfigStore, public MainOnlyConfigStore {
  private:
+#ifdef UNIT_TEST
+ public:
+#endif
   std::list<ServerConfig> servers_;
 
  public:
