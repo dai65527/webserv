@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/26 16:49:25 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/29 18:07:58 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ class test_findServer : public ::testing::Test {
       config.addServer(server[i]);
     }
     session = new Session(0, config);
+    session->request_.headers_["host"] = "localhost:8080";
   }
 
   // 各ケース共通の後処理を書く
@@ -41,7 +42,6 @@ TEST_F(test_findServer, findFromOne) {
   server[0].server_name_.push_back("SelectMe");
   config.addServer(server[0]);
 
-  session = new Session(0, config);
   res = session->findServer();
   EXPECT_EQ(res->server_name_.front(), "SelectMe");
 }
@@ -52,7 +52,6 @@ TEST_F(test_findServer, findFromOneADDRANY) {
   server[0].server_name_.push_back("SelectMe");
   config.addServer(server[0]);
 
-  session = new Session(0, config);
   res = session->findServer();
   EXPECT_EQ(res->server_name_.front(), "SelectMe");
 }
@@ -68,7 +67,6 @@ TEST_F(test_findServer, findFromOneManyListen) {
   server[0].server_name_.push_back("SelectMe");
   config.addServer(server[0]);
 
-  session = new Session(0, config);
   res = session->findServer();
   EXPECT_EQ(res->server_name_.front(), "SelectMe");
 }
@@ -108,7 +106,6 @@ TEST_F(test_findServer, findFromThreeNormal1) {
   server[4].addToListen(0x4244242, 0x242);
   config.addServer(server[4]);
 
-  session = new Session(0, config);
   res = session->findServer();
   EXPECT_EQ(res->server_name_.front(), "SelectMe");
 }
@@ -139,7 +136,6 @@ TEST_F(test_findServer, findFromThreeNormal2) {
   server[4].addToListen(0x12345678, 0x1111);
   config.addServer(server[4]);
 
-  session = new Session(0, config);
   res = session->findServer();
   EXPECT_EQ(res->server_name_.front(), "SelectMe");
 }
@@ -170,7 +166,6 @@ TEST_F(test_findServer, findFromThreeNormal3) {
   server[4].server_name_.push_back("SelectMe");
   config.addServer(server[4]);
 
-  session = new Session(0, config);
   res = session->findServer();
   EXPECT_EQ(res->server_name_.front(), "SelectMe");
 }
@@ -189,7 +184,6 @@ TEST_F(test_findServer, findFromFiveDuplicateIPPort) {
   server[4].addToListen(0x12345678, 0x1234);
   config.addServer(server[4]);
 
-  session = new Session(0, config);
   res = session->findServer();
   EXPECT_EQ(res->server_name_.front(), "SelectMe");
 }
@@ -202,7 +196,6 @@ TEST_F(test_findServer, findFromFiveDuplicateANY) {
   server[1].addToListen(0x12345678, 0x1234);
   config.addServer(server[1]);
 
-  session = new Session(0, config);
   res = session->findServer();
   EXPECT_EQ(res->server_name_.front(), "SelectMe");
 }
@@ -215,7 +208,6 @@ TEST_F(test_findServer, findFromFiveDuplicateANY2) {
   server[1].addToListen(INADDR_ANY, 0x1234);
   config.addServer(server[1]);
 
-  session = new Session(0, config);
   res = session->findServer();
   EXPECT_EQ(res->server_name_.front(), "SelectMe");
 }
@@ -227,9 +219,9 @@ TEST_F(test_findServer, findFromFiveDuplicateANYwithServerName) {
   server[0].server_name_.push_back("localhost");
   config.addServer(server[0]);
   server[1].addToListen(0x12345678, 0x1234);
+  server[1].server_name_.push_back("DontSelectMe");
   config.addServer(server[1]);
 
-  session = new Session(0, config);
   res = session->findServer();
   EXPECT_EQ(res->server_name_.front(), "SelectMe");
 }
@@ -237,13 +229,13 @@ TEST_F(test_findServer, findFromFiveDuplicateANYwithServerName) {
 TEST_F(test_findServer, findFromFiveDuplicateANYwithServerName2) {
   const ServerConfig* res;
   server[0].addToListen(INADDR_ANY, 0x1234);
+  server[0].server_name_.push_back("DontSelectMe");
   config.addServer(server[0]);
-  server[1].addToListen(0x12345678, 0x1234);
+  server[1].addToListen(INADDR_ANY, 0x1234);
   server[1].server_name_.push_back("SelectMe");
   server[1].server_name_.push_back("localhost");
   config.addServer(server[1]);
 
-  session = new Session(0, config);
   res = session->findServer();
   EXPECT_EQ(res->server_name_.front(), "SelectMe");
 }
