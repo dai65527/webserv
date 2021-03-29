@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 17:40:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/21 09:09:27 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/28 12:17:47 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,10 @@
 
 class CommonConfigStore {
  protected:
+#ifdef UNIT_TEST
+ public:
+#endif /* UNIT_TEST */
+
   std::string root_;                                  // root directive
   std::list<std::string> index_;                      // index directive
   std::map<HTTPStatusCode, std::string> error_page_;  // error_page directive
@@ -43,10 +47,6 @@ class CommonConfigStore {
   bool flg_client_max_body_size_set_;   // true if CMBS already set
   unsigned long limit_except_;          // allowed functions
   bool flg_limit_except_set_;           // true if limit_except already set
-
-#ifdef UNIT_TEST
- public:
-#endif /* UNIT_TEST */
 
   /*
   ** parsers
