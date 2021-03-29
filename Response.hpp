@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 20:22:22 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 22:46:19 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/29 12:43:42 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,10 +28,10 @@ class Response {
   std::string body_;
   size_t bytes_already_sent_;
 
-  std::string raw_response_;
-  HTTPStatusCode status_;
-  std::string method_;
+  // to be deleted
   std::string uri_;
+  std::string method_;
+  std::string raw_response_;
   std::map<std::string, std::string> headers_;
 
   // map (status code) -> message (ex: HTTP_404 -> "Not Found")
@@ -47,6 +47,8 @@ class Response {
   virtual ~Response();
   int addHeader(const std::string& key, const std::string& value);
   int createStatusLine(HTTPStatusCode http_status_);
+  int createDefaultErrorResponse(HTTPStatusCode http_status_);
+  int appendRawData(const std::string& data);
   int appendRawData(const char* data, size_t len);
   ssize_t sendRawData(int sock_fd);
   const std::string& getRawReponse() const;

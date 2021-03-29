@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 22:45:57 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/29 12:38:37 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,48 @@
 Response::Response() { initResponseCodeMessage(); }
 
 Response::~Response() {}
+
+int Response::createStatusLine(HTTPStatusCode http_status_) {
+  // status line
+  status_header_.append("HTTP/1.1 ");
+  status_header_.append(std::to_string(http_status_));
+  status_header_.append(" ");
+  status_header_.append(response_code_message_[http_status_]);
+  status_header_.append("\r\n");
+
+  // common header
+  addHeader("Server", WEBSERV_NAME);
+  // TODO: time header
+}
+
+int Response::addHeader(const std::string& key, const std::string& value) {
+  status_header_.append(key);
+  status_header_.append(": ");
+  status_header_.append(value);
+  status_header_.append("\r\n");
+  return 0;
+}
+
+int Response::createDefaultErrorResponse(HTTPStatusCode http_status_) {
+  // create status line and common header
+  createStatusLine(http_status_);
+
+  // create body
+  std::string status_msg =
+      std::to_string(http_status_) + " " + response_code_message_[http_status_];
+  body_.clear();
+  body_.append("<html>\r\n");
+  body_.append("<head><title>" + status_msg + "</ title></ head>\r\n");
+  body_.append("<body bgcolor = \"white\">\r\n");
+  body_.append("<center><h1>" + status_msg + "</h1></center>\r\n");
+  body_.append("<hr><center> nginDX </center>\r\n");
+  body_.append("</body></html>\r\n");
+
+  // add Headers
+  addHeader("Content-Type", "text/html");
+  addHeader("ContentLength", std::to_string(http_status_));
+  addHeader("Connection", "close");
+}
 
 int Response::appendRawData(const char* data, size_t len) {
   raw_response_.append(data, len);
