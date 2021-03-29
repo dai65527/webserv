@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/29 15:53:48 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/29 16:07:11 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,22 +187,23 @@ int Session::receiveRequest() {
   } else if (ret == 0) {
     startCreateResponse();
   } else if (ret == 42) {
+#ifndef UNIT_TEST
     setupServerAndLocationConfig();
+#endif
     if (location_config_ && request_.getContentLength() >
                                 location_config_->getClientMaxBodySize()) {
       createErrorResponse(HTTP_413);
 #ifdef UNIT_TEST
       return 4131;
 #endif
-    }
-    else if (server_config_ &&
-        request_.getContentLength() > server_config_->getClientMaxBodySize()) {
+    } else if (server_config_ && request_.getContentLength() >
+                                     server_config_->getClientMaxBodySize()) {
       createErrorResponse(HTTP_413);
 #ifdef UNIT_TEST
       return 4132;
 #endif
-    }
-    else if (request_.getContentLength() > main_config_.getClientMaxBodySize()) {
+    } else if (request_.getContentLength() >
+               main_config_.getClientMaxBodySize()) {
       createErrorResponse(HTTP_413);
 #ifdef UNIT_TEST
       return 4133;

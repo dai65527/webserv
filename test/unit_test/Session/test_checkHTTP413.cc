@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/29 16:03:49 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/29 16:08:40 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,7 @@ TEST_F(test_checkHTTP413, serverConfigNG) {
   EXPECT_EQ(session->receiveRequest(), 0);
   session->request_.buf_.append("en-US\r\nContent-length: \t\t");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("30\r\n\r\n012345678");
+  session->request_.buf_.append("40\r\n\r\n012345678");
   EXPECT_EQ(session->receiveRequest(),
             4132);  // max body size defined in server config
   EXPECT_EQ(session->request_.method_, "POST");
@@ -126,7 +126,7 @@ TEST_F(test_checkHTTP413, serverConfigNG) {
   EXPECT_EQ(session->request_.headers_["host"], "localhost");
   EXPECT_EQ(session->request_.headers_["location"], "Yokohama");
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
-  EXPECT_EQ(session->request_.headers_["content-length"], "30");
+  EXPECT_EQ(session->request_.headers_["content-length"], "40");
 }
 
 TEST_F(test_checkHTTP413, locationConfigOK) {
@@ -175,7 +175,7 @@ TEST_F(test_checkHTTP413, locationConfigNG) {
   EXPECT_EQ(session->receiveRequest(), 0);
   session->request_.buf_.append("en-US\r\nContent-length: \t\t");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("10\r\n\r\n012345678");
+  session->request_.buf_.append("30\r\n\r\n012345678");
   EXPECT_EQ(session->receiveRequest(),
             4131);  // max body size defined in location config
   EXPECT_EQ(session->request_.method_, "POST");
@@ -184,5 +184,5 @@ TEST_F(test_checkHTTP413, locationConfigNG) {
   EXPECT_EQ(session->request_.headers_["host"], "localhost");
   EXPECT_EQ(session->request_.headers_["location"], "Yokohama");
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
-  EXPECT_EQ(session->request_.headers_["content-length"], "10");
+  EXPECT_EQ(session->request_.headers_["content-length"], "30");
 }
