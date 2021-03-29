@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/29 15:15:36 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/29 22:10:00 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ const std::map<std::string, std::string>& Request::getHeaders() const {
 const std::map<std::string, std::string>& Request::getQuery() const {
   return query_;
 }
-size_t Request::getContentLength() const { return content_length_;}
+size_t Request::getContentLength() const { return content_length_; }
 
 /*
 ** receive
@@ -50,7 +50,7 @@ size_t Request::getContentLength() const { return content_length_;}
 #include <unistd.h>
 
 int Request::receive(int sock_fd) {
-  #ifndef UNIT_TEST
+#ifndef UNIT_TEST
   int ret;
   char read_buf[BUFFER_SIZE];
   ret = recv(sock_fd, read_buf, BUFFER_SIZE, 0);
@@ -60,9 +60,9 @@ int Request::receive(int sock_fd) {
   write(1, read_buf, ret);
   write(1, "\n", 1);
   buf_.append(read_buf, ret);
-  #else
+#else
   (void)sock_fd;
-  #endif
+#endif
   return parseRequest();
 }
 
@@ -73,46 +73,47 @@ int Request::receive(int sock_fd) {
 **  -2: 505 HTTP Version Not Supported
 **   0: end of request (go to create response)
 **   1: continue to receive (will be set to select again)
+**   42:parse all header to find config
 */
 int Request::parseRequest() {
   ssize_t pos_buf;
   int ret;
-  if (parse_progress_ == 0) {
+  if (parse_progress_ == 0) {  // 0: parse not started yet
     if ((pos_buf = findRequestLineEnd()) == -1) {
-      return 1;  // 1: continue to receive (will be set to select again)
+      return CONTINUE_RECV;
     }
     ret = parseRequestLine();
     if (ret < 0) {
       return ret;
     }
     if (!buf_.compare(pos_buf, 3, "\n\r\n")) { /* in case of NO header field*/
-      return -4;
+      return ERR_BAD_REQUEST;
     }
     pos_begin_header_ = ++pos_buf;
     pos_prev_ = pos_begin_header_;
   }
-  if (parse_progress_ == 1) {
+  if (parse_progress_ == 1) {  // 1: finished parse request line then header
     pos_buf = pos_prev_;
     if ((pos_buf = findHeaderFieldEnd(pos_buf)) == -1) {
-      return 1;  // 1: continue to receive (will be set to select again)
+      return CONTINUE_RECV;
     }
     ret = parseHeaderField(pos_begin_header_);
     if (ret < 0) {
       return ret;
     }
     if (content_length_ == 0) {
-      return 0;  // in case of 0 byte for content-length, body should not been
-                 // read
+      return FIN_PARSE_HEADER;
     }
     pos_begin_body_ = pos_buf;
-    return 42;
+    return FIN_PARSE_HEADER;
   }
-  if (content_length_ > 0 && parse_progress_ == 2) {
+  if (content_length_ > 0 &&
+      parse_progress_ == 2) {  // 2: finished parse header then body
     if (findBodyEndAndStore(pos_begin_body_) < 0) {
-      return 1;
+      return CONTINUE_RECV;
     }
   }
-  return 0;
+  return FIN_RECV;
 }
 
 /* get request line from the input (beginning to /r/n) */
@@ -293,8 +294,7 @@ int Request::checkHeaderField() {
         return -4;
       }
     }
-    content_length_ = static_cast<size_t>(atoi(itr_content_length->second.c_str()));
-    return 0;
+    content_length_ = ft_atoul(itr_content_length->second.c_str());
   }
   return 0;
 }

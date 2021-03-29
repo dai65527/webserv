@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/29 16:07:11 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/29 22:09:14 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,40 +178,58 @@ int Session::receiveRequest() {
     return 0;
   }
   retry_count_ = 0;
-  if (ret == -4) {
+  return checkReceiveReturn(ret);
+}
+
+/*
+** check return value of request_.receive(sock_fd_);
+*/
+int Session::checkReceiveReturn(int ret) {
+  /* firstly check the return value is ERROR or NOT*/
+  if (ret == ERR_BAD_REQUEST) {
     createErrorResponse(HTTP_400);
-  } else if (ret == -2) {
+  } else if (ret == ERR_HTTP_VERSION) {
     createErrorResponse(HTTP_505);
-  } else if (ret == -3) {
+  } else if (ret == ERR_LEN_REQUIRED) {
     createErrorResponse(HTTP_411);
-  } else if (ret == 0) {
-    startCreateResponse();
-  } else if (ret == 42) {
+  }
+  /*
+  ** Then check the content-length,
+  ** if it's 0 (no body), return 0
+  ** else if it'is larger than client max body size return HTTP413(Payload Too
+  *Large)
+  */
+  else if (ret == FIN_PARSE_HEADER) {
 #ifndef UNIT_TEST
-    setupServerAndLocationConfig();
+    setupServerAndLocationConfig();  // To get server and location config
 #endif
-    if (location_config_ && request_.getContentLength() >
-                                location_config_->getClientMaxBodySize()) {
+    if (request_.getContentLength() == 0) {
+      return 0;
+    } else if (location_config_ &&
+               request_.getContentLength() >
+                   location_config_->getClientMaxBodySize()) {
       createErrorResponse(HTTP_413);
 #ifdef UNIT_TEST
-      return 4131;
+      return 4131;  // just for unit test
 #endif
     } else if (server_config_ && request_.getContentLength() >
                                      server_config_->getClientMaxBodySize()) {
       createErrorResponse(HTTP_413);
 #ifdef UNIT_TEST
-      return 4132;
+      return 4132;  // just for unit test
 #endif
     } else if (request_.getContentLength() >
                main_config_.getClientMaxBodySize()) {
       createErrorResponse(HTTP_413);
 #ifdef UNIT_TEST
-      return 4133;
+      return 4133;  // just for unit test
 #endif
+      /* Finished receiving then start create response*/
+    } else if (ret == FIN_RECV) {
+      startCreateResponse();
     }
-    return 0;
   }
-  return 0;  // continue to receive
+  return 0;
 }
 
 /*

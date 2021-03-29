@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/29 02:14:56 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/29 21:43:47 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,22 @@
 #include <map>
 #include <string>
 
+extern "C" {
+#include "libft.h"
+}
+
 #define BUFFER_SIZE 1024
 #define RETRY_TIME_MAX 10
+
+
+#define FIN_PARSE_HEADER 2 //finished parsing header
+#define CONTINUE_RECV 1 //continue to receive
+#define FIN_RECV 0 // finished receiving
+#define ERR_RECV -1 //fail syscall of recv
+#define ERR_HTTP_VERSION -2 //HTTP505
+#define ERR_LEN_REQUIRED -3 //HTTP411
+#define ERR_BAD_REQUEST -4 //HTTP400
+
 
 class Request {
 #ifdef UNIT_TEST
@@ -36,7 +50,7 @@ class Request {
   std::string uri_;
   std::map<std::string, std::string> query_;
   std::map<std::string, std::string> headers_;
-  size_t content_length_;
+  unsigned long content_length_;
 
   Request(Request const& other);
   Request& operator=(Request const& other);
