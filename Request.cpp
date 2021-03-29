@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/29 02:18:26 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/29 15:15:36 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ size_t Request::getContentLength() const { return content_length_;}
 #include <unistd.h>
 
 int Request::receive(int sock_fd) {
+  #ifndef UNIT_TEST
   int ret;
   char read_buf[BUFFER_SIZE];
   ret = recv(sock_fd, read_buf, BUFFER_SIZE, 0);
@@ -59,6 +60,9 @@ int Request::receive(int sock_fd) {
   write(1, read_buf, ret);
   write(1, "\n", 1);
   buf_.append(read_buf, ret);
+  #else
+  (void)sock_fd;
+  #endif
   return parseRequest();
 }
 

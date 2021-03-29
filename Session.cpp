@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/29 14:11:21 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/29 15:53:48 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,8 +188,25 @@ int Session::receiveRequest() {
     startCreateResponse();
   } else if (ret == 42) {
     setupServerAndLocationConfig();
-    if (request_.getContentLength() > main_config_.getClientMaxBodySize()) {
+    if (location_config_ && request_.getContentLength() >
+                                location_config_->getClientMaxBodySize()) {
       createErrorResponse(HTTP_413);
+#ifdef UNIT_TEST
+      return 4131;
+#endif
+    }
+    else if (server_config_ &&
+        request_.getContentLength() > server_config_->getClientMaxBodySize()) {
+      createErrorResponse(HTTP_413);
+#ifdef UNIT_TEST
+      return 4132;
+#endif
+    }
+    else if (request_.getContentLength() > main_config_.getClientMaxBodySize()) {
+      createErrorResponse(HTTP_413);
+#ifdef UNIT_TEST
+      return 4133;
+#endif
     }
     return 0;
   }
@@ -351,7 +368,7 @@ const ServerConfig* Session::findServer() const {
   (void)addrlen;
   in_addr_t ip = 0x12345678;
   uint16_t port = 0x1234;
-  const_cast<Request&>(request_).headers_["host"] = "localhost:8080";
+  // const_cast<Request&>(request_).headers_["host"] = "localhost:8080";
 #endif /* UNIT_TEST */
 
   // iterate for all server directive in main_config
@@ -727,7 +744,7 @@ void Session::createCgiProcess(const std::string& filepath,
   response_.appendRawData(filepath.c_str(), filepath.length());
   response_.appendRawData("</h1>\n", 6);
   // status_ = SESSION_FOR_CGI_WRITE;
-  status_ = SESSION_FOR_CLIENT_SEND; // TEMP!!!!
+  status_ = SESSION_FOR_CLIENT_SEND;  // TEMP!!!!
 }
 
 // write to cgi process (TODO!!)
