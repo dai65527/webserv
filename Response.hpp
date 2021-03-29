@@ -24,6 +24,10 @@ class Response {
 #else
  private:
 #endif
+  std::string status_header_;
+  std::string body_;
+  size_t bytes_already_sent_;
+
   std::string raw_response_;
   HTTPStatusCode status_;
   std::string method_;
@@ -41,6 +45,8 @@ class Response {
  public:
   Response();
   virtual ~Response();
+  int addHeader(const std::string& key, const std::string& value);
+  int createStatusLine(HTTPStatusCode http_status_);
   int appendRawData(const char* data, size_t len);
   ssize_t sendRawData(int sock_fd);
   const std::string& getRawReponse() const;
