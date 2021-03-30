@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/29 22:32:32 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/30 01:11:41 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,13 +162,8 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
 // call receive and parse request and client
 int Session::receiveRequest() {
   int ret;
-
-  // receive returns...
-  // -1:failed to receive, -3:http411 Length Required -2:http505, -4:http400,
-  // 42:finished parsing header then check max body size
-  // 0:received all, 1:continue
   ret = request_.receive(sock_fd_);
-  if (ret == -1) {
+  if (ret == REQ_ERR_RECV) {
     if (retry_count_ == RETRY_TIME_MAX) {
       // then try to send return internal server error
       createErrorResponse(HTTP_500);
@@ -768,9 +763,18 @@ void Session::createCgiProcess(const std::string& filepath,
 int Session::writeToCgi() {
   ssize_t n;
 
+  size_t size = request_.getBuf().size();
+  unsigned char* str = static_cast<unsigned char*>(malloc(size));
+  if (!str) {
+    exit(EXIT_FAILURE);
+  }
+  for (size_t i = 0; i < size; ++i) {
+    str[i] = request_.getBuf()[i];
+  }
   // write to cgi process
-  n = cgi_handler_.writeToCgi(request_.getBuf().c_str(),
-                              request_.getBuf().length());
+  n = cgi_handler_.writeToCgi(str, size);
+  free(str);
+  str = NULL;
 
   // retry several times even if write failed
   if (n == -1) {
@@ -876,8 +880,17 @@ int Session::writeToFile() {
   ssize_t n;
 
   // write to file
-  n = write(file_fd_, request_.getBuf().c_str(), request_.getBuf().length());
-
+  size_t size = request_.getBuf().size();
+  unsigned char* str = static_cast<unsigned char*>(malloc(size));
+  if (!str) {
+    exit(EXIT_FAILURE);
+  }
+  for (size_t i = 0; i < size; ++i) {
+    str[i] = request_.getBuf()[i];
+  }
+  n = write(file_fd_, str, size);
+  free(str);
+  str = NULL;
   // retry several times even if write failed
   if (n == -1) {
     std::cout << "[error] failed to write to file" << std::endl;

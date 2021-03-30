@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/29 22:29:48 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/30 00:42:43 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define REQUEST_HPP
 
 #include <map>
+#include <vector>
 #include <string>
 
 extern "C" {
@@ -40,7 +41,8 @@ class Request {
  private:
 #endif
  public:      // just for test!!!!
-  std::string buf_; /*for temporary saving before parsing*/
+  // std::string buf_; /*temporary saving before parsing and finally becomes body*/
+  std::vector<unsigned char> buf_;
   int parse_progress_;
   ssize_t pos_prev_;
   ssize_t pos_begin_header_;
@@ -59,7 +61,8 @@ class Request {
   Request();
   virtual ~Request();
 
-  const std::string& getBuf() const;
+  // const std::string& getBuf() const;
+  const std::vector<unsigned char>& getBuf() const;
   const std::string& getMethod() const;
   const std::string& getUri() const;
   const std::map<std::string, std::string>& getHeaders() const;

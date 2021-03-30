@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/29 22:32:05 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/30 18:43:27 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ Request::Request() : parse_progress_(0), pos_prev_(0), content_length_(0) {}
 Request::~Request() {}
 
 /* getters */
-const std::string& Request::getBuf() const { return buf_; }
+const std::vector<unsigned char>& Request::getBuf() const { return buf_; }
 const std::string& Request::getMethod() const { return method_; }
 const std::string& Request::getUri() const { return uri_; }
 const std::map<std::string, std::string>& Request::getHeaders() const {
@@ -38,13 +38,13 @@ size_t Request::getContentLength() const { return content_length_; }
 **
 ** receive request using recv syscall
 **
-** return val:
-**  -4: 400 bad request (parse failue)
-**  -3: 411 Length Required
-**  -2: 505 HTTP Version Not Supported
-**  -1: failed to receive (recv syscall failed)
-**   0: end of request (go to create response)
-**   1: continue to receive (will beß set to select again)
+** return values: (negatives are ERRPR)
+** REQ_FIN_PARSE_HEADER 2 //finished parsing header
+** REQ_CONTINUE_RECV 1 //continue to receive
+** REQ_FIN_RECV 0 // finished receiving
+** REQ_ERR_HTTP_VERSION -2 //HTTP505
+** REQ_ERR_LEN_REQUIRED -3 //HTTP411
+** REQ_ERR_BAD_REQUEST -4 //HTTP400
 */
 
 #include <unistd.h>
@@ -55,11 +55,14 @@ int Request::receive(int sock_fd) {
   char read_buf[BUFFER_SIZE];
   ret = recv(sock_fd, read_buf, BUFFER_SIZE, 0);
   if (ret < 0) {
-    return -1;
+    return REQ_ERR_RECV;
   }
   write(1, read_buf, ret);
   write(1, "\n", 1);
-  buf_.append(read_buf, ret);
+  // buf_.append(read_buf, ret);
+  for (int i = 0; i < ret; ++i) {
+    buf_.push_back(read_buf[i]);
+  }
 #else
   (void)sock_fd;
 #endif
@@ -86,7 +89,11 @@ int Request::parseRequest() {
     if (ret < 0) {
       return ret;
     }
-    if (!buf_.compare(pos_buf, 3, "\n\r\n")) { /* in case of NO header field*/
+    std::string str;
+    for (int i = pos_buf; i < pos_buf + 3; ++i) {
+      str.push_back(buf_[i]);
+    }
+    if (!str.compare(0, 3, "\n\r\n")) { /* in case of NO header field*/
       return REQ_ERR_BAD_REQUEST;
     }
     pos_begin_header_ = ++pos_buf;
@@ -101,9 +108,7 @@ int Request::parseRequest() {
     if (ret < 0) {
       return ret;
     }
-    if (content_length_ == 0) {
-      return REQ_FIN_PARSE_HEADER;
-    }
+
     pos_begin_body_ = pos_buf;
     return REQ_FIN_PARSE_HEADER;
   }
@@ -119,10 +124,10 @@ int Request::parseRequest() {
 /* get request line from the input (beginning to /r/n) */
 ssize_t Request::findRequestLineEnd() {
   size_t pos = pos_prev_;
-  while (buf_.c_str()[pos] != '\0' && buf_[pos] != '\r' && buf_[pos] != '\n') {
+  while (pos != buf_.size() && buf_[pos] != '\r' && buf_[pos] != '\n') {
     ++pos;
   }
-  if (buf_.c_str()[pos] == '\0') {
+  if (pos == buf_.size()) {
     pos_prev_ = pos;
     return -1;
   }
@@ -139,9 +144,13 @@ ssize_t Request::findRequestLineEnd() {
 }
 
 ssize_t Request::findHeaderFieldEnd(size_t pos) {
-  while (buf_.c_str()[pos] != 0) {
+  while (pos != buf_.size()) {
     if (buf_[pos] == '\r') {
-      if (!buf_.compare(pos, 4, "\r\n\r\n")) {
+      std::string str;
+      for (size_t i = pos; i < pos + 4; ++i) {
+        str.push_back(buf_[i]);
+      }
+      if (!str.compare(0, 4, "\r\n\r\n")) {
         parse_progress_ = 2;
         return pos + 4;
       }
@@ -152,10 +161,13 @@ ssize_t Request::findHeaderFieldEnd(size_t pos) {
 }
 
 ssize_t Request::findBodyEndAndStore(size_t pos) {
-  while (buf_.c_str()[pos] != 0) {
+  while (pos != buf_.size()) {
     if (pos - pos_begin_body_ == content_length_) {
-      buf_.erase(0, pos_begin_body_);
-      buf_.erase(pos - pos_begin_body_, pos);
+      std::vector<unsigned char>::iterator itr_begin_body =
+          buf_.begin() + pos_begin_body_;
+      std::vector<unsigned char>::iterator itr_end_body = buf_.begin() + pos;
+      buf_.erase(itr_end_body, buf_.end());
+      buf_.erase(buf_.begin(), itr_begin_body);
       return 0;
     }
     ++pos;
@@ -175,37 +187,54 @@ int Request::parseRequestLine() {
 
 size_t Request::parseMethod() {
   size_t pos = 0;
-  while (buf_.c_str()[pos] != '\0' && buf_[pos] != ' ' && buf_[pos] != '\r') {
+  while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r') {
     ++pos;
   }
-  method_ = buf_.substr(0, pos);
+  for (size_t i = 0; i < pos; ++i) {
+    method_.push_back(buf_[i]);
+  }
   return pos;
 }
 
 size_t Request::parseUri(size_t pos) {
-  while (buf_.c_str()[pos] == ' ') {
+  while (pos != buf_.size() && buf_[pos] == ' ') {
     ++pos;
   }
   size_t copy_begin = pos;
-  while (buf_.c_str()[pos] != '\0' && buf_[pos] != ' ' && buf_[pos] != '\r' &&
+  while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r' &&
          buf_[pos] != '?') {
     ++pos;
   }
-  uri_ = buf_.substr(copy_begin, pos - copy_begin);
+  for (size_t i = copy_begin; i < pos; ++i) {
+    uri_.push_back(buf_[i]);
+  }
   if (buf_[pos] == '?') { /* parse query */
-    while (buf_[pos] != '\0' && buf_[pos] != ' ' && buf_[pos] != '\r') {
+    while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r') {
       size_t begin = ++pos;
-      while (buf_[pos] != '\0' && buf_[pos] != ' ' && buf_[pos] != '\r' &&
+      while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r' &&
              buf_[pos] != '&') {
         ++pos;
       }
-      size_t pos_equal = buf_.find("=", begin);
-      if (pos_equal == std::string::npos) {
+      size_t pos_equal = begin;
+      while (pos_equal != buf_.size()) {
+        if (buf_[pos_equal] == '=') {
+          break;
+        }
+        ++pos_equal;
+      }
+      if (pos_equal == buf_.size()) {
         continue;
       }
-      std::string key = buf_.substr(begin, pos_equal - begin);
+      std::string key;
+      for (size_t i = begin; i < pos_equal; ++i) {
+        key.push_back(buf_[i]);
+      }
       ++pos_equal;
-      query_[key] = buf_.substr(pos_equal, pos - pos_equal);
+      std::string value;
+      for (size_t i = pos_equal; i < pos; ++i) {
+        value.push_back(buf_[i]);
+      }
+      query_[key] = value;
       if (buf_[pos] != '&') {
         break;
       }
@@ -217,12 +246,12 @@ size_t Request::parseUri(size_t pos) {
 int Request::checkRequestLine(size_t pos) {
   // check method
   if (method_.empty() || uri_.empty()) {
-    return -4;
+    return REQ_ERR_BAD_REQUEST;
   }
   for (std::string::iterator itr = method_.begin(); itr != method_.end();
        ++itr) {
     if (!std::isupper(*itr)) {
-      return -4;
+      return REQ_ERR_BAD_REQUEST;
     }
   }
 
@@ -230,44 +259,63 @@ int Request::checkRequestLine(size_t pos) {
   // 難しいので後回し！
 
   // check protocol
-  while (buf_.c_str()[pos] != '\0' && buf_[pos] == ' ' && buf_[pos] != '\r') {
+  while (pos != buf_.size() && buf_[pos] == ' ' && buf_[pos] != '\r') {
     ++pos;
   }
   size_t copy_begin = pos;
   std::string protocol;
-  while (buf_.c_str()[pos] != '\0' && buf_[pos] != ' ' && buf_[pos] != '\r') {
+  while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r') {
     ++pos;
   }
-  protocol = buf_.substr(copy_begin, pos - copy_begin);
+  for (size_t i = copy_begin; i < pos; ++i) {
+    protocol.push_back(buf_[i]);
+  }
   if (protocol.empty()) {
-    return -4;
+    return REQ_ERR_BAD_REQUEST;
   } else if (protocol != "HTTP/1.1") {
-    return -2;
+    return REQ_ERR_HTTP_VERSION;
   }
   return 0;
 }
 
 int Request::parseHeaderField(size_t pos) {
-  while (buf_.c_str()[pos] != '\0') {
+  while (pos != buf_.size()) {
     size_t begin = pos;
-    while (buf_.c_str()[pos] != '\0' && buf_[pos] != '\r') {
+    while (pos != buf_.size() && buf_[pos] != '\r') {
       ++pos;
     }
-    size_t pos_colon = buf_.find(":", begin);
-    if (pos_colon == std::string::npos) {
-      return -4;
+    size_t pos_colon = begin;
+    while (pos_colon != buf_.size()) {
+      if (buf_[pos_colon] == ':') {
+        break;
+      }
+      ++pos_colon;
     }
-    std::string key = buf_.substr(begin, pos_colon - begin);
+    if (pos_colon == buf_.size()) {
+      return REQ_ERR_BAD_REQUEST;
+    }
+    std::string key;
+    for (size_t i = begin; i < pos_colon; ++i) {
+      key.push_back(buf_[i]);
+    }
     for (std::string::iterator itr = key.begin(); itr != key.end(); ++itr)
       *itr = std::tolower(*itr);
     begin += key.length() + 1;
-    while (buf_.c_str()[begin] != '\0' &&
+    while (begin != buf_.size() &&
            (buf_[begin] == '\t' || buf_[begin] == ' ')) {
       ++begin;
     }
-    headers_[key] = buf_.substr(begin, pos - begin);
+    std::string value;
+    for (size_t i = begin; i < pos; ++i) {
+      value.push_back(buf_[i]);
+    }
+    headers_[key] = value;
     if (buf_[pos] == '\r') {
-      if (buf_.substr(pos, 4) == "\r\n\r\n") {
+      std::string str;
+      for (size_t i = pos; i < pos + 4; ++i) {
+        str.push_back(buf_[i]);
+      }
+      if (!str.compare(0, 4, "\r\n\r\n")) {
         break;
       } else {
         pos += 2;
@@ -279,19 +327,19 @@ int Request::parseHeaderField(size_t pos) {
 
 int Request::checkHeaderField() {
   if (headers_.find("host") == headers_.end()) {
-    return -4;
+    return REQ_ERR_BAD_REQUEST;
   }
   std::map<std::string, std::string>::iterator itr_content_length =
       headers_.find("content-length");
   if (method_ == "POST" && itr_content_length == headers_.end()) {
-    return -3;
+    return REQ_ERR_LEN_REQUIRED;
   }
   /*in case of content-length is negative or non digit */
   if (itr_content_length != headers_.end()) {
     for (std::string::iterator itr = itr_content_length->second.begin();
          itr != itr_content_length->second.end(); ++itr) {
       if (!isdigit(*itr)) {
-        return -4;
+        return REQ_ERR_BAD_REQUEST;
       }
     }
     content_length_ = ft_atoul(itr_content_length->second.c_str());
@@ -299,15 +347,22 @@ int Request::checkHeaderField() {
   return 0;
 }
 
-void Request::eraseBuf(ssize_t n) { buf_.erase(0, n); }
+void Request::eraseBuf(ssize_t n) {
+  std::vector<unsigned char>::iterator itr = buf_.begin() + n;
+  buf_.erase(buf_.begin(), itr);
+}
 
 // check
 int Request::checkResponseType() const {
-  if (!buf_.compare(0, 4, "read", 0, 4)) {
+  std::string str;
+  for (int i = 0; i < 4; ++i) {
+    str.push_back(buf_[i]);
+  }
+  if (!str.compare(0, 4, "read", 0, 4)) {
     return 0;
-  } else if (!buf_.compare(0, 4, "write", 0, 4)) {
+  } else if (!str.compare(0, 4, "write", 0, 4)) {
     return 1;
-  } else if (!buf_.compare(0, 3, "cgi", 0, 3)) {
+  } else if (!str.compare(0, 3, "cgi", 0, 3)) {
     return 2;
   }
   return 42;
