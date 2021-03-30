@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/31 03:32:55 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/31 03:37:41 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,9 +91,10 @@ int Request::parseRequest() {
     pos_prev_ = pos_begin_header_;
   }
   if (parse_progress_ == 1) {  // 1: finished parse request line then header
+  //check in case of no header field for first time only
     if (pos_prev_ == pos_begin_header_ && buf_[pos_begin_header_] == '\r' &&
         buf_[pos_begin_header_ + 1] == '\n') {
-      return REQ_ERR_BAD_REQUEST; //in case of no header field
+      return REQ_ERR_BAD_REQUEST; 
     }
     pos_buf = pos_prev_;
     if ((pos_buf = findHeaderFieldEnd(pos_buf)) == -1) {
