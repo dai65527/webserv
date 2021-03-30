@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/30 20:31:16 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/31 02:50:39 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,11 +107,12 @@ int Request::parseRequest() {
       return ret;
     }
     pos_begin_body_ = pos_buf;
+    pos_prev_ = pos_begin_body_;
     return REQ_FIN_PARSE_HEADER;
   }
   if (content_length_ > 0 &&
       parse_progress_ == 2) {  // 2: finished parse header then body
-    if (findBodyEndAndStore(pos_begin_body_) < 0) {
+    if (findBodyEndAndStore() < 0) {
       return REQ_CONTINUE_RECV;
     }
   }
@@ -157,18 +158,13 @@ ssize_t Request::findHeaderFieldEnd(size_t pos) {
   return -1;
 }
 
-ssize_t Request::findBodyEndAndStore(size_t pos) {
-  while (pos != buf_.size()) {
-    if (pos - pos_begin_body_ == content_length_) {
-      std::vector<char>::iterator itr_begin_body =
-          buf_.begin() + pos_begin_body_;
-      std::vector<char>::iterator itr_end_body = buf_.begin() + pos;
-      buf_.erase(itr_end_body, buf_.end());
-      buf_.erase(buf_.begin(), itr_begin_body);
+ssize_t Request::findBodyEndAndStore() {
+    ssize_t excess = buf_.size() - (pos_begin_body_ + content_length_);
+    if (excess >= 0) {
+      buf_.erase(buf_.end() - excess, buf_.end());
+      buf_.erase(buf_.begin(), buf_.begin() + pos_begin_body_);
       return 0;
     }
-    ++pos;
-  }
   return -1;
 }
 

@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/30 19:08:57 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/31 02:50:18 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@ class Request {
   ssize_t findHeaderFieldEnd(size_t pos);
   int parseHeaderField(size_t pos);
   int checkHeaderField();
-  ssize_t findBodyEndAndStore(size_t pos);
+  ssize_t findBodyEndAndStore();
 };
 
 #endif /* REQUEST_HPP */
