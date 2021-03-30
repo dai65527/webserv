@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/30 19:27:20 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/30 22:03:41 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,7 +199,7 @@ int Session::checkReceiveReturn(int ret) {
     setupServerAndLocationConfig();  // To get server and location config
 #endif
     if (request_.getContentLength() == 0) {
-      return 0;
+      startCreateResponse();
     } else if (location_config_ &&
                request_.getContentLength() >
                    location_config_->getClientMaxBodySize()) {
