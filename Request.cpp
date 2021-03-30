@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/31 02:50:39 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/31 03:32:55 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,17 +87,14 @@ int Request::parseRequest() {
     if (ret < 0) {
       return ret;
     }
-    std::string str;
-    for (int i = pos_buf; i < pos_buf + 3; ++i) {
-      str.push_back(buf_[i]);
-    }
-    if (!str.compare(0, 3, "\n\r\n")) { /* in case of NO header field*/
-      return REQ_ERR_BAD_REQUEST;
-    }
     pos_begin_header_ = ++pos_buf;
     pos_prev_ = pos_begin_header_;
   }
   if (parse_progress_ == 1) {  // 1: finished parse request line then header
+    if (pos_prev_ == pos_begin_header_ && buf_[pos_begin_header_] == '\r' &&
+        buf_[pos_begin_header_ + 1] == '\n') {
+      return REQ_ERR_BAD_REQUEST; //in case of no header field
+    }
     pos_buf = pos_prev_;
     if ((pos_buf = findHeaderFieldEnd(pos_buf)) == -1) {
       return REQ_CONTINUE_RECV;
@@ -159,12 +156,12 @@ ssize_t Request::findHeaderFieldEnd(size_t pos) {
 }
 
 ssize_t Request::findBodyEndAndStore() {
-    ssize_t excess = buf_.size() - (pos_begin_body_ + content_length_);
-    if (excess >= 0) {
-      buf_.erase(buf_.end() - excess, buf_.end());
-      buf_.erase(buf_.begin(), buf_.begin() + pos_begin_body_);
-      return 0;
-    }
+  ssize_t excess = buf_.size() - (pos_begin_body_ + content_length_);
+  if (excess >= 0) {
+    buf_.erase(buf_.end() - excess, buf_.end());
+    buf_.erase(buf_.begin(), buf_.begin() + pos_begin_body_);
+    return 0;
+  }
   return -1;
 }
 

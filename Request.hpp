@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/31 02:50:18 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/31 03:15:57 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 #define REQUEST_HPP
 
 #include <map>
-#include <vector>
 #include <string>
+#include <vector>
 
 extern "C" {
 #include "libft.h"
@@ -24,15 +24,13 @@ extern "C" {
 #define BUFFER_SIZE 1024
 #define RETRY_TIME_MAX 10
 
-
-#define REQ_FIN_PARSE_HEADER 2 //finished parsing header
-#define REQ_CONTINUE_RECV 1 //continue to receive
-#define REQ_FIN_RECV 0 // finished receiving
-#define REQ_ERR_RECV -1 //fail syscall of recv
-#define REQ_ERR_HTTP_VERSION -2 //HTTP505
-#define REQ_ERR_LEN_REQUIRED -3 //HTTP411
-#define REQ_ERR_BAD_REQUEST -4 //HTTP400
-
+#define REQ_FIN_PARSE_HEADER 2   // finished parsing header
+#define REQ_CONTINUE_RECV 1      // continue to receive
+#define REQ_FIN_RECV 0           // finished receiving
+#define REQ_ERR_RECV -1          // fail syscall of recv
+#define REQ_ERR_HTTP_VERSION -2  // HTTP505
+#define REQ_ERR_LEN_REQUIRED -3  // HTTP411
+#define REQ_ERR_BAD_REQUEST -4   // HTTP400
 
 class Request {
 #ifdef UNIT_TEST
@@ -40,8 +38,9 @@ class Request {
 #else
  private:
 #endif
- public:      // just for test!!!!
-  // std::string buf_; /*temporary saving before parsing and finally becomes body*/
+ public:  // just for test!!!!
+  // std::string buf_; /*temporary saving before parsing and finally becomes
+  // body*/
   std::vector<char> buf_;
   int parse_progress_;
   ssize_t pos_prev_;
