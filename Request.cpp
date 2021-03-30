@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/30 19:08:56 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/30 20:31:16 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,9 +60,7 @@ int Request::receive(int sock_fd) {
   write(1, read_buf, ret);
   write(1, "\n", 1);
   // buf_.append(read_buf, ret);
-  for (int i = 0; i < ret; ++i) {
-    buf_.push_back(read_buf[i]);
-  }
+  buf_.insert(buf_.end(), read_buf, read_buf + ret);
 #else
   (void)sock_fd;
 #endif
@@ -108,7 +106,6 @@ int Request::parseRequest() {
     if (ret < 0) {
       return ret;
     }
-
     pos_begin_body_ = pos_buf;
     return REQ_FIN_PARSE_HEADER;
   }

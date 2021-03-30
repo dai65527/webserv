@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/30 19:10:11 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/30 19:27:20 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -233,9 +233,6 @@ int Session::checkReceiveReturn(int ret) {
 
 // check request, load proper config and start creating response
 void Session::startCreateResponse() {
-  // set server and location config according to request
-  setupServerAndLocationConfig();
-
   // case GET
   if ((request_.getMethod() == "GET" && isMethodAllowed(HTTP_GET)) ||
       (request_.getMethod() == "HEAD" && isMethodAllowed(HTTP_HEAD))) {
