@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/30 08:07:06 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/30 10:50:14 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,23 +59,23 @@ int Response::createDefaultErrorResponse(HTTPStatusCode http_status_) {
   std::string status_msg =
       std::to_string(http_status_) + " " + response_code_message_[http_status_];
   body_.clear();
-  body_.append("<html>\r\n");
-  body_.append("<head><title>" + status_msg + "</title></ head>\r\n");
-  body_.append("<body bgcolor = \"white\">\r\n");
-  body_.append("<center><h1>" + status_msg + "</h1></center>\r\n");
-  body_.append("<hr><center> nginDX </center>\r\n");
-  body_.append("</body></html>\r\n");
+  appendToBody("<html>\r\n");
+  appendToBody("<head><title>" + status_msg + "</title></ head>\r\n");
+  appendToBody("<body bgcolor = \"white\">\r\n");
+  appendToBody("<center><h1>" + status_msg + "</h1></center>\r\n");
+  appendToBody("<hr><center> nginDX </center>\r\n");
+  appendToBody("</body></html>\r\n");
 
   return 0;
 }
 
 int Response::appendToBody(const char* data, size_t len) {
-  body_.append(data, len);
+  body_.insert(body_.end(), data, data + len);
   return 0;
 }
 
 int Response::appendToBody(const std::string& data) {
-  body_.append(data);
+  body_.insert(body_.end(), data.begin(), data.end());
   return 0;
 }
 
@@ -117,15 +117,16 @@ ssize_t Response::sendData(int sock_fd) {
       return 1;
 
     case 2:  // sending body
-      n = send(sock_fd, body_.c_str() + bytes_already_sent_,
-               body_.length() - bytes_already_sent_, 0);
+      n = send(sock_fd, &body_[bytes_already_sent_],
+               body_.size() - bytes_already_sent_, 0);
+
       if (n < 0) {
         return -1;
       }
 
       // count byte already sent
       bytes_already_sent_ += n;
-      if (bytes_already_sent_ < body_.length()) {
+      if (bytes_already_sent_ < body_.size()) {
         return 1;  // continue to send
       }
 
@@ -143,7 +144,7 @@ ssize_t Response::sendData(int sock_fd) {
 
 // create headers which cannot be defined before create body
 int Response::createCompleteHeader() {
-  addHeader("Content-Length", std::to_string(body_.length()));
+  addHeader("Content-Length", std::to_string(body_.size()));
   status_header_.append("\r\n");
   return 0;
 }

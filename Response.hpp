@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 20:22:22 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/29 22:40:17 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/30 10:45:01 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define RESPONSE_HPP
 
 #include <map>
+#include <vector>
 #include <string>
 
 #include "HttpStatusCode.hpp"
@@ -25,7 +26,7 @@ class Response {
  private:
 #endif
   std::string status_header_;
-  std::string body_;
+  std::vector<char> body_;
   int send_progress_; // 0: first send, 1: sending header, 2: sending body
   size_t bytes_already_sent_;
 
