@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/30 01:11:41 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/30 19:10:11 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -764,7 +764,7 @@ int Session::writeToCgi() {
   ssize_t n;
 
   size_t size = request_.getBuf().size();
-  unsigned char* str = static_cast<unsigned char*>(malloc(size));
+  char* str = static_cast<char*>(malloc(size));
   if (!str) {
     exit(EXIT_FAILURE);
   }
@@ -881,7 +881,7 @@ int Session::writeToFile() {
 
   // write to file
   size_t size = request_.getBuf().size();
-  unsigned char* str = static_cast<unsigned char*>(malloc(size));
+  char* str = static_cast<char*>(malloc(size));
   if (!str) {
     exit(EXIT_FAILURE);
   }

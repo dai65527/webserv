@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/30 18:43:27 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/30 19:08:56 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ Request::Request() : parse_progress_(0), pos_prev_(0), content_length_(0) {}
 Request::~Request() {}
 
 /* getters */
-const std::vector<unsigned char>& Request::getBuf() const { return buf_; }
+const std::vector<char>& Request::getBuf() const { return buf_; }
 const std::string& Request::getMethod() const { return method_; }
 const std::string& Request::getUri() const { return uri_; }
 const std::map<std::string, std::string>& Request::getHeaders() const {
@@ -163,9 +163,9 @@ ssize_t Request::findHeaderFieldEnd(size_t pos) {
 ssize_t Request::findBodyEndAndStore(size_t pos) {
   while (pos != buf_.size()) {
     if (pos - pos_begin_body_ == content_length_) {
-      std::vector<unsigned char>::iterator itr_begin_body =
+      std::vector<char>::iterator itr_begin_body =
           buf_.begin() + pos_begin_body_;
-      std::vector<unsigned char>::iterator itr_end_body = buf_.begin() + pos;
+      std::vector<char>::iterator itr_end_body = buf_.begin() + pos;
       buf_.erase(itr_end_body, buf_.end());
       buf_.erase(buf_.begin(), itr_begin_body);
       return 0;
@@ -348,7 +348,7 @@ int Request::checkHeaderField() {
 }
 
 void Request::eraseBuf(ssize_t n) {
-  std::vector<unsigned char>::iterator itr = buf_.begin() + n;
+  std::vector<char>::iterator itr = buf_.begin() + n;
   buf_.erase(buf_.begin(), itr);
 }
 

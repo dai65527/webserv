@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/30 00:42:43 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/30 19:08:57 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ class Request {
 #endif
  public:      // just for test!!!!
   // std::string buf_; /*temporary saving before parsing and finally becomes body*/
-  std::vector<unsigned char> buf_;
+  std::vector<char> buf_;
   int parse_progress_;
   ssize_t pos_prev_;
   ssize_t pos_begin_header_;
@@ -62,7 +62,7 @@ class Request {
   virtual ~Request();
 
   // const std::string& getBuf() const;
-  const std::vector<unsigned char>& getBuf() const;
+  const std::vector<char>& getBuf() const;
   const std::string& getMethod() const;
   const std::string& getUri() const;
   const std::map<std::string, std::string>& getHeaders() const;

@@ -20,7 +20,7 @@ class test_parseRequest : public ::testing::Test {
   bool flg_thrown = false;
   Request request;
 
-  void appendVec(std::vector<unsigned char> &vec, const std::string &str) {
+  void appendVec(std::vector<char> &vec, const std::string &str) {
     for (size_t i = 0; i < str.length(); ++i) {
       vec.push_back(str[i]);
     }

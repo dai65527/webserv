@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/30 18:50:14 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/30 19:11:22 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ class test_checkHTTP413 : public ::testing::Test {
   Session *session;
   bool flg_thrown;
 
-  void appendVec(std::vector<unsigned char> &vec, const std::string &str) {
+  void appendVec(std::vector<char> &vec, const std::string &str) {
     for (size_t i = 0; i < str.length(); ++i) {
       vec.push_back(str[i]);
     }
