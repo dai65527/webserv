@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/30 22:03:41 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/31 01:31:21 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -220,9 +220,9 @@ int Session::checkReceiveReturn(int ret) {
       return 4133;  // just for unit test
 #endif
       /* Finished receiving then start create response*/
-    } else if (ret == REQ_FIN_RECV) {
-      startCreateResponse();
     }
+  } else if (ret == REQ_FIN_RECV) {
+    startCreateResponse();
   }
   return 0;
 }
