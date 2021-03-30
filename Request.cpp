@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/31 03:37:41 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/31 04:10:01 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,21 @@ const std::map<std::string, std::string>& Request::getQuery() const {
   return query_;
 }
 size_t Request::getContentLength() const { return content_length_; }
+
+/* make string from a part of buf*/
+std::string Request::bufToString(size_t begin, size_t end) {
+  std::string ret;
+  for (size_t i = begin; i < end; ++i) {
+    ret.push_back(buf_[i]);
+  }
+  return ret;
+}
+
+/* compare char literal and a part of buf*/
+int Request::compareBuf(size_t begin, size_t end, const char* str) {
+  std::string str_buf = bufToString(begin, end);
+  return str_buf.compare(0, str_buf.length(), str);
+}
 
 /*
 ** receive
@@ -59,7 +74,6 @@ int Request::receive(int sock_fd) {
   }
   write(1, read_buf, ret);
   write(1, "\n", 1);
-  // buf_.append(read_buf, ret);
   buf_.insert(buf_.end(), read_buf, read_buf + ret);
 #else
   (void)sock_fd;
@@ -91,10 +105,10 @@ int Request::parseRequest() {
     pos_prev_ = pos_begin_header_;
   }
   if (parse_progress_ == 1) {  // 1: finished parse request line then header
-  //check in case of no header field for first time only
+    // check in case of no header field for first time only
     if (pos_prev_ == pos_begin_header_ && buf_[pos_begin_header_] == '\r' &&
         buf_[pos_begin_header_ + 1] == '\n') {
-      return REQ_ERR_BAD_REQUEST; 
+      return REQ_ERR_BAD_REQUEST;
     }
     pos_buf = pos_prev_;
     if ((pos_buf = findHeaderFieldEnd(pos_buf)) == -1) {
@@ -142,11 +156,7 @@ ssize_t Request::findRequestLineEnd() {
 ssize_t Request::findHeaderFieldEnd(size_t pos) {
   while (pos != buf_.size()) {
     if (buf_[pos] == '\r') {
-      std::string str;
-      for (size_t i = pos; i < pos + 4; ++i) {
-        str.push_back(buf_[i]);
-      }
-      if (!str.compare(0, 4, "\r\n\r\n")) {
+      if (!compareBuf(pos, pos + 4, "\r\n\r\n")) {
         parse_progress_ = 2;
         return pos + 4;
       }
@@ -216,15 +226,9 @@ size_t Request::parseUri(size_t pos) {
       if (pos_equal == buf_.size()) {
         continue;
       }
-      std::string key;
-      for (size_t i = begin; i < pos_equal; ++i) {
-        key.push_back(buf_[i]);
-      }
+      std::string key = bufToString(begin, pos_equal);
       ++pos_equal;
-      std::string value;
-      for (size_t i = pos_equal; i < pos; ++i) {
-        value.push_back(buf_[i]);
-      }
+      std::string value = bufToString(pos_equal, pos);
       query_[key] = value;
       if (buf_[pos] != '&') {
         break;
@@ -285,10 +289,7 @@ int Request::parseHeaderField(size_t pos) {
     if (pos_colon == buf_.size()) {
       return REQ_ERR_BAD_REQUEST;
     }
-    std::string key;
-    for (size_t i = begin; i < pos_colon; ++i) {
-      key.push_back(buf_[i]);
-    }
+    std::string key = bufToString(begin, pos_colon);
     for (std::string::iterator itr = key.begin(); itr != key.end(); ++itr)
       *itr = std::tolower(*itr);
     begin += key.length() + 1;
@@ -296,17 +297,10 @@ int Request::parseHeaderField(size_t pos) {
            (buf_[begin] == '\t' || buf_[begin] == ' ')) {
       ++begin;
     }
-    std::string value;
-    for (size_t i = begin; i < pos; ++i) {
-      value.push_back(buf_[i]);
-    }
+    std::string value = bufToString(begin, pos);
     headers_[key] = value;
     if (buf_[pos] == '\r') {
-      std::string str;
-      for (size_t i = pos; i < pos + 4; ++i) {
-        str.push_back(buf_[i]);
-      }
-      if (!str.compare(0, 4, "\r\n\r\n")) {
+      if (!compareBuf(pos, pos + 4, "\r\n\r\n")) {
         break;
       } else {
         pos += 2;
