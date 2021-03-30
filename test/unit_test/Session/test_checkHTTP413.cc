@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/29 21:43:35 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/30 18:50:14 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,14 @@
 class test_checkHTTP413 : public ::testing::Test {
  protected:
   MainConfig config;
-  Session* session;
+  Session *session;
   bool flg_thrown;
+
+  void appendVec(std::vector<unsigned char> &vec, const std::string &str) {
+    for (size_t i = 0; i < str.length(); ++i) {
+      vec.push_back(str[i]);
+    }
+  }
 
   virtual void SetUp() {
     flg_thrown = false;
@@ -33,17 +39,17 @@ class test_checkHTTP413 : public ::testing::Test {
 
 TEST_F(test_checkHTTP413, mainConfigOK) {
   config.client_max_body_size_ = 42;
-  session->request_.buf_ = "POST /index.html?a HTTP/1.1\r\nHost: ";
+  appendVec(session->request_.buf_, "POST /index.html?a HTTP/1.1\r\nHost: ");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("localhost\r\nLocation:\t  \tYokoh");
+  appendVec(session->request_.buf_, "localhost\r\nLocation:\t  \tYokoh");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("ama\r\nlanguage: \t\t");
+  appendVec(session->request_.buf_, "ama\r\nlanguage: \t\t");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("en-US\r\nContent-length: \t\t");
+  appendVec(session->request_.buf_, "en-US\r\nContent-length: \t\t");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("16\r\n\r\n012345678");
+  appendVec(session->request_.buf_, "16\r\n\r\n012345678");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("9abcdefghij");
+  appendVec(session->request_.buf_, "9abcdefghij");
   EXPECT_EQ(session->request_.method_, "POST");
   EXPECT_EQ(session->request_.uri_, "/index.html");
   EXPECT_EQ(session->request_.query_["a"], "");
@@ -52,20 +58,21 @@ TEST_F(test_checkHTTP413, mainConfigOK) {
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
   EXPECT_EQ(session->request_.headers_["content-length"], "16");
   EXPECT_EQ(session->receiveRequest(), 0);
-  EXPECT_EQ(session->request_.buf_, "0123456789abcdef");
+  std::string str(session->request_.buf_.begin(), session->request_.buf_.end());
+  EXPECT_EQ(str, "0123456789abcdef");
 }
 
 TEST_F(test_checkHTTP413, mainConfigNG) {
   config.client_max_body_size_ = 42;
-  session->request_.buf_ = "POST /index.html?a HTTP/1.1\r\nHost: ";
+  appendVec(session->request_.buf_, "POST /index.html?a HTTP/1.1\r\nHost: ");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("localhost\r\nLocation:\t  \tYokoh");
+  appendVec(session->request_.buf_, "localhost\r\nLocation:\t  \tYokoh");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("ama\r\nlanguage: \t\t");
+  appendVec(session->request_.buf_, "ama\r\nlanguage: \t\t");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("en-US\r\nContent-length: \t\t");
+  appendVec(session->request_.buf_, "en-US\r\nContent-length: \t\t");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("100\r\n\r\n012345678");
+  appendVec(session->request_.buf_, "100\r\n\r\n012345678");
   EXPECT_EQ(session->receiveRequest(),
             4133);  // max body size defined in main config
   EXPECT_EQ(session->request_.method_, "POST");
@@ -82,17 +89,17 @@ TEST_F(test_checkHTTP413, serverConfigOK) {
   ServerConfig server_config;
   server_config.client_max_body_size_ = 30;
   session->server_config_ = &server_config;
-  session->request_.buf_ = "POST /index.html?a HTTP/1.1\r\nHost: ";
+  appendVec(session->request_.buf_, "POST /index.html?a HTTP/1.1\r\nHost: ");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("localhost\r\nLocation:\t  \tYokoh");
+  appendVec(session->request_.buf_, "localhost\r\nLocation:\t  \tYokoh");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("ama\r\nlanguage: \t\t");
+  appendVec(session->request_.buf_, "ama\r\nlanguage: \t\t");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("en-US\r\nContent-length: \t\t");
+  appendVec(session->request_.buf_, "en-US\r\nContent-length: \t\t");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("16\r\n\r\n012345678");
+  appendVec(session->request_.buf_, "16\r\n\r\n012345678");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("9abcdefghij");
+  appendVec(session->request_.buf_, "9abcdefghij");
   EXPECT_EQ(session->request_.method_, "POST");
   EXPECT_EQ(session->request_.uri_, "/index.html");
   EXPECT_EQ(session->request_.query_["a"], "");
@@ -101,7 +108,8 @@ TEST_F(test_checkHTTP413, serverConfigOK) {
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
   EXPECT_EQ(session->request_.headers_["content-length"], "16");
   EXPECT_EQ(session->receiveRequest(), 0);
-  EXPECT_EQ(session->request_.buf_, "0123456789abcdef");
+  std::string str(session->request_.buf_.begin(), session->request_.buf_.end());
+  EXPECT_EQ(str, "0123456789abcdef");
 }
 
 TEST_F(test_checkHTTP413, serverConfigNG) {
@@ -109,15 +117,15 @@ TEST_F(test_checkHTTP413, serverConfigNG) {
   ServerConfig server_config;
   server_config.client_max_body_size_ = 30;
   session->server_config_ = &server_config;
-  session->request_.buf_ = "POST /index.html?a HTTP/1.1\r\nHost: ";
+  appendVec(session->request_.buf_, "POST /index.html?a HTTP/1.1\r\nHost: ");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("localhost\r\nLocation:\t  \tYokoh");
+  appendVec(session->request_.buf_, "localhost\r\nLocation:\t  \tYokoh");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("ama\r\nlanguage: \t\t");
+  appendVec(session->request_.buf_, "ama\r\nlanguage: \t\t");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("en-US\r\nContent-length: \t\t");
+  appendVec(session->request_.buf_, "en-US\r\nContent-length: \t\t");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("40\r\n\r\n012345678");
+  appendVec(session->request_.buf_, "40\r\n\r\n012345678");
   EXPECT_EQ(session->receiveRequest(),
             4132);  // max body size defined in server config
   EXPECT_EQ(session->request_.method_, "POST");
@@ -137,17 +145,17 @@ TEST_F(test_checkHTTP413, locationConfigOK) {
   LocationConfig location_config;
   location_config.client_max_body_size_ = 20;
   session->location_config_ = &location_config;
-  session->request_.buf_ = "POST /index.html?a HTTP/1.1\r\nHost: ";
+  appendVec(session->request_.buf_, "POST /index.html?a HTTP/1.1\r\nHost: ");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("localhost\r\nLocation:\t  \tYokoh");
+  appendVec(session->request_.buf_, "localhost\r\nLocation:\t  \tYokoh");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("ama\r\nlanguage: \t\t");
+  appendVec(session->request_.buf_, "ama\r\nlanguage: \t\t");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("en-US\r\nContent-length: \t\t");
+  appendVec(session->request_.buf_, "en-US\r\nContent-length: \t\t");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("16\r\n\r\n012345678");
+  appendVec(session->request_.buf_, "16\r\n\r\n012345678");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("9abcdefghij");
+  appendVec(session->request_.buf_, "9abcdefghij");
   EXPECT_EQ(session->request_.method_, "POST");
   EXPECT_EQ(session->request_.uri_, "/index.html");
   EXPECT_EQ(session->request_.query_["a"], "");
@@ -156,7 +164,8 @@ TEST_F(test_checkHTTP413, locationConfigOK) {
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
   EXPECT_EQ(session->request_.headers_["content-length"], "16");
   EXPECT_EQ(session->receiveRequest(), 0);
-  EXPECT_EQ(session->request_.buf_, "0123456789abcdef");
+  std::string str(session->request_.buf_.begin(), session->request_.buf_.end());
+  EXPECT_EQ(str, "0123456789abcdef");
 }
 
 TEST_F(test_checkHTTP413, locationConfigNG) {
@@ -167,15 +176,15 @@ TEST_F(test_checkHTTP413, locationConfigNG) {
   LocationConfig location_config;
   location_config.client_max_body_size_ = 20;
   session->location_config_ = &location_config;
-  session->request_.buf_ = "POST /index.html?a HTTP/1.1\r\nHost: ";
+  appendVec(session->request_.buf_, "POST /index.html?a HTTP/1.1\r\nHost: ");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("localhost\r\nLocation:\t  \tYokoh");
+  appendVec(session->request_.buf_, "localhost\r\nLocation:\t  \tYokoh");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("ama\r\nlanguage: \t\t");
+  appendVec(session->request_.buf_, "ama\r\nlanguage: \t\t");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("en-US\r\nContent-length: \t\t");
+  appendVec(session->request_.buf_, "en-US\r\nContent-length: \t\t");
   EXPECT_EQ(session->receiveRequest(), 0);
-  session->request_.buf_.append("30\r\n\r\n012345678");
+  appendVec(session->request_.buf_, "30\r\n\r\n012345678");
   EXPECT_EQ(session->receiveRequest(),
             4131);  // max body size defined in location config
   EXPECT_EQ(session->request_.method_, "POST");
