@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/30 00:42:40 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/31 15:30:01 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,7 @@ class Session {
   int getSockFd() const;
   int getFileFd() const;
   const SessionStatus& getStatus() const;
+  void addResponseHeaderOfFile(const std::string& filepath);
 
   // functions called from Webserv
   int setFdToSelect(fd_set* rfds, fd_set* wfds);
