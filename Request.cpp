@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/31 13:55:04 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/31 21:22:57 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -316,7 +316,17 @@ int Request::checkHeaderField() {
   }
   std::map<std::string, std::string>::iterator itr_content_length =
       headers_.find("content-length");
-  if (method_ == "POST" && itr_content_length == headers_.end()) {
+  std::map<std::string, std::string>::iterator itr_transfer_encoding =
+      headers_.find("transfer-encoding");
+  if (itr_transfer_encoding != headers_.end()) {
+    for (std::string::iterator itr = itr_transfer_encoding->second.begin();
+         itr != itr_transfer_encoding->second.end(); ++itr)
+      *itr = std::tolower(*itr);
+  }
+  /* POST requires content-length or transfer-encoding of chunked*/
+  if (method_ == "POST" && itr_content_length == headers_.end() &&
+      (itr_transfer_encoding == headers_.end() ||
+       itr_transfer_encoding->second != "chunked")) {
     return REQ_ERR_LEN_REQUIRED;
   }
   /*in case of content-length is negative or non digit */
