@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/30 16:51:15 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/31 15:30:12 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,11 +162,8 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
 // call receive and parse request and client
 int Session::receiveRequest() {
   int ret;
-
-  // receive returns...
-  // -3:failed to receive, -2:http505, -1:http400, 0:received all, 1:continue
   ret = request_.receive(sock_fd_);
-  if (ret == -3) {
+  if (ret == REQ_ERR_RECV) {
     if (retry_count_ == RETRY_TIME_MAX) {
       // then try to send return internal server error
       createErrorResponse(HTTP_500);
@@ -176,12 +173,58 @@ int Session::receiveRequest() {
     return 0;
   }
   retry_count_ = 0;
-  if (ret == -1 || ret == -2) {
-    createErrorResponse(ret == -1 ? HTTP_400 : HTTP_505);
-  } else if (ret == 0) {
+  return checkReceiveReturn(ret);
+}
+
+/*
+** check return value of request_.receive(sock_fd_);
+*/
+int Session::checkReceiveReturn(int ret) {
+  /* firstly check the return value is ERROR or NOT*/
+  if (ret == REQ_ERR_BAD_REQUEST) {
+    createErrorResponse(HTTP_400);
+  } else if (ret == REQ_ERR_HTTP_VERSION) {
+    createErrorResponse(HTTP_505);
+  } else if (ret == REQ_ERR_LEN_REQUIRED) {
+    createErrorResponse(HTTP_411);
+  }
+  /*
+  ** Then check the content-length,
+  ** if it's 0 (no body), return 0
+  ** else if it'is larger than client max body size return HTTP413(Payload Too
+  *Large)
+  */
+  else if (ret == REQ_FIN_PARSE_HEADER) {
+#ifndef UNIT_TEST
+    setupServerAndLocationConfig();  // To get server and location config
+#endif
+    if (request_.getContentLength() == 0) {
+      startCreateResponse();
+    } else if (location_config_ &&
+               request_.getContentLength() >
+                   location_config_->getClientMaxBodySize()) {
+      createErrorResponse(HTTP_413);
+#ifdef UNIT_TEST
+      return 4131;  // just for unit test
+#endif
+    } else if (server_config_ && request_.getContentLength() >
+                                     server_config_->getClientMaxBodySize()) {
+      createErrorResponse(HTTP_413);
+#ifdef UNIT_TEST
+      return 4132;  // just for unit test
+#endif
+    } else if (request_.getContentLength() >
+               main_config_.getClientMaxBodySize()) {
+      createErrorResponse(HTTP_413);
+#ifdef UNIT_TEST
+      return 4133;  // just for unit test
+#endif
+      /* Finished receiving then start create response*/
+    }
+  } else if (ret == REQ_FIN_RECV) {
     startCreateResponse();
   }
-  return 0;  // continue to receive
+  return 0;
 }
 
 /*
@@ -190,9 +233,6 @@ int Session::receiveRequest() {
 
 // check request, load proper config and start creating response
 void Session::startCreateResponse() {
-  // set server and location config according to request
-  setupServerAndLocationConfig();
-
   // case GET
   if ((request_.getMethod() == "GET" && isMethodAllowed(HTTP_GET)) ||
       (request_.getMethod() == "HEAD" && isMethodAllowed(HTTP_HEAD))) {
@@ -717,7 +757,7 @@ void Session::createCgiProcess(const std::string& filepath,
   response_.appendToBody(filepath.c_str(), filepath.length());
   response_.appendToBody("</h1>\n", 6);
   // status_ = SESSION_FOR_CGI_WRITE;
-  status_ = SESSION_FOR_CLIENT_SEND; // TEMP!!!!
+  status_ = SESSION_FOR_CLIENT_SEND;  // TEMP!!!!
 }
 
 // write to cgi process (TODO!!)
@@ -725,8 +765,7 @@ int Session::writeToCgi() {
   ssize_t n;
 
   // write to cgi process
-  n = cgi_handler_.writeToCgi(request_.getBuf().c_str(),
-                              request_.getBuf().length());
+  n = cgi_handler_.writeToCgi(&(request_.getBuf()[0]), request_.getBuf().size());
 
   // retry several times even if write failed
   if (n == -1) {
@@ -832,8 +871,7 @@ int Session::writeToFile() {
   ssize_t n;
 
   // write to file
-  n = write(file_fd_, request_.getBuf().c_str(), request_.getBuf().length());
-
+  n = write(file_fd_, &(request_.getBuf()[0]), request_.getBuf().size());
   // retry several times even if write failed
   if (n == -1) {
     std::cout << "[error] failed to write to file" << std::endl;
