@@ -480,3 +480,45 @@ TEST_F(test_parseRequest, bodyAgain) {
   std::string str(request.buf_.begin(), request.buf_.end());
   EXPECT_EQ(str, "0123456789abcdef");
 }
+
+TEST_F(test_parseRequest, transferEncodingOK1) {
+  appendVec(request.buf_, "POST /index.html?a HTTP/1.1\r\nHost: ");
+  EXPECT_EQ(request.parseRequest(), 1);
+  appendVec(request.buf_, "localhost\r\nLocation:\t  \tYokoh");
+  EXPECT_EQ(request.parseRequest(), 1);
+  appendVec(request.buf_, "ama\r\nlanguage: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  appendVec(request.buf_, "en-US\r\nTransfer-Encoding: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  appendVec(request.buf_, "Chunked\r\n\r\n012345678");
+  EXPECT_EQ(request.parseRequest(), 2);
+  appendVec(request.buf_, "9abcdefghij");
+  EXPECT_EQ(request.method_, "POST");
+  EXPECT_EQ(request.uri_, "/index.html");
+  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+  EXPECT_EQ(request.headers_["location"], "Yokohama");
+  EXPECT_EQ(request.headers_["language"], "en-US");
+  EXPECT_EQ(request.headers_["transfer-encoding"], "chunked");
+}
+
+TEST_F(test_parseRequest, transferEncodingNG1) {
+  appendVec(request.buf_, "POST /index.html?a HTTP/1.1\r\nHost: ");
+  EXPECT_EQ(request.parseRequest(), 1);
+  appendVec(request.buf_, "localhost\r\nLocation:\t  \tYokoh");
+  EXPECT_EQ(request.parseRequest(), 1);
+  appendVec(request.buf_, "ama\r\nlanguage: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  appendVec(request.buf_, "en-US\r\nTransfer-Encoding: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  appendVec(request.buf_, "hunked\r\n\r\n012345678");
+  EXPECT_EQ(request.parseRequest(), REQ_ERR_LEN_REQUIRED);
+  appendVec(request.buf_, "9abcdefghij");
+  EXPECT_EQ(request.method_, "POST");
+  EXPECT_EQ(request.uri_, "/index.html");
+  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+  EXPECT_EQ(request.headers_["location"], "Yokohama");
+  EXPECT_EQ(request.headers_["language"], "en-US");
+  EXPECT_EQ(request.headers_["transfer-encoding"], "hunked");
+}
