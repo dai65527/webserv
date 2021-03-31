@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/30 10:50:14 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/03/31 16:29:16 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,6 @@ ssize_t Response::sendData(int sock_fd) {
 
       // to next process (send body)
       send_progress_ = 2;
-      printf("hoge\n");
       return 1;
 
     case 2:  // sending body
