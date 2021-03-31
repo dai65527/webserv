@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/31 04:00:46 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/31 13:54:32 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ class Request {
   int checkHeaderField();
   ssize_t findBodyEndAndStore();
   std::string bufToString(size_t begin, size_t end);
-  int compareBuf(size_t begin, size_t end, const char* str);
+  int compareBuf(size_t begin, const char* str);
 };
 
 #endif /* REQUEST_HPP */

@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/31 01:31:21 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/31 13:40:52 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -760,18 +760,8 @@ void Session::createCgiProcess(const std::string& filepath,
 int Session::writeToCgi() {
   ssize_t n;
 
-  size_t size = request_.getBuf().size();
-  char* str = static_cast<char*>(malloc(size));
-  if (!str) {
-    exit(EXIT_FAILURE);
-  }
-  for (size_t i = 0; i < size; ++i) {
-    str[i] = request_.getBuf()[i];
-  }
   // write to cgi process
-  n = cgi_handler_.writeToCgi(str, size);
-  free(str);
-  str = NULL;
+  n = cgi_handler_.writeToCgi(&(request_.getBuf()[0]), request_.getBuf().size());
 
   // retry several times even if write failed
   if (n == -1) {
@@ -877,17 +867,7 @@ int Session::writeToFile() {
   ssize_t n;
 
   // write to file
-  size_t size = request_.getBuf().size();
-  char* str = static_cast<char*>(malloc(size));
-  if (!str) {
-    exit(EXIT_FAILURE);
-  }
-  for (size_t i = 0; i < size; ++i) {
-    str[i] = request_.getBuf()[i];
-  }
-  n = write(file_fd_, str, size);
-  free(str);
-  str = NULL;
+  n = write(file_fd_, &(request_.getBuf()[0]), request_.getBuf().size());
   // retry several times even if write failed
   if (n == -1) {
     std::cout << "[error] failed to write to file" << std::endl;

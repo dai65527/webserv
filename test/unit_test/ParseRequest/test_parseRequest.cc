@@ -21,9 +21,7 @@ class test_parseRequest : public ::testing::Test {
   Request request;
 
   void appendVec(std::vector<char> &vec, const std::string &str) {
-    for (size_t i = 0; i < str.length(); ++i) {
-      vec.push_back(str[i]);
-    }
+    vec.insert(vec.end(), str.begin(), str.end());
   }
   // 各ケース共通の前処理を書く
   virtual void SetUp() {}

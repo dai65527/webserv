@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/31 04:10:01 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/03/31 13:55:04 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,17 +35,20 @@ size_t Request::getContentLength() const { return content_length_; }
 
 /* make string from a part of buf*/
 std::string Request::bufToString(size_t begin, size_t end) {
-  std::string ret;
-  for (size_t i = begin; i < end; ++i) {
-    ret.push_back(buf_[i]);
+  if (end > begin) {
+    return std::string(&buf_[begin], &buf_[end]);
   }
-  return ret;
+  return "";
 }
 
 /* compare char literal and a part of buf*/
-int Request::compareBuf(size_t begin, size_t end, const char* str) {
-  std::string str_buf = bufToString(begin, end);
-  return str_buf.compare(0, str_buf.length(), str);
+int Request::compareBuf(size_t begin, const char* str) {
+  for (size_t i = 0; i < ft_strlen(str); ++i) {
+    if (buf_[i + begin] != str[i]) {
+      return 1;
+    }
+  }
+  return 0;
 }
 
 /*
@@ -156,7 +159,7 @@ ssize_t Request::findRequestLineEnd() {
 ssize_t Request::findHeaderFieldEnd(size_t pos) {
   while (pos != buf_.size()) {
     if (buf_[pos] == '\r') {
-      if (!compareBuf(pos, pos + 4, "\r\n\r\n")) {
+      if (!compareBuf(pos, "\r\n\r\n")) {
         parse_progress_ = 2;
         return pos + 4;
       }
@@ -191,9 +194,7 @@ size_t Request::parseMethod() {
   while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r') {
     ++pos;
   }
-  for (size_t i = 0; i < pos; ++i) {
-    method_.push_back(buf_[i]);
-  }
+  method_.assign(&buf_[0], &buf_[pos]);
   return pos;
 }
 
@@ -297,10 +298,9 @@ int Request::parseHeaderField(size_t pos) {
            (buf_[begin] == '\t' || buf_[begin] == ' ')) {
       ++begin;
     }
-    std::string value = bufToString(begin, pos);
-    headers_[key] = value;
+    headers_[key] = bufToString(begin, pos);
     if (buf_[pos] == '\r') {
-      if (!compareBuf(pos, pos + 4, "\r\n\r\n")) {
+      if (!compareBuf(pos, "\r\n\r\n")) {
         break;
       } else {
         pos += 2;
