@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/31 13:54:32 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/01 21:33:02 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ class Request {
   // body*/
   std::vector<char> buf_;
   int parse_progress_;
+  int flg_chunked_;
   ssize_t pos_prev_;
   ssize_t pos_begin_header_;
   ssize_t pos_begin_body_;
@@ -52,6 +53,7 @@ class Request {
   std::map<std::string, std::string> query_;
   std::map<std::string, std::string> headers_;
   unsigned long content_length_;
+  unsigned long chunk_size_;
 
   Request(Request const& other);
   Request& operator=(Request const& other);
@@ -88,6 +90,8 @@ class Request {
   int parseHeaderField(size_t pos);
   int checkHeaderField();
   ssize_t findBodyEndAndStore();
+  ssize_t parseChunkedBody(size_t pos);
+
   std::string bufToString(size_t begin, size_t end);
   int compareBuf(size_t begin, const char* str);
 };

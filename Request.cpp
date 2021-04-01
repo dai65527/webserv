@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/31 21:22:57 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/01 23:28:43 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,12 @@
 #include <algorithm>
 #include <iostream>
 
-Request::Request() : parse_progress_(0), pos_prev_(0), content_length_(0) {}
+Request::Request()
+    : parse_progress_(0),
+      flg_chunked_(0),
+      pos_prev_(0),
+      content_length_(0),
+      chunk_size_(0) {}
 
 Request::~Request() {}
 
@@ -43,7 +48,8 @@ std::string Request::bufToString(size_t begin, size_t end) {
 
 /* compare char literal and a part of buf*/
 int Request::compareBuf(size_t begin, const char* str) {
-  for (size_t i = 0; i < ft_strlen(str); ++i) {
+  size_t len = ft_strlen(str);
+  for (size_t i = 0; i < len; ++i) {
     if (buf_[i + begin] != str[i]) {
       return 1;
     }
@@ -125,8 +131,14 @@ int Request::parseRequest() {
     pos_prev_ = pos_begin_body_;
     return REQ_FIN_PARSE_HEADER;
   }
-  if (content_length_ > 0 &&
-      parse_progress_ == 2) {  // 2: finished parse header then body
+  /* parse chunked body (Chunked has the priority over Content-length*/
+  if (flg_chunked_) {
+    pos_buf = pos_prev_;
+    return parseChunkedBody(pos_buf);
+  }
+  /* store body based on content-length value*/
+  else if (content_length_ > 0 &&
+           parse_progress_ == 2) {  // 2: finished parse header then body
     if (findBodyEndAndStore() < 0) {
       return REQ_CONTINUE_RECV;
     }
@@ -320,8 +332,10 @@ int Request::checkHeaderField() {
       headers_.find("transfer-encoding");
   if (itr_transfer_encoding != headers_.end()) {
     for (std::string::iterator itr = itr_transfer_encoding->second.begin();
-         itr != itr_transfer_encoding->second.end(); ++itr)
+         itr != itr_transfer_encoding->second.end(); ++itr) {
       *itr = std::tolower(*itr);
+    }
+    flg_chunked_ = 1;
   }
   /* POST requires content-length or transfer-encoding of chunked*/
   if (method_ == "POST" && itr_content_length == headers_.end() &&
@@ -340,6 +354,43 @@ int Request::checkHeaderField() {
     content_length_ = ft_atoul(itr_content_length->second.c_str());
   }
   return 0;
+}
+
+ssize_t Request::parseChunkedBody(size_t pos) {
+  size_t begin = pos;
+  while (pos != buf_.size()) {
+    if (buf_[pos] == '\r' && buf_[pos + 1] == '\n') {
+      /* get chunk data size*/
+      if (parse_progress_ == 2) {
+        std::string chunk_size = bufToString(begin, pos);
+        for (std::string::iterator itr = chunk_size.begin();
+             itr != chunk_size.end(); ++itr) {
+          if (!(isdigit(*itr) || ('a' <= *itr && *itr <= 'f') ||
+              ('A' <= *itr && *itr <= 'F'))) {
+            return REQ_ERR_BAD_REQUEST;
+          }
+        }
+        chunk_size_ = ft_atoul(chunk_size.c_str());
+        parse_progress_ = 3;
+        pos_prev_ = pos + 2;
+        return REQ_CONTINUE_RECV;
+        /* get chunked data body*/
+      } else {
+        if (pos - begin > chunk_size_) {
+          return REQ_ERR_BAD_REQUEST;
+        } else {
+          if (chunk_size_ == 0) {  // finish chunked data transfer
+            return REQ_FIN_RECV;
+          }
+          parse_progress_ = 2;
+          pos_prev_ = pos + 2;
+          return REQ_CONTINUE_RECV;
+        }
+      }
+    }
+    ++pos;
+  }
+  return REQ_CONTINUE_RECV;
 }
 
 void Request::eraseBuf(ssize_t n) {
