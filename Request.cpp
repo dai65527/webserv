@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/02 14:02:00 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/02 14:27:15 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,13 +139,10 @@ int Request::parseRequest() {
     return parseChunkedBody(pos_buf);
   }
   /* store body based on content-length value*/
-  else if (content_length_ > 0 &&
-           parse_progress_ == 2) {  // 2: finished parse header then body
-    if (findBodyEndAndStore() < 0) {
-      return REQ_CONTINUE_RECV;
-    }
+  else if (content_length_ > 0) {
+    return findBodyEndAndStore();
   }
-  return REQ_FIN_RECV;
+return REQ_FIN_RECV;
 }
 
 /* get request line from the input (beginning to /r/n) */
@@ -191,9 +188,9 @@ ssize_t Request::findBodyEndAndStore() {
     body_ = buf_;
     std::vector<char>().swap(
         buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
-    return 0;
+    return REQ_FIN_RECV;
   }
-  return -1;
+  return REQ_CONTINUE_RECV;
 }
 
 int Request::parseRequestLine() {
