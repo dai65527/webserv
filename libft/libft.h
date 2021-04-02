@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   libft.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/10/05 12:01:52 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/19 15:38:31 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/02 12:43:53 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,7 @@ char				*ft_strdup(const char *s1);
 
 int					ft_atoi(const char *str);
 unsigned long		ft_atoul(const char *str);
+unsigned long		ft_atoul_hexbase(const char *str);
 double				ft_atof(const char *s);
 char				*ft_itoa(int n);
 
