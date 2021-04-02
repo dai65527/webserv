@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/02 13:04:52 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/02 13:06:07 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,6 +187,7 @@ ssize_t Request::findBodyEndAndStore() {
   if (excess >= 0) {
     buf_.erase(buf_.end() - excess, buf_.end());
     buf_.erase(buf_.begin(), buf_.begin() + pos_begin_body_);
+    body_ = buf_;
     return 0;
   }
   return -1;

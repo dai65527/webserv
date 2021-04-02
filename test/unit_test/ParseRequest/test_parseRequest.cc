@@ -367,7 +367,8 @@ TEST_F(test_parseRequest, postwithBodyOK1) {
   EXPECT_EQ(request.headers_["language"], "en-US");
   EXPECT_EQ(request.headers_["content-length"], "5");
   EXPECT_EQ(request.parseRequest(), 0);
-  std::string str(request.buf_.begin(), request.buf_.end());
+  // std::string str(request.buf_.begin(), request.buf_.end());
+  std::string str(request.body_.begin(), request.body_.end());
   EXPECT_EQ(str, "01234");
   // EXPECT_EQ(request.body_, "01234");
 }
@@ -391,7 +392,8 @@ TEST_F(test_parseRequest, postwithBodyOK2) {
   EXPECT_EQ(request.headers_["language"], "en-US");
   EXPECT_EQ(request.headers_["content-length"], "5");
   EXPECT_EQ(request.parseRequest(), 0);
-  std::string str(request.buf_.begin(), request.buf_.end());
+  // std::string str(request.buf_.begin(), request.buf_.end());
+  std::string str(request.body_.begin(), request.body_.end());
   EXPECT_EQ(str, "\r\n\r\n\r");
   // EXPECT_EQ(request.body_, "\r\n\r\n\r");
 }
@@ -477,7 +479,8 @@ TEST_F(test_parseRequest, bodyAgain) {
   EXPECT_EQ(request.headers_["language"], "en-US");
   EXPECT_EQ(request.headers_["content-length"], "16");
   EXPECT_EQ(request.parseRequest(), 0);
-  std::string str(request.buf_.begin(), request.buf_.end());
+  // std::string str(request.buf_.begin(), request.buf_.end());
+  std::string str(request.body_.begin(), request.body_.end());
   EXPECT_EQ(str, "0123456789abcdef");
 }
 
