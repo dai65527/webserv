@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/02 14:19:44 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/02 14:21:46 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,6 +198,7 @@ TEST_F(test_checkHTTP413, locationConfigNG) {
 }
 
 TEST_F(test_checkHTTP413, transferEncodingOK1) {
+  config.client_max_body_size_ = 42;
   appendVec(session->request_.buf_, "POST /index.html?a HTTP/1.1\r\nHost: ");
   EXPECT_EQ(session->receiveRequest(), 0);
   appendVec(session->request_.buf_, "localhost\r\nLocation:\t  \tYokoh");
@@ -219,6 +220,7 @@ TEST_F(test_checkHTTP413, transferEncodingOK1) {
 }
 
 TEST_F(test_checkHTTP413, transferEncodingNG1) {
+  config.client_max_body_size_ = 42;
   appendVec(session->request_.buf_, "POST /index.html?a HTTP/1.1\r\nHost: ");
   EXPECT_EQ(session->receiveRequest(), 0);
   appendVec(session->request_.buf_, "localhost\r\nLocation:\t  \tYokoh");
@@ -240,6 +242,7 @@ TEST_F(test_checkHTTP413, transferEncodingNG1) {
 }
 
 TEST_F(test_checkHTTP413, transferEncodingNG2) {
+  config.client_max_body_size_ = 42;
   appendVec(session->request_.buf_, "POST /index.html?a HTTP/1.1\r\nHost: ");
   EXPECT_EQ(session->receiveRequest(), 0);
   appendVec(session->request_.buf_, "localhost\r\nLocation:\t  \tYokoh");
@@ -261,6 +264,7 @@ TEST_F(test_checkHTTP413, transferEncodingNG2) {
 }
 
 TEST_F(test_checkHTTP413, transferEncodingOK2) {
+  config.client_max_body_size_ = 42;
   appendVec(session->request_.buf_, "POST /index.html?a HTTP/1.1\r\nHost: ");
   EXPECT_EQ(session->receiveRequest(), 0);
   appendVec(session->request_.buf_, "localhost\r\nLocation:\t  \tYokoh");
@@ -287,6 +291,7 @@ TEST_F(test_checkHTTP413, transferEncodingOK2) {
 }
 
 TEST_F(test_checkHTTP413, transferEncodingOK3) {
+  config.client_max_body_size_ = 42;
   appendVec(session->request_.buf_, "POST /index.html?a HTTP/1.1\r\nHost: ");
   EXPECT_EQ(session->receiveRequest(), 0);
   appendVec(session->request_.buf_, "localhost\r\nLocation:\t  \tYokoh");
@@ -317,6 +322,7 @@ TEST_F(test_checkHTTP413, transferEncodingOK3) {
 }
 
 TEST_F(test_checkHTTP413, transferEncodingNG3) {
+  config.client_max_body_size_ = 42;
   appendVec(session->request_.buf_, "POST /index.html?a HTTP/1.1\r\nHost: ");
   EXPECT_EQ(session->receiveRequest(), 0);
   appendVec(session->request_.buf_, "localhost\r\nLocation:\t  \tYokoh");
@@ -345,6 +351,7 @@ TEST_F(test_checkHTTP413, transferEncodingNG3) {
 }
 
 TEST_F(test_checkHTTP413, transferEncodingOK4) {
+  config.client_max_body_size_ = 42;
   appendVec(session->request_.buf_, "POST /index.html?a HTTP/1.1\r\nHost: ");
   EXPECT_EQ(session->receiveRequest(), 0);
   appendVec(session->request_.buf_, "localhost\r\nLocation:\t  \tYokoh");
