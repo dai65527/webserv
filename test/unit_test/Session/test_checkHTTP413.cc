@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/31 13:21:25 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/02 13:38:21 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,8 @@ TEST_F(test_checkHTTP413, mainConfigOK) {
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
   EXPECT_EQ(session->request_.headers_["content-length"], "16");
   EXPECT_EQ(session->receiveRequest(), 0);
-  std::string str(session->request_.buf_.begin(), session->request_.buf_.end());
+  // std::string str(session->request_.buf_.begin(), session->request_.buf_.end());
+  std::string str(session->request_.body_.begin(), session->request_.body_.end());
   EXPECT_EQ(str, "0123456789abcdef");
 }
 
@@ -106,7 +107,8 @@ TEST_F(test_checkHTTP413, serverConfigOK) {
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
   EXPECT_EQ(session->request_.headers_["content-length"], "16");
   EXPECT_EQ(session->receiveRequest(), 0);
-  std::string str(session->request_.buf_.begin(), session->request_.buf_.end());
+  // std::string str(session->request_.buf_.begin(), session->request_.buf_.end());
+  std::string str(session->request_.body_.begin(), session->request_.body_.end());
   EXPECT_EQ(str, "0123456789abcdef");
 }
 
@@ -162,7 +164,8 @@ TEST_F(test_checkHTTP413, locationConfigOK) {
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
   EXPECT_EQ(session->request_.headers_["content-length"], "16");
   EXPECT_EQ(session->receiveRequest(), 0);
-  std::string str(session->request_.buf_.begin(), session->request_.buf_.end());
+  // std::string str(session->request_.buf_.begin(), session->request_.buf_.end());
+  std::string str(session->request_.body_.begin(), session->request_.body_.end());
   EXPECT_EQ(str, "0123456789abcdef");
 }
 
