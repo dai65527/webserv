@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/02 13:18:28 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/02 13:39:59 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,7 +188,8 @@ ssize_t Request::findBodyEndAndStore() {
     buf_.erase(buf_.end() - excess, buf_.end());
     buf_.erase(buf_.begin(), buf_.begin() + pos_begin_body_);
     body_ = buf_;
-    std::vector<char>().swap(buf_);//free memory of buf_ (c11 can use fit_to_shurink);
+    std::vector<char>().swap(
+        buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
     return 0;
   }
   return -1;
@@ -373,8 +374,7 @@ ssize_t Request::parseChunkedBody(size_t pos) {
             return REQ_ERR_BAD_REQUEST;
           }
         }
-        chunk_size_ =
-            ft_atoul_hexbase(chunk_size.c_str());
+        chunk_size_ = ft_atoul_hexbase(chunk_size.c_str());
         parse_progress_ = 3;
         pos_prev_ = pos + 2;
         return REQ_CONTINUE_RECV;
@@ -384,7 +384,8 @@ ssize_t Request::parseChunkedBody(size_t pos) {
           return REQ_ERR_BAD_REQUEST;
         } else {
           if (chunk_size_ == 0) {  // finish chunked data transfer
-            std::vector<char>().swap(buf_);//free memory of buf_ (c11 can use fit_to_shurink);
+            std::vector<char>().swap(
+                buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
             return REQ_FIN_RECV;
           }
           body_.insert(body_.end(), buf_.begin() + begin, buf_.begin() + pos);
