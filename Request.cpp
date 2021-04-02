@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/01 23:28:43 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/02 12:22:57 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ const std::map<std::string, std::string>& Request::getQuery() const {
   return query_;
 }
 size_t Request::getContentLength() const { return content_length_; }
+const std::vector<char>& Request::getBody() const { return body_; }
 
 /* make string from a part of buf*/
 std::string Request::bufToString(size_t begin, size_t end) {
@@ -366,11 +367,12 @@ ssize_t Request::parseChunkedBody(size_t pos) {
         for (std::string::iterator itr = chunk_size.begin();
              itr != chunk_size.end(); ++itr) {
           if (!(isdigit(*itr) || ('a' <= *itr && *itr <= 'f') ||
-              ('A' <= *itr && *itr <= 'F'))) {
+                ('A' <= *itr && *itr <= 'F'))) {
             return REQ_ERR_BAD_REQUEST;
           }
         }
-        chunk_size_ = ft_atoul(chunk_size.c_str());
+        chunk_size_ =
+            ft_atoul(chunk_size.c_str());  // should be replace by hex func
         parse_progress_ = 3;
         pos_prev_ = pos + 2;
         return REQ_CONTINUE_RECV;
@@ -382,6 +384,7 @@ ssize_t Request::parseChunkedBody(size_t pos) {
           if (chunk_size_ == 0) {  // finish chunked data transfer
             return REQ_FIN_RECV;
           }
+          body_.insert(body_.end(), buf_.begin() + begin, buf_.begin() + pos);
           parse_progress_ = 2;
           pos_prev_ = pos + 2;
           return REQ_CONTINUE_RECV;

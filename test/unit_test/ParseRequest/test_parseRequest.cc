@@ -543,3 +543,29 @@ TEST_F(test_parseRequest, transferEncodingNG2) {
   EXPECT_EQ(request.headers_["transfer-encoding"], "chunked");
   EXPECT_EQ(request.parseRequest(), REQ_ERR_BAD_REQUEST);
 }
+
+TEST_F(test_parseRequest, transferEncodingOK2) {
+  appendVec(request.buf_, "POST /index.html?a HTTP/1.1\r\nHost: ");
+  EXPECT_EQ(request.parseRequest(), 1);
+  appendVec(request.buf_, "localhost\r\nLocation:\t  \tYokoh");
+  EXPECT_EQ(request.parseRequest(), 1);
+  appendVec(request.buf_, "ama\r\nlanguage: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  appendVec(request.buf_, "en-US\r\nTransfer-Encoding: \t\t");
+  EXPECT_EQ(request.parseRequest(), 1);
+  appendVec(request.buf_, "chunked\r\n\r\n5\r\n01234\r\n0\r\n\r\n");
+  EXPECT_EQ(request.parseRequest(), REQ_FIN_PARSE_HEADER);
+  EXPECT_EQ(request.method_, "POST");
+  EXPECT_EQ(request.uri_, "/index.html");
+  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+  EXPECT_EQ(request.headers_["location"], "Yokohama");
+  EXPECT_EQ(request.headers_["language"], "en-US");
+  EXPECT_EQ(request.headers_["transfer-encoding"], "chunked");
+  EXPECT_EQ(request.parseRequest(), REQ_CONTINUE_RECV);
+  EXPECT_EQ(request.parseRequest(), REQ_CONTINUE_RECV);
+  EXPECT_EQ(request.parseRequest(), REQ_CONTINUE_RECV);
+  EXPECT_EQ(request.parseRequest(), REQ_FIN_RECV);
+  std::string str(request.body_.begin(), request.body_.end());
+  EXPECT_EQ(str, "01234");
+}

@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/01 21:33:02 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/02 12:15:40 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ class Request {
   std::string uri_;
   std::map<std::string, std::string> query_;
   std::map<std::string, std::string> headers_;
+  std::vector<char> body_;
   unsigned long content_length_;
   unsigned long chunk_size_;
 
@@ -69,6 +70,7 @@ class Request {
   const std::map<std::string, std::string>& getHeaders() const;
   const std::map<std::string, std::string>& getQuery() const;
   size_t getContentLength() const;
+  const std::vector<char>& getBody() const;
 
   int receive(int sock_fd);
   int appendRawData(char* raw_data);
