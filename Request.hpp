@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/02 12:15:40 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/02 13:59:13 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,7 @@ class Request {
   const std::map<std::string, std::string>& getQuery() const;
   size_t getContentLength() const;
   const std::vector<char>& getBody() const;
+  int getFlgChunked() const;
 
   int receive(int sock_fd);
   int appendRawData(char* raw_data);

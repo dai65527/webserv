@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/02 13:39:59 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/02 14:02:00 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ const std::map<std::string, std::string>& Request::getQuery() const {
 }
 size_t Request::getContentLength() const { return content_length_; }
 const std::vector<char>& Request::getBody() const { return body_; }
+int Request::getFlgChunked() const { return flg_chunked_; };
 
 /* make string from a part of buf*/
 std::string Request::bufToString(size_t begin, size_t end) {
