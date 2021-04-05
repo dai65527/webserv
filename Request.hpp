@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/02 13:59:13 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/05 20:14:41 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ extern "C" {
 #define BUFFER_SIZE 1024
 #define RETRY_TIME_MAX 10
 
+/* return value of parseRequest*/
 #define REQ_FIN_PARSE_HEADER 2   // finished parsing header
 #define REQ_CONTINUE_RECV 1      // continue to receive
 #define REQ_FIN_RECV 0           // finished receiving
@@ -31,6 +32,12 @@ extern "C" {
 #define REQ_ERR_HTTP_VERSION -2  // HTTP505
 #define REQ_ERR_LEN_REQUIRED -3  // HTTP411
 #define REQ_ERR_BAD_REQUEST -4   // HTTP400
+
+/* value of parse_progress_*/
+#define REQ_BEFORE_PARSE 0
+#define REQ_FIN_REQEST_LINE 1
+#define REQ_FIN_HEADER_FIELD 2
+#define REQ_GOT_CHUNK_SIZE 3
 
 class Request {
 #ifdef UNIT_TEST
