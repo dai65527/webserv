@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/05 20:17:20 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/05 20:19:24 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -374,7 +374,9 @@ ssize_t Request::parseChunkedBody(size_t pos) {
           }
         }
         chunk_size_ = ft_atoul_hexbase(chunk_size.c_str());
-        parse_progress_ = REQ_GOT_CHUNK_SIZE;
+        parse_progress_ =
+            REQ_GOT_CHUNK_SIZE;  // Then next should be getting chunked data in
+                                 // else part of this function
         pos_prev_ = pos + 2;
         return REQ_CONTINUE_RECV;
         /* get chunked data body*/
