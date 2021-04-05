@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/05 20:14:41 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/05 20:17:22 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ extern "C" {
 
 /* value of parse_progress_*/
 #define REQ_BEFORE_PARSE 0
-#define REQ_FIN_REQEST_LINE 1
+#define REQ_FIN_REQUEST_LINE 1
 #define REQ_FIN_HEADER_FIELD 2
 #define REQ_GOT_CHUNK_SIZE 3
 
