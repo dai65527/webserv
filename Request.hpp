@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/31 13:54:32 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/05 20:17:22 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ extern "C" {
 #define BUFFER_SIZE 1024
 #define RETRY_TIME_MAX 10
 
+/* return value of parseRequest*/
 #define REQ_FIN_PARSE_HEADER 2   // finished parsing header
 #define REQ_CONTINUE_RECV 1      // continue to receive
 #define REQ_FIN_RECV 0           // finished receiving
@@ -31,6 +32,12 @@ extern "C" {
 #define REQ_ERR_HTTP_VERSION -2  // HTTP505
 #define REQ_ERR_LEN_REQUIRED -3  // HTTP411
 #define REQ_ERR_BAD_REQUEST -4   // HTTP400
+
+/* value of parse_progress_*/
+#define REQ_BEFORE_PARSE 0
+#define REQ_FIN_REQUEST_LINE 1
+#define REQ_FIN_HEADER_FIELD 2
+#define REQ_GOT_CHUNK_SIZE 3
 
 class Request {
 #ifdef UNIT_TEST
@@ -43,6 +50,7 @@ class Request {
   // body*/
   std::vector<char> buf_;
   int parse_progress_;
+  int flg_chunked_;
   ssize_t pos_prev_;
   ssize_t pos_begin_header_;
   ssize_t pos_begin_body_;
@@ -51,7 +59,9 @@ class Request {
   std::string uri_;
   std::map<std::string, std::string> query_;
   std::map<std::string, std::string> headers_;
+  std::vector<char> body_;
   unsigned long content_length_;
+  unsigned long chunk_size_;
 
   Request(Request const& other);
   Request& operator=(Request const& other);
@@ -67,6 +77,8 @@ class Request {
   const std::map<std::string, std::string>& getHeaders() const;
   const std::map<std::string, std::string>& getQuery() const;
   size_t getContentLength() const;
+  const std::vector<char>& getBody() const;
+  int getFlgChunked() const;
 
   int receive(int sock_fd);
   int appendRawData(char* raw_data);
@@ -88,6 +100,8 @@ class Request {
   int parseHeaderField(size_t pos);
   int checkHeaderField();
   ssize_t findBodyEndAndStore();
+  ssize_t parseChunkedBody(size_t pos);
+
   std::string bufToString(size_t begin, size_t end);
   int compareBuf(size_t begin, const char* str);
 };

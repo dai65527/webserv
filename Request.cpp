@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/31 13:55:04 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/05 20:19:24 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,12 @@
 #include <algorithm>
 #include <iostream>
 
-Request::Request() : parse_progress_(0), pos_prev_(0), content_length_(0) {}
+Request::Request()
+    : parse_progress_(REQ_BEFORE_PARSE),
+      flg_chunked_(0),
+      pos_prev_(0),
+      content_length_(0),
+      chunk_size_(0) {}
 
 Request::~Request() {}
 
@@ -32,6 +37,8 @@ const std::map<std::string, std::string>& Request::getQuery() const {
   return query_;
 }
 size_t Request::getContentLength() const { return content_length_; }
+const std::vector<char>& Request::getBody() const { return body_; }
+int Request::getFlgChunked() const { return flg_chunked_; };
 
 /* make string from a part of buf*/
 std::string Request::bufToString(size_t begin, size_t end) {
@@ -43,7 +50,8 @@ std::string Request::bufToString(size_t begin, size_t end) {
 
 /* compare char literal and a part of buf*/
 int Request::compareBuf(size_t begin, const char* str) {
-  for (size_t i = 0; i < ft_strlen(str); ++i) {
+  size_t len = ft_strlen(str);
+  for (size_t i = 0; i < len; ++i) {
     if (buf_[i + begin] != str[i]) {
       return 1;
     }
@@ -96,7 +104,7 @@ int Request::receive(int sock_fd) {
 int Request::parseRequest() {
   ssize_t pos_buf;
   int ret;
-  if (parse_progress_ == 0) {  // 0: parse not started yet
+  if (parse_progress_ == REQ_BEFORE_PARSE) {  // 0: parse not started yet
     if ((pos_buf = findRequestLineEnd()) == -1) {
       return REQ_CONTINUE_RECV;
     }
@@ -107,7 +115,8 @@ int Request::parseRequest() {
     pos_begin_header_ = ++pos_buf;
     pos_prev_ = pos_begin_header_;
   }
-  if (parse_progress_ == 1) {  // 1: finished parse request line then header
+  if (parse_progress_ ==
+      REQ_FIN_REQUEST_LINE) {  // 1: finished parse request line then header
     // check in case of no header field for first time only
     if (pos_prev_ == pos_begin_header_ && buf_[pos_begin_header_] == '\r' &&
         buf_[pos_begin_header_ + 1] == '\n') {
@@ -125,11 +134,14 @@ int Request::parseRequest() {
     pos_prev_ = pos_begin_body_;
     return REQ_FIN_PARSE_HEADER;
   }
-  if (content_length_ > 0 &&
-      parse_progress_ == 2) {  // 2: finished parse header then body
-    if (findBodyEndAndStore() < 0) {
-      return REQ_CONTINUE_RECV;
-    }
+  /* parse chunked body (Chunked has the priority over Content-length*/
+  if (flg_chunked_) {
+    pos_buf = pos_prev_;
+    return parseChunkedBody(pos_buf);
+  }
+  /* store body based on content-length value*/
+  else if (content_length_ > 0) {
+    return findBodyEndAndStore();
   }
   return REQ_FIN_RECV;
 }
@@ -148,7 +160,7 @@ ssize_t Request::findRequestLineEnd() {
     ++pos;
   }
   if (buf_[pos] == '\n') {
-    parse_progress_ = 1;
+    parse_progress_ = REQ_FIN_REQUEST_LINE;
     return pos;
   } else {
     pos_prev_ = pos;
@@ -160,7 +172,7 @@ ssize_t Request::findHeaderFieldEnd(size_t pos) {
   while (pos != buf_.size()) {
     if (buf_[pos] == '\r') {
       if (!compareBuf(pos, "\r\n\r\n")) {
-        parse_progress_ = 2;
+        parse_progress_ = REQ_FIN_HEADER_FIELD;
         return pos + 4;
       }
     }
@@ -174,9 +186,12 @@ ssize_t Request::findBodyEndAndStore() {
   if (excess >= 0) {
     buf_.erase(buf_.end() - excess, buf_.end());
     buf_.erase(buf_.begin(), buf_.begin() + pos_begin_body_);
-    return 0;
+    body_ = buf_;
+    std::vector<char>().swap(
+        buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
+    return REQ_FIN_RECV;
   }
-  return -1;
+  return REQ_CONTINUE_RECV;
 }
 
 int Request::parseRequestLine() {
@@ -316,7 +331,19 @@ int Request::checkHeaderField() {
   }
   std::map<std::string, std::string>::iterator itr_content_length =
       headers_.find("content-length");
-  if (method_ == "POST" && itr_content_length == headers_.end()) {
+  std::map<std::string, std::string>::iterator itr_transfer_encoding =
+      headers_.find("transfer-encoding");
+  if (itr_transfer_encoding != headers_.end()) {
+    for (std::string::iterator itr = itr_transfer_encoding->second.begin();
+         itr != itr_transfer_encoding->second.end(); ++itr) {
+      *itr = std::tolower(*itr);
+    }
+    flg_chunked_ = 1;
+  }
+  /* POST requires content-length or transfer-encoding of chunked*/
+  if (method_ == "POST" && itr_content_length == headers_.end() &&
+      (itr_transfer_encoding == headers_.end() ||
+       itr_transfer_encoding->second != "chunked")) {
     return REQ_ERR_LEN_REQUIRED;
   }
   /*in case of content-length is negative or non digit */
@@ -330,6 +357,48 @@ int Request::checkHeaderField() {
     content_length_ = ft_atoul(itr_content_length->second.c_str());
   }
   return 0;
+}
+
+ssize_t Request::parseChunkedBody(size_t pos) {
+  size_t begin = pos;
+  while (pos != buf_.size()) {
+    if (buf_[pos] == '\r' && buf_[pos + 1] == '\n') {
+      /* get chunk data size*/
+      if (parse_progress_ == REQ_FIN_HEADER_FIELD) {
+        std::string chunk_size = bufToString(begin, pos);
+        for (std::string::iterator itr = chunk_size.begin();
+             itr != chunk_size.end(); ++itr) {
+          if (!(isdigit(*itr) || ('a' <= *itr && *itr <= 'f') ||
+                ('A' <= *itr && *itr <= 'F'))) {
+            return REQ_ERR_BAD_REQUEST;
+          }
+        }
+        chunk_size_ = ft_atoul_hexbase(chunk_size.c_str());
+        parse_progress_ =
+            REQ_GOT_CHUNK_SIZE;  // Then next should be getting chunked data in
+                                 // else part of this function
+        pos_prev_ = pos + 2;
+        return REQ_CONTINUE_RECV;
+        /* get chunked data body*/
+      } else {
+        if (pos - begin > chunk_size_) {
+          return REQ_ERR_BAD_REQUEST;
+        } else {
+          if (chunk_size_ == 0) {  // finish chunked data transfer
+            std::vector<char>().swap(
+                buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
+            return REQ_FIN_RECV;
+          }
+          body_.insert(body_.end(), buf_.begin() + begin, buf_.begin() + pos);
+          parse_progress_ = REQ_FIN_HEADER_FIELD;
+          pos_prev_ = pos + 2;
+          return REQ_CONTINUE_RECV;
+        }
+      }
+    }
+    ++pos;
+  }
+  return REQ_CONTINUE_RECV;
 }
 
 void Request::eraseBuf(ssize_t n) {

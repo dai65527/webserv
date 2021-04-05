@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/31 15:30:12 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/02 14:03:38 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,7 +198,7 @@ int Session::checkReceiveReturn(int ret) {
 #ifndef UNIT_TEST
     setupServerAndLocationConfig();  // To get server and location config
 #endif
-    if (request_.getContentLength() == 0) {
+    if (!request_.getFlgChunked() && (request_.getContentLength() == 0)) {
       startCreateResponse();
     } else if (location_config_ &&
                request_.getContentLength() >

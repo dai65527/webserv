@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
+#    By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/08/21 08:47:29 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/19 15:37:04 by dnakano          ###   ########.fr        #
+#    Updated: 2021/04/02 12:44:23 by dhasegaw         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -45,7 +45,7 @@ BONUSSRCNAME	:=	ft_lstnew.c ft_lstadd_front.c ft_lstsize.c ft_lstlast.c \
 					ft_atof_bintof.c ft_atof_dectobin_frac.c \
 					ft_atof_atobin.c ft_atof_atodec.c \
 					ft_atof_uint128_2.c ft_atof_uint128.c \
-					ft_atoul.c \
+					ft_atoul.c ft_atoul_hexbase.c \
 					ft_htons.c
 SRCDIR			:=	.
 SRCS			:=	$(addprefix $(SRCDIR)/,$(SRCNAME))
