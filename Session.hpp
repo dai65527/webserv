@@ -67,7 +67,7 @@ class Session {
   void startReadingFromFile(const std::string& filepath);
   std::string findFileFromDir(const std::string& dirpath) const;
   std::string findFile(const std::string& uri) const;
-  std::string findRoot() const;
+  const std::string& findRoot() const;
   bool isIndex(const std::string& filename) const;
   int readFromFile();
 

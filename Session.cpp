@@ -524,13 +524,15 @@ std::string Session::findFile(const std::string& uri) const {
 }
 
 // find root config (called from findFile())
-std::string Session::findRoot() const {
+const std::string& Session::findRoot() const {
   // TODO: need to check location but later
-  if (server_config_->getRoot().empty()) {
-    return main_config_.getRoot();
-  } else {
+  if (location_config_ != NULL && !location_config_->getRoot().empty()) {
+    return location_config_->getRoot();
+  }
+  if (server_config_ != NULL && !server_config_->getRoot().empty()) {
     return server_config_->getRoot();
   }
+  return main_config_.getRoot();
 }
 
 // find file as index directive (called from findFile())
