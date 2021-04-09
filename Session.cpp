@@ -116,7 +116,7 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
       std::cout << "[webserv] read data from file" << std::endl;
       return (1);
     }
-  } else if (status_ == SESSION_FOR_FILE_READ && FD_ISSET(file_fd_, wfds)) {
+  } else if (status_ == SESSION_FOR_FILE_WRITE && FD_ISSET(file_fd_, wfds)) {
     if (writeToFile() == -1) {
       return (-1);
     } else {
@@ -492,8 +492,7 @@ void Session::startReadingFromFile(const std::string& filepath) {
   }
 
   // create response header
-  addResponseHeaderOfFile(filepath);          // add response header
-
+  addResponseHeaderOfFile(filepath);  // add response header
   status_ = SESSION_FOR_FILE_READ;
 }
 
@@ -767,7 +766,8 @@ int Session::writeToCgi() {
   ssize_t n;
 
   // write to cgi process
-  n = cgi_handler_.writeToCgi(&(request_.getBuf()[0]), request_.getBuf().size());
+  n = cgi_handler_.writeToCgi(&(request_.getBody()[0]),
+                              request_.getBody().size());
 
   // retry several times even if write failed
   if (n == -1) {
@@ -794,10 +794,10 @@ int Session::writeToCgi() {
   retry_count_ = 0;
 
   // erase written data
-  request_.eraseBuf(n);
+  request_.eraseBody(n);
 
   // written all data
-  if (request_.getBuf().empty()) {
+  if (request_.getBody().empty()) {
     close(cgi_handler_.getInputFd());
     status_ = SESSION_FOR_CGI_READ;  // to read from cgi process
     return 0;
