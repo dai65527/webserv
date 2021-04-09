@@ -498,7 +498,7 @@ main, server, location
 
 ### upload_pass
 ファイルをアップロードする際のパスを指定する。
-このパスにPOST/PUT/DELETEメソッドを送ると、リクエストボディの内容に応じて、ファイルの追加/削除が行えるようにする。
+このパスにPOSTメソッドを送ると、リクエストボディの内容に応じて、ファイルの追加が行えるようにする。
 `upload_store` もセットで実装すること。
 
 https://www.nginx.com/resources/wiki/modules/upload/
@@ -512,7 +512,7 @@ upload_pass <route>;
 #### 例
 
 ```
-upload_pass /doc/new;
+upload_pass /upload;
 ```
 
 #### default value
@@ -530,13 +530,15 @@ server, location
 ディレクトリを一つ指定する。
 
 ```
-upload_store <path_to_directory>;
+upload_store <ralative_path_from_root>;
 ```
 
 #### 例
 
 ```
-upload_store <path_to_directory>;
+# file will be saved to /path/to/root/dir/path/to/upload
+root /path/to/root/dir;
+upload_store /path/to/upload;
 ```
 
 #### default value
@@ -551,7 +553,7 @@ server, location
 nginxのlimit_exceptと異なり、ブロックを取らず、全てのクライアントに対して指定されたメソッド以外を禁止する。
 http://nginx.org/en/docs/http/ngx_http_core_module.html#limit_except
 
-server、location contextに記述された場合は、上位のディレクティブの設定を引き継がない。
+server、location、contextに記述された場合は、上位のディレクティブの設定を引き継がない。
 
 #### 文法
 
