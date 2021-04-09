@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/31 15:30:01 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/09 08:51:36 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,8 +53,10 @@ class Session {
   // response
   void startCreateResponse();
   void startCreateResponseToGet();
+  void startCreateResponseToPost();
   void createErrorResponse(HTTPStatusCode http_status);
   int sendResponse();
+  std::string findUploadStore(const std::string& uri) const;
 
   // load config
   void setupServerAndLocationConfig();
@@ -75,8 +77,10 @@ class Session {
   void startDirectoryListing(const std::string& filepath);
 
   // write to file
-  void startWritingToFile();
+  std::string createFilename() const;
+  void startWritingToFile(const std::string& filepath);
   int writeToFile();
+  std::string getFileExtension() const;
 
   // cgi process
   void createCgiProcess(const std::string& filepath, const std::string& cgiuri);

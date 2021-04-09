@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/02 14:03:38 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/09 10:48:41 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -240,11 +240,11 @@ void Session::startCreateResponse() {
     return;
   }
 
-  // case POST (for now, just try to use cgi in startReadingFromFile)
-  // if (request_.getMethod() == "POST" && !isMethodAllowed(HTTP_POST)) {
-  // startReadingFromFile();  // header will checked in startReadingFromFile
-  // return;
-  // }
+  // case POST
+  if (request_.getMethod() == "POST" && isMethodAllowed(HTTP_POST)) {
+    startCreateResponseToPost();  // write to file or cgi
+    return;
+  }
 
   // case others (PUT, DELETE and TRACE)
   // not inpl them for now
@@ -295,6 +295,59 @@ void Session::startCreateResponseToGet() {
   createErrorResponse(HTTP_404);
 }
 
+void Session::startCreateResponseToPost() {
+  std::string filepath;
+
+  // check path includes cgi extension
+  const std::string cgiuri = findCgiPathFromUri();
+  if (!cgiuri.empty()) {
+    filepath = findRoot() + cgiuri;
+    if (filepath.empty()) {
+      createErrorResponse(HTTP_404);
+    } else {
+      createCgiProcess(filepath, cgiuri);
+    }
+    return;
+  }
+
+  // check if request uri upload path
+  std::string upload_store =
+      findUploadStore(request_.getUri());  // relative path from root
+  std::cout << "upload_store = " << upload_store << std::endl;
+  if (upload_store.empty()) {
+    createErrorResponse(HTTP_405);
+    return;
+  }
+
+  // create and append filename to upload store
+  if (*(upload_store.end() - 1) != '/') {
+    upload_store.push_back('/');  // append "/" if missing
+  }
+  upload_store.append(createFilename());  // append filename
+
+  // create filepath
+  filepath = findRoot();
+  if (*(filepath.end() - 1) != '/' || upload_store[0] != '/') {
+    filepath.append("/");  // append "/" if missing
+  }
+  filepath.append(upload_store);
+
+  // create response header
+  response_.createStatusLine(HTTP_201);
+  response_.addHeader("Location", upload_store);
+
+  // start to readfrom file
+  startWritingToFile(filepath);
+}
+
+std::string Session::createFilename() const {
+  std::string filename = "file";  // basename (tmp)
+  char buf[512];
+
+  getTimeStamp(buf, 512, "%y%m%d%M%s");
+  return std::string("file") + buf + getFileExtension();
+}
+
 // check HTTP Request method are avairable
 bool Session::isMethodAllowed(HTTPMethodFlag method) const {
   if (location_config_) {
@@ -340,6 +393,23 @@ int Session::sendResponse() {
   }
   retry_count_ = 0;  // reset retry_count if success
   return 0;
+}
+
+std::string Session::findUploadStore(const std::string& uri) const {
+  if (location_config_ != NULL &&
+      isLocationMatch(location_config_->getUploadPass(), uri)) {
+    return location_config_->getUploadStore();
+  }
+  std::cout << server_config_->getUploadPass() << std::endl;
+  if (server_config_ != NULL &&
+      isLocationMatch(server_config_->getUploadPass(), uri)) {
+    return server_config_->getUploadStore();
+  }
+  return "";
+}
+
+std::string Session::getFileExtension() const {
+  return ".txt";  // TODO!!!!!
 }
 
 /*
@@ -859,36 +929,43 @@ int Session::readFromCgi() {
 ** file writers (TODO!!)
 */
 
-void Session::startWritingToFile() {
-  file_fd_ = open("./test_req.txt", O_RDWR | O_CREAT, 0644);  // toriaezu
+void Session::startWritingToFile(const std::string& filepath) {
+  // open file
+  file_fd_ = open(filepath.c_str(), O_RDWR | O_CREAT, 0644);  // toriaezu
   if (file_fd_ == -1) {
-    createErrorResponse(HTTP_404);
+    createErrorResponse(HTTP_500);
     status_ = SESSION_FOR_CLIENT_SEND;
+    return;
   }
-  fcntl(file_fd_, F_SETFL, O_NONBLOCK);
+
+  // set as non block
+  if (fcntl(file_fd_, F_SETFL, O_NONBLOCK) == -1) {
+    createErrorResponse(HTTP_500);
+    status_ = SESSION_FOR_CLIENT_SEND;
+    return;
+  }
+
   status_ = SESSION_FOR_FILE_WRITE;
 }
 
 int Session::writeToFile() {
   ssize_t n;
 
+  printf("write to file\n");
   // write to file
-  n = write(file_fd_, &(request_.getBuf()[0]), request_.getBuf().size());
+  n = write(file_fd_, &(request_.getBody()[0]), request_.getBody().size());
   // retry several times even if write failed
   if (n == -1) {
     std::cout << "[error] failed to write to file" << std::endl;
 
     // give up if reached retry count to maximum
     if (retry_count_ == RETRY_TIME_MAX) {
+      close(file_fd_);
       retry_count_ = 0;
 
       // close connection
       std::cout << "[error] close file" << std::endl;
-      // close(file_fd_);
-
-      // send response to notify request failed
-      //  response_buf_ = "500 server error"; /* (tmp setter) error msg
-      //  generator in Request class*/
+      createErrorResponse(HTTP_500);
       status_ = SESSION_FOR_CLIENT_SEND;  // to send response to client
       return 0;
     }
@@ -901,16 +978,15 @@ int Session::writeToFile() {
   retry_count_ = 0;
 
   // erase written data
-  request_.eraseBuf(n);
+  request_.eraseBody(n);
 
   // written all data
-  if (request_.getBuf().empty()) {
+  if (request_.getBody().empty()) {
     close(file_fd_);
 
     // create response to notify the client
     // response_buf_ = "201 created";
     status_ = SESSION_FOR_CLIENT_SEND;  // to send response to client
-    return 0;
   }
   // to next read
   return 0;
