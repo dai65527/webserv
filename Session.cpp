@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/09 10:48:41 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/09 10:59:05 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -951,7 +951,6 @@ void Session::startWritingToFile(const std::string& filepath) {
 int Session::writeToFile() {
   ssize_t n;
 
-  printf("write to file\n");
   // write to file
   n = write(file_fd_, &(request_.getBody()[0]), request_.getBody().size());
   // retry several times even if write failed
