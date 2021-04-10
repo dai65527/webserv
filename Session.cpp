@@ -349,8 +349,9 @@ std::string Session::createFilename() const {
   std::string filename = "file";  // basename (tmp)
   char buf[512];
 
-  getTimeStamp(buf, 512, "%y%m%d%M%s");
-  return std::string("file") + buf + getFileExtension();
+  getTimeStamp(buf, 512, "%y%m%d%H%M%S");
+  return std::string("file") + buf + "_" + std::to_string(rand()) +
+         getFileExtension();
 }
 
 // check HTTP Request method are avairable
