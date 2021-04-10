@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/10 17:29:58 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/11 08:10:16 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -318,7 +318,6 @@ void Session::startCreateResponseToPost() {
   // check if request uri upload path
   std::string upload_store =
       findUploadStore(request_.getUri());  // relative path from root
-  std::cout << "upload_store = " << upload_store << std::endl;
   if (upload_store.empty()) {
     createErrorResponse(HTTP_405);
     return;
