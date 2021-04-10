@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/09 10:59:05 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/10 17:29:58 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,9 @@
 
 #include "webserv_utils.hpp"
 
+std::map<std::string, std::string> Session::map_mime_ext_;
+std::map<std::string, std::string> Session::map_ext_mime_;
+
 /*
 ** constructor
 **
@@ -35,7 +38,9 @@ Session::Session(int sock_fd, const MainConfig& main_config)
       status_(SESSION_FOR_CLIENT_RECV),
       main_config_(main_config),
       server_config_(NULL),
-      location_config_(NULL) {}
+      location_config_(NULL) {
+  initMapMineExt();
+}
 
 Session::~Session(){};
 
@@ -989,4 +994,135 @@ int Session::writeToFile() {
   }
   // to next read
   return 0;
+}
+
+void Session::initMapMineExt() {
+  static bool flg_set;
+  if (flg_set) {
+    return;
+  }
+  flg_set = true;
+
+  // set extention to MIME
+  map_ext_mime_["aac"] = "audio/aac";              // AAC 音声
+  map_ext_mime_["abw"] = "application/x-abiword";  // AbiWord文書
+  map_ext_mime_["arc"] =
+      "application/x-freearc";  //(複数のファイルが埋め込まれた)アーカイブ文書
+  map_ext_mime_["avi"] = "video/x-msvideo";  // AVI: Audio Video Interleave
+  map_ext_mime_["azw"] =
+      "application/vnd.amazon.ebook";  // Amazon Kindle eBook 形式
+  map_ext_mime_["bin"] =
+      "application/octet-stream";  //任意の種類のバイナリーデータ
+  map_ext_mime_["bmp"] = "image/bmp";            // Windows OS/2
+                                                 //ビットマップ画像
+  map_ext_mime_["bz"] = "application/x-bzip";    // BZip アーカイブ
+  map_ext_mime_["bz2"] = "application/x-bzip2";  // BZip2 アーカイブ
+  map_ext_mime_["csh"] = "application/x-csh";    // C-Shell スクリプト
+  map_ext_mime_["css"] = "text/css";  //カスケーディングスタイルシート
+                                      //(CSS)
+  map_ext_mime_["csv"] = "text/csv";            //カンマ区切り値 (CSV)
+  map_ext_mime_["doc"] = "application/msword";  // Microsoft Word
+  map_ext_mime_["docx"] =
+      "application/"
+      "vnd.openxmlformats-officedocument.wordprocessingml.document";  // Microsoft
+                                                                      // Word
+                                                                      // (OpenXML)
+  map_ext_mime_["eot"] =
+      "application/vnd.ms-fontobject";  // MS 埋め込み OpenTypeフォント
+  map_ext_mime_["epub"] = "application/epub+zip";  //電子出版 (EPUB)
+  map_ext_mime_["gz"] = "application/gzip";        // GZip 圧縮アーカイブ
+  map_ext_mime_["gif"] = "image/gif";  //グラフィック交換形式 (GIF)
+  map_ext_mime_["htm"] = "text/html";  //ハイパーテキストマークアップ言語
+                                       //(HTML)
+  map_ext_mime_["html"] =
+      "text/html";  //ハイパーテキストマークアップ言語//(HTML)
+  map_ext_mime_["ico"] = "image/vnd.microsoft.icon";  //アイコン形式
+  map_ext_mime_["ics"] = "text/calendar";             // iCalendar 形式
+  map_ext_mime_["jar"] = "application/java-archive";  // Java Archive (JAR)
+  map_ext_mime_["jpeg"] = "image/jpeg";               // JPEG 画像
+  map_ext_mime_["jpg"] = "image/jpeg";                // JPEG 画像
+  map_ext_mime_["js"] = "text/javascript";            // JavaScript
+  map_ext_mime_["json"] = "application/json";         // JSON 形式
+  map_ext_mime_["jsonld"] = "application/ld+json";    // JSON-LD 形式
+  map_ext_mime_["midi"] = "audio/x-midi";    // Musical Instrument Digital
+                                             // Interface (MIDI)
+  map_ext_mime_["mid"] = "audio/midi";       // Musical Instrument Digital
+                                             // Interface (MIDI)
+  map_ext_mime_["mjs"] = "text/javascript";  // JavaScript モジュール
+  map_ext_mime_["mp3"] = "audio/mpeg";       // MP3 音声
+  map_ext_mime_["mpeg"] = "video/mpeg";      // MPEG 動画
+  map_ext_mime_["mpkg"] =
+      "application/vnd.apple.installer+xml";  // Apple Installer Package
+  map_ext_mime_["odp"] =
+      "application/vnd.oasis.opendocument.presentation";  // OpenDocuemnt
+                                                          //プレゼンテーション文書
+  map_ext_mime_["ods"] =
+      "application/vnd.oasis.opendocument.spreadsheet";  // OpenDocuemnt
+                                                         //表計算文書
+  map_ext_mime_["odt"] =
+      "application/vnd.oasis.opendocument.text";  // OpenDocument テキスト文書
+  map_ext_mime_["oga"] = "audio/ogg";             // OGG 音声
+  map_ext_mime_["ogv"] = "video/ogg";             // OGG 動画
+  map_ext_mime_["ogx"] = "application/ogg";       // OGG
+  map_ext_mime_["opus"] = "audio/opus";           // Opus 音声
+  map_ext_mime_["otf"] = "font/otf";              // OpenType フォント
+  map_ext_mime_["png"] = "image/png";             // Portable Network Graphics
+  map_ext_mime_["pdf"] =
+      "application/pdf";  // Adobe Portable Document Format (PDF)
+  map_ext_mime_["php"] =
+      "application/x-httpd-php";  // Hypertext Preprocessor (Personal Home Page)
+  map_ext_mime_["ppt"] =
+      "application/vnd.ms-powerpoint";  // Microsoft PowerPoint
+  map_ext_mime_["pptx"] =
+      "application/"
+      "vnd.openxmlformats-officedocument.presentationml.presentation";  // Microsoft
+                                                                        // PowerPoint
+                                                                        // (OpenXML)
+  map_ext_mime_["rar"] = "application/vnd.rar";  // RAR アーカイブ
+  map_ext_mime_["rtf"] = "application/rtf";  //リッチテキスト形式 (RTF)
+  map_ext_mime_["sh"] = "application/x-sh";  // Bourne shell スクリプト
+  map_ext_mime_["svg"] = "image/svg+xml";    // Scalable Vector Graphics (SVG)
+  map_ext_mime_["swf"] =
+      "application/x-shockwave-flash";  // Small web format (SWF) または Adobe
+                                        // Flash 文書
+  map_ext_mime_["tar"] = "application/x-tar";  // Tape Archive (TAR)
+  map_ext_mime_["tif"] = "image/tiff";   // Tagged Image File Format (TIFF)
+  map_ext_mime_["tiff"] = "image/tiff";  // Tagged Image File Format (TIFF)
+  map_ext_mime_["ts"] = "video/mp2t";    // MPEG transport stream
+  map_ext_mime_["ttf"] = "font/ttf";     // TrueType フォント
+  map_ext_mime_["txt"] = "text/plain";   //テキストファイル (一般に
+                                         // ASCII or ISO
+                                         // 8859-<em>n</em>)
+  map_ext_mime_["vsd"] = "application/vnd.visio";  // Microsoft Visio
+  map_ext_mime_["wav"] = "audio/wav";              // Waveform 音声形式
+  map_ext_mime_["weba"] = "audio/webm";            // WEBM 音声
+  map_ext_mime_["webm"] = "video/webm";            // WEBM 動画
+  map_ext_mime_["webp"] = "image/webp";            // WEBP 画像
+  map_ext_mime_["woff"] = "font/woff";    // Web Open Font Format (WOFF)
+  map_ext_mime_["woff2"] = "font/woff2";  // Web Open Font Format (WOFF)
+  map_ext_mime_["xhtml"] = "application/xhtml+xml";   // XHTML
+  map_ext_mime_["xls"] = "application/vnd.ms-excel";  // Microsoft Excel
+  map_ext_mime_["xlsx"] =
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";  //    Microsoft Excel (OpenXML)
+  map_ext_mime_["xml"] = "application/xml";  // XML
+                                             //(一般のユーザから読める場合)
+  map_ext_mime_["xml"] = "text/xml";  // XML
+                                      //(一般のユーザから読めない場合)
+  map_ext_mime_["xul"] = "application/vnd.mozilla.xul+xml";  // XUL
+  map_ext_mime_["zip"] = "application/zip";  // ZIP アーカイブ
+  map_ext_mime_["3gp"] = "audio/3gpp";  // 3GPP 音声/動画コンテナー (動画含まず)
+  map_ext_mime_["3gp"] = "video/3gpp";  // 3GPP 音声/動画コンテナー
+  map_ext_mime_["3g2"] =
+      "audio/3gpp2";  // 3GPP2 音声/動画コンテナー (動画含まず)
+  map_ext_mime_["3g2"] = "video/3gpp2";  // 3GPP2 音声/動画コンテナー
+  map_ext_mime_["7z"] = "application/x-7z-compressed";  // 7-zipアーカイブ
+
+  // set extention to MIME
+  for (std::map<std::string, std::string>::const_iterator itr =
+           map_ext_mime_.begin();
+       itr != map_ext_mime_.end(); ++itr) {
+    map_mime_ext_[itr->second] = itr->first;
+  }
+  map_mime_ext_["audio/3gpp"] = "3gp";
+  map_mime_ext_["audio/3gpp2"] = "3g2";
 }

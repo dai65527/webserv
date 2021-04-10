@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/09 08:51:36 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/10 16:57:14 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,10 @@ class Session {
 #ifdef UNIT_TEST
  public:
 #endif
+  static std::map<std::string, std::string> map_mime_ext_;
+  static std::map<std::string, std::string> map_ext_mime_;
+  static void initMapMineExt();
+
   int sock_fd_;
   int file_fd_;
   int retry_count_;
