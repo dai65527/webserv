@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/10 23:05:02 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/11 08:04:21 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,17 +33,17 @@ class test_getFileExtension : public ::testing::Test {
 
 TEST_F(test_getFileExtension, normal_html) {
   session->request_.headers_["content-type"] = "text/html";
-  EXPECT_EQ(session->getFileExtension(), "html");
+  EXPECT_EQ(session->getFileExtension(), ".html");
 }
 
 TEST_F(test_getFileExtension, normal_3gppaudio) {
   session->request_.headers_["content-type"] = "audio/3gpp";
-  EXPECT_EQ(session->getFileExtension(), "3gp");
+  EXPECT_EQ(session->getFileExtension(), ".3gp");
 }
 
 TEST_F(test_getFileExtension, normal_3gppvideo) {
   session->request_.headers_["content-type"] = "video/3gpp";
-  EXPECT_EQ(session->getFileExtension(), "3gp");
+  EXPECT_EQ(session->getFileExtension(), ".3gp");
 }
 
 TEST_F(test_getFileExtension, no_content_type_header) {
@@ -57,10 +57,10 @@ TEST_F(test_getFileExtension, no_such_mime) {
 
 TEST_F(test_getFileExtension, withcharset1_html) {
   session->request_.headers_["content-type"] = "text/html; charset=UTF-8";
-  EXPECT_EQ(session->getFileExtension(), "html");
+  EXPECT_EQ(session->getFileExtension(), ".html");
 }
 
 TEST_F(test_getFileExtension, withcharset2_html) {
   session->request_.headers_["content-type"] = "text/html ;charset=UTF-8";
-  EXPECT_EQ(session->getFileExtension(), "html");
+  EXPECT_EQ(session->getFileExtension(), ".html");
 }

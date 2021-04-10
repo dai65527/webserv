@@ -418,9 +418,9 @@ std::string Session::findUploadStore(const std::string& uri) const {
 std::string Session::getFileExtension() const {
   // find content-type header
   std::map<std::string, std::string>::const_iterator itr =
-      request_.headers_.find("content-type");
-  if (itr == request_.headers_.end()) {
-    return "";  // return empty string
+      request_.getHeaders().find("content-type");
+  if (itr == request_.getHeaders().end()) {
+    return "";  // return empty strin
   }
 
   // get mime type from header
@@ -437,7 +437,7 @@ std::string Session::getFileExtension() const {
   if (itr == map_mime_ext_.end()) {
     return "";  // no mime type matched
   }
-  return itr->second;  // return extention found
+  return "." + itr->second;  // return extention found
 }
 
 /*
