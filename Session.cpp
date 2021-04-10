@@ -413,8 +413,30 @@ std::string Session::findUploadStore(const std::string& uri) const {
   return "";
 }
 
+// get file extension from mime type
 std::string Session::getFileExtension() const {
-  return ".txt";  // TODO!!!!!
+  // find content-type header
+  std::map<std::string, std::string>::const_iterator itr =
+      request_.headers_.find("content-type");
+  if (itr == request_.headers_.end()) {
+    return "";  // return empty string
+  }
+
+  // get mime type from header
+  std::string mime_type;
+  size_t posend = std::min(itr->second.find(' '), itr->second.find(';'));
+  if (posend == std::string::npos) {
+    mime_type = itr->second;
+  } else {
+    mime_type = itr->second.substr(0, posend);
+  }
+
+  // get file extension
+  itr = map_mime_ext_.find(mime_type);
+  if (itr == map_mime_ext_.end()) {
+    return "";  // no mime type matched
+  }
+  return itr->second;  // return extention found
 }
 
 /*
