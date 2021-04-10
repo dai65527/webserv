@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/05 20:19:24 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/10 20:41:42 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,7 @@ int Request::receive(int sock_fd) {
   if (ret < 0) {
     return REQ_ERR_RECV;
   }
+  //else if (ret == 0) {} /*when brawsers shut down the connection, this may be required */
   write(1, read_buf, ret);
   write(1, "\n", 1);
   buf_.insert(buf_.end(), read_buf, read_buf + ret);

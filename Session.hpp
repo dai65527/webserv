@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/31 15:30:01 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/10 20:48:07 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@
 #include "Request.hpp"
 #include "Response.hpp"
 #include "SessionStatus.hpp"
+
+#define SOFTWARE_NAME "nginDX"
 
 class Session {
  private:
@@ -61,7 +63,7 @@ class Session {
   const ServerConfig* findServer() const;
   const LocationConfig* findLocation() const;
   bool isLocationMatch(const std::string& loc_route,
-                            const std::string& uri_path) const;
+                       const std::string& uri_path) const;
 
   // read from file
   void startReadingFromFile(const std::string& filepath);
@@ -84,6 +86,10 @@ class Session {
   bool isCgiFile(const std::string& filepath) const;
   int writeToCgi();
   int readFromCgi();
+  char** storeArgvs();
+  const std::vector<std::string> storeMetaVariables();
+  void storeMetaVariables(const char** meta_variables,
+                          const std::vector<std::string>& envp);
 
  public:
   virtual ~Session();

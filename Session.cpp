@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/02 14:03:38 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/10 20:51:19 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -492,7 +492,7 @@ void Session::startReadingFromFile(const std::string& filepath) {
   }
 
   // create response header
-  addResponseHeaderOfFile(filepath);          // add response header
+  addResponseHeaderOfFile(filepath);  // add response header
 
   status_ = SESSION_FOR_FILE_READ;
 }
@@ -741,11 +741,14 @@ bool Session::isCgiFile(const std::string& filepath) const {
 
 void Session::createCgiProcess(const std::string& filepath,
                                const std::string& cgiuri) {
-  // HTTPStatusCode http_status = cgi_handler_.createCgiProcess();
-  // if (http_status != HTTP_200) {
-  //   std::cout << "[error] failed to create cgi process" << std::endl;
-  //   createErrorResponse(http_status);
-  // }
+  // prepare argvs and env vars here and pass them to cgiHandler
+  const std::vector<std::string> meta_variables = storeMetaVariables();
+  HTTPStatusCode http_status =
+      cgi_handler_.createCgiProcess(filepath, meta_variables);
+  if (http_status != HTTP_200) {
+    std::cout << "[error] failed to create cgi process" << std::endl;
+    createErrorResponse(http_status);
+  }
 
   // [TEMP] create response header
   response_.createStatusLine(HTTP_200);
@@ -756,8 +759,7 @@ void Session::createCgiProcess(const std::string& filepath,
   response_.appendToBody("<h1>cgi not yet implemented: ", 29);
   response_.appendToBody(filepath.c_str(), filepath.length());
   response_.appendToBody("</h1>\n", 6);
-  // status_ = SESSION_FOR_CGI_WRITE;
-  status_ = SESSION_FOR_CLIENT_SEND;  // TEMP!!!!
+  status_ = SESSION_FOR_CGI_WRITE;
 }
 
 // write to cgi process (TODO!!)
@@ -765,7 +767,8 @@ int Session::writeToCgi() {
   ssize_t n;
 
   // write to cgi process
-  n = cgi_handler_.writeToCgi(&(request_.getBuf()[0]), request_.getBuf().size());
+  n = cgi_handler_.writeToCgi(&(request_.getBuf()[0]),
+                              request_.getBuf().size());
 
   // retry several times even if write failed
   if (n == -1) {
@@ -912,4 +915,64 @@ int Session::writeToFile() {
   }
   // to next read
   return 0;
+}
+
+const std::vector<std::string> Session::storeMetaVariables() {
+  std::vector<std::string> envp;
+  std::string tmp;
+  const std::map<std::string, std::string>& headers = request_.getHeaders();
+  tmp = "AUTH_TYPE=";
+  tmp += "TEST";
+  envp.push_back(tmp);
+  tmp = "CONTENT_LENGTH=";
+  tmp += (*(headers).find("content-length")).second;//if  not find ""; 
+  envp.push_back(tmp);
+  tmp = "CONTENT_TYPE=";//how to get content-type??? 入れてもらう！
+  tmp += "TEST";
+  envp.push_back(tmp);
+  tmp = "GATEWAY_INTERFACE=";//プロトコル名称入れてもらう？
+  tmp += "TEST";
+  envp.push_back(tmp);
+  tmp = "PATH_INFO=";//cgi-bin/xxx.cgi/taro/xxx.htm (requestのURIから使える)
+  tmp += "TEST";  // need func to get path_info
+  envp.push_back(tmp);
+  tmp = "PATH_TRANSLATED=";//PATH_INFO
+  tmp += "TEST";  // need func to create path_translated
+  envp.push_back(tmp);
+  tmp = "QUERY_STRING=";//?test.cgi?a=b&c=d ->parseするのはcgiの責任parseしたのから再構築してもいい、直してもいい
+  tmp += "TEST";  // need func to get URI from ?
+  envp.push_back(tmp);
+  tmp = "REMOTE_ADDR=";// getsockname(sock_fd_, reinterpret_cast<struct sockaddr*>(&addr), &addrlen);
+  tmp += "TEST";// getsockname(sock_fd_, reinterpret_cast<struct sockaddr*>(&addr), &addrlen);
+  // in_addr_t ip = addr.sin_addr.s_addr;
+  // uint16_t port = addr.sin_port;
+  //(findServerでportをメンバとしてもらってしまう)
+  envp.push_back(tmp);
+  tmp = "REMOTE_IDENT=";
+  tmp += "TEST";
+  envp.push_back(tmp);
+  tmp = "REMOTE_USER=";
+  tmp += "TEST";
+  envp.push_back(tmp);
+  tmp = "RQUEST_METHOD=";
+  tmp += request_.getMethod();
+  envp.push_back(tmp);
+  tmp = "RQUEST_URI=";
+  tmp += request_.getUri();
+  envp.push_back(tmp);
+  tmp = "SCRIPT_NAME=";//cgi script名(cgi_uriの最後を使う)ft_splitで！
+  tmp += "TEST";
+  envp.push_back(tmp);
+  tmp = "SERVER_NAME=";//host header?
+  tmp += "TEST";
+  envp.push_back(tmp);
+  tmp = "SERVER_PORT=";// port (findServerでipをメンバとしてもらってしまう)
+  tmp += "TEST";
+  envp.push_back(tmp);
+  tmp = "SERVER_PROTOCOL=HTTP/1.1";
+  envp.push_back(tmp);
+  tmp = "SERVER_SOFTWARE=";
+  tmp += SOFTWARE_NAME;
+  envp.push_back(tmp);
+  return envp;
 }

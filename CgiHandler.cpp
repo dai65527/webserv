@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/07 23:25:56 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/30 19:09:35 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/10 01:00:43 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,8 @@ int CgiHandler::getInputFd() const { return input_fd_; }
 int CgiHandler::getOutputFd() const { return output_fd_; }
 
 // HTTPStatusCode CgiHandler::createCgiProcess(const std::string& path) {
-HTTPStatusCode CgiHandler::createCgiProcess() {
+HTTPStatusCode CgiHandler::createCgiProcess(const std::string& filepath,
+                                            const std::vector<std::string>& meta_variables_str) {
   // create a pipe connect to stdin of cgi process
   int pipe_stdin[2];
   if (pipe(pipe_stdin) == -1) {
@@ -70,9 +71,13 @@ HTTPStatusCode CgiHandler::createCgiProcess() {
     close(pipe_stdout[0]);
     close(pipe_stdout[1]);
 
-    // excecute cgi process (TODO: implement iroiro)
-    char* argv[] = {(char*)"/bin/cat", (char*)"-e", NULL};
-    execve("/bin/cat", argv, NULL);
+    // excecute cgi process
+    char* argv[] = {const_cast<char*>(filepath.c_str()), (char*)"TEST",
+                    NULL};  //
+    // char* envp[] = {(char*)"AUTH_TYPE=TEST", (char*)"CONTENT_LENGTH=18", NULL};
+    const char *meta_variables[18];
+    storeMetaVariables(meta_variables, meta_variables_str);
+    execve(filepath.c_str(), argv, (char**)meta_variables);
     exit(1);
   }
 
@@ -87,9 +92,6 @@ HTTPStatusCode CgiHandler::createCgiProcess() {
   // close fd not to use in parent process
   close(pipe_stdin[0]);
   close(pipe_stdout[1]);
-
-  // change status to cgi write
-  // status_ = SESSION_FOR_CGI_WRITE;
 
   // return status 200 on success (but not a final status)
   return HTTP_200;
@@ -118,4 +120,13 @@ int CgiHandler::readFromCgi(char* buf, size_t size) {
     return 0;
   }
   return ret;
+}
+
+void CgiHandler::storeMetaVariables(
+    const char* meta_variables[],
+    const std::vector<std::string>& meta_variables_str) {
+  for (size_t i = 0; i < meta_variables_str.size(); ++i) {
+    meta_variables[i] = meta_variables_str[i].c_str();
+  }
+  meta_variables[meta_variables_str.size()] = NULL;
 }

@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 22:01:23 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/30 19:09:11 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/10 00:59:22 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <sys/types.h>
 
 #include <string>
+#include <vector>
 
 #include "HttpStatusCode.hpp"
 
@@ -37,8 +38,11 @@ class CgiHandler {
   pid_t getPid() const;
   int getInputFd() const;
   int getOutputFd() const;
-  // HTTPStatusCode createCgiProcess(const std::string& path);
-  HTTPStatusCode createCgiProcess();
+  HTTPStatusCode createCgiProcess(
+      const std::string& filepath,
+      const std::vector<std::string>& meta_variables_str);
+  void storeMetaVariables(const char* meta_variables[],
+                          const std::vector<std::string>& meta_variables_str);
   int writeToCgi(const char* buf, size_t size);
   int finishWriting();
   int readFromCgi(char* buf, size_t size);
