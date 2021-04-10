@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/05 20:17:22 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/10 22:57:30 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,8 @@ class Request {
   std::string header_field_;
   std::string method_;
   std::string uri_;
-  std::map<std::string, std::string> query_;
+  // std::map<std::string, std::string> query_;
+  std::string query_;
   std::map<std::string, std::string> headers_;
   std::vector<char> body_;
   unsigned long content_length_;
@@ -75,7 +76,8 @@ class Request {
   const std::string& getMethod() const;
   const std::string& getUri() const;
   const std::map<std::string, std::string>& getHeaders() const;
-  const std::map<std::string, std::string>& getQuery() const;
+  // const std::map<std::string, std::string>& getQuery() const;
+  const std::string& getQuery() const;
   size_t getContentLength() const;
   const std::vector<char>& getBody() const;
   int getFlgChunked() const;

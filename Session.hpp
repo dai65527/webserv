@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/10 20:48:07 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/10 22:49:24 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,9 @@ class Session {
   Response response_;
   CgiHandler cgi_handler_;
   pid_t cgi_pid_;
+  in_addr_t ip_;
+  uint16_t port_;
+
 
   Session();
   Session(Session const& other);

@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/10 20:41:42 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/10 23:05:29 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,10 @@ const std::string& Request::getUri() const { return uri_; }
 const std::map<std::string, std::string>& Request::getHeaders() const {
   return headers_;
 }
-const std::map<std::string, std::string>& Request::getQuery() const {
+// const std::map<std::string, std::string>& Request::getQuery() const {
+//   return query_;
+// }
+const std::string& Request::getQuery() const {
   return query_;
 }
 size_t Request::getContentLength() const { return content_length_; }
@@ -227,30 +230,35 @@ size_t Request::parseUri(size_t pos) {
     uri_.push_back(buf_[i]);
   }
   if (buf_[pos] == '?') { /* parse query */
-    while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r') {
       size_t begin = ++pos;
-      while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r' &&
-             buf_[pos] != '&') {
-        ++pos;
-      }
-      size_t pos_equal = begin;
-      while (pos_equal != buf_.size()) {
-        if (buf_[pos_equal] == '=') {
-          break;
-        }
-        ++pos_equal;
-      }
-      if (pos_equal == buf_.size()) {
-        continue;
-      }
-      std::string key = bufToString(begin, pos_equal);
-      ++pos_equal;
-      std::string value = bufToString(pos_equal, pos);
-      query_[key] = value;
-      if (buf_[pos] != '&') {
-        break;
-      }
-    }
+       while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r') {
+         ++pos;
+       }
+       query_ = bufToString(begin, pos);
+  //   while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r') {
+  //     size_t begin = ++pos;
+  //     while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r' &&
+  //            buf_[pos] != '&') {
+  //       ++pos;
+  //     }
+  //     size_t pos_equal = begin;
+  //     while (pos_equal != buf_.size()) {
+  //       if (buf_[pos_equal] == '=') {
+  //         break;
+  //       }
+  //       ++pos_equal;
+  //     }
+  //     if (pos_equal == buf_.size()) {
+  //       continue;
+  //     }
+  //     std::string key = bufToString(begin, pos_equal);
+  //     ++pos_equal;
+  //     std::string value = bufToString(pos_equal, pos);
+  //     query_[key] = value;
+  //     if (buf_[pos] != '&') {
+  //       break;
+  //     }
+  //   }
   }
   return pos;
 }
