@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/10 22:49:25 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/11 00:45:11 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -369,7 +369,7 @@ static bool isServerNameMatch(const std::string& host_header,
 }
 
 // find matching server directive to request
-const ServerConfig* Session::findServer() const {
+const ServerConfig* Session::findServer() {
   // get ip and port
   sockaddr_in addr;
   socklen_t addrlen = sizeof(sockaddr_in);
@@ -399,8 +399,8 @@ const ServerConfig* Session::findServer() const {
     bool flg_matched = false;
     for (itr_listen = itr_server->getListen().begin(); itr_listen != end_listen;
          ++itr_listen) {
-      if ((itr_listen->first == INADDR_ANY || itr_listen->first == ip) &&
-          itr_listen->second == port) {
+      if ((itr_listen->first == INADDR_ANY || itr_listen->first == ip_) &&
+          itr_listen->second == port_) {
         flg_matched = true;
         break;
       }
@@ -927,16 +927,16 @@ const std::vector<std::string> Session::storeMetaVariables() {
   std::string tmp;
   const std::map<std::string, std::string>& headers = request_.getHeaders();
   tmp = "AUTH_TYPE=";
-  tmp += "TEST";
+  tmp += getFromHeaders(headers, "authorization");
   envp.push_back(tmp);
   tmp = "CONTENT_LENGTH=";
-  tmp += (*(headers).find("content-length")).second;  // if  not find "";
+  tmp += getFromHeaders(headers, "content-length");  // if  not find "";
   envp.push_back(tmp);
   tmp = "CONTENT_TYPE=";  // how to get content-type??? 入れてもらう！
-  tmp += "TEST";
+  tmp += getFromHeaders(headers, "content-type");
   envp.push_back(tmp);
   tmp = "GATEWAY_INTERFACE=";  //プロトコル名称入れてもらう？
-  tmp += "TEST";
+  tmp += getFromHeaders(headers, "gateway-interface");
   envp.push_back(tmp);
   tmp = "PATH_INFO=";  // cgi-bin/xxx.cgi/taro/xxx.htm (requestのURIから使える)
   tmp += "TEST";       // need func to get path_info
@@ -947,14 +947,10 @@ const std::vector<std::string> Session::storeMetaVariables() {
   tmp =
       "QUERY_STRING=";  //?test.cgi?a=b&c=d
                         //->parseするのはcgiの責任parseしたのから再構築してもいい、直してもいい
-  tmp += "TEST";        // need func to get URI from ?
+  tmp += request_.getQuery();
   envp.push_back(tmp);
-  tmp = "REMOTE_ADDR=";  // getsockname(sock_fd_, reinterpret_cast<struct
-                         // sockaddr*>(&addr), &addrlen);
-  tmp += "TEST";         // getsockname(sock_fd_, reinterpret_cast<struct
-                         // sockaddr*>(&addr), &addrlen);
-  // in_addr_t ip = addr.sin_addr.s_addr;
-  // uint16_t port = addr.sin_port;
+  tmp = "REMOTE_ADDR=";
+  tmp += "TEST";
   //(findServerでportをメンバとしてもらってしまう)
   envp.push_back(tmp);
   tmp = "REMOTE_IDENT=";
@@ -963,17 +959,18 @@ const std::vector<std::string> Session::storeMetaVariables() {
   tmp = "REMOTE_USER=";
   tmp += "TEST";
   envp.push_back(tmp);
-  tmp = "RQUEST_METHOD=";
+  tmp = "REQUEST_METHOD=";
   tmp += request_.getMethod();
+  std::cout << "Method: " << request_.getMethod() << std::endl;
   envp.push_back(tmp);
-  tmp = "RQUEST_URI=";
+  tmp = "REQUEST_URI=";
   tmp += request_.getUri();
   envp.push_back(tmp);
   tmp = "SCRIPT_NAME=";  // cgi script名(cgi_uriの最後を使う)ft_splitで！
   tmp += "TEST";
   envp.push_back(tmp);
-  tmp = "SERVER_NAME=";  // host header?
-  tmp += "TEST";
+  tmp = "SERVER_NAME=";
+  tmp += getFromHeaders(headers, "host");
   envp.push_back(tmp);
   tmp = "SERVER_PORT=";  // port (findServerでipをメンバとしてもらってしまう)
   tmp += "TEST";
@@ -984,4 +981,13 @@ const std::vector<std::string> Session::storeMetaVariables() {
   tmp += SOFTWARE_NAME;
   envp.push_back(tmp);
   return envp;
+}
+
+std::string Session::getFromHeaders(const std::map<std::string, std::string>& headers,
+                            const std::string key) {
+  std::map<std::string, std::string>::const_iterator itr = headers.find(key);
+  if (itr == headers.end()) {
+    return "";
+  }
+  return (*itr).second;
 }

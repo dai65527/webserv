@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/10 23:05:29 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/11 00:44:20 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,7 +213,7 @@ size_t Request::parseMethod() {
   while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r') {
     ++pos;
   }
-  method_.assign(&buf_[0], &buf_[pos]);
+  method_ = bufToString(0, pos);
   return pos;
 }
 
@@ -226,15 +226,13 @@ size_t Request::parseUri(size_t pos) {
          buf_[pos] != '?') {
     ++pos;
   }
-  for (size_t i = copy_begin; i < pos; ++i) {
-    uri_.push_back(buf_[i]);
-  }
+  uri_ = bufToString(copy_begin, pos);
   if (buf_[pos] == '?') { /* parse query */
-      size_t begin = ++pos;
+      copy_begin = ++pos;
        while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r') {
          ++pos;
        }
-       query_ = bufToString(begin, pos);
+       query_ = bufToString(copy_begin, pos);
   //   while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r') {
   //     size_t begin = ++pos;
   //     while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r' &&

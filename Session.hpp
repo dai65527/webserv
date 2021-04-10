@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/10 22:49:24 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/11 00:07:34 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,6 @@ class Session {
   in_addr_t ip_;
   uint16_t port_;
 
-
   Session();
   Session(Session const& other);
   Session& operator=(Session const& other);
@@ -63,7 +62,7 @@ class Session {
 
   // load config
   void setupServerAndLocationConfig();
-  const ServerConfig* findServer() const;
+  const ServerConfig* findServer();
   const LocationConfig* findLocation() const;
   bool isLocationMatch(const std::string& loc_route,
                        const std::string& uri_path) const;
@@ -93,6 +92,8 @@ class Session {
   const std::vector<std::string> storeMetaVariables();
   void storeMetaVariables(const char** meta_variables,
                           const std::vector<std::string>& envp);
+  std::string getFromHeaders(const std::map<std::string, std::string>& headers,
+                              const std::string key);
 
  public:
   virtual ~Session();
