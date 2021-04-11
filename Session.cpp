@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/02 14:03:38 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/11 12:45:21 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -492,7 +492,7 @@ void Session::startReadingFromFile(const std::string& filepath) {
   }
 
   // create response header
-  addResponseHeaderOfFile(filepath);          // add response header
+  addResponseHeaderOfFile(filepath);  // add response header
 
   status_ = SESSION_FOR_FILE_READ;
 }
@@ -642,13 +642,68 @@ int Session::readFromFile() {
 */
 
 void Session::startDirectoryListing(const std::string& filepath) {
+  DIR* dptr;
+
+  // check autoindex is on
+  if ((location_config_ && location_config_->getAutoIndex()) ||
+      (server_config_ && server_config_->getAutoIndex()) ||
+      main_config_.getAutoIndex()) {
+    // OK GO AHEAD
+  } else {
+    createErrorResponse(HTTP_403);
+    return;
+  }
+
+  // open directory
+  dptr = opendir(filepath.c_str());
+  if (dptr == NULL) {
+    createErrorResponse(HTTP_404);
+    return;
+  }
+
+  // add header
   response_.createStatusLine(HTTP_200);
   response_.addHeader("Content-Type", "text/html");
+  // response_.addHeader("Date", timestamp);  // add after merged
 
-  // [TEMP] response
-  response_.appendToBody("<h1>autoindex not yet implemented: ", 35);
-  response_.appendToBody(filepath.c_str(), filepath.length());
-  response_.appendToBody("</h1>\n", 6);
+  /*** create body ***/
+  // create header
+  response_.appendToBody("<html>\n<head><title>Index of ");
+  response_.appendToBody(request_.uri_);
+  response_.appendToBody("</title></head>\n");
+
+  // create title
+  response_.appendToBody("<body bgcolor=\"white\">\n");
+  response_.appendToBody("<h1>Index of ");
+  response_.appendToBody(request_.uri_);
+  response_.appendToBody("</h1>\n<hr>\n");
+
+  // create list
+  response_.appendToBody(
+      "<pre>\n<a href=\"../\">../</a>\n");  // .. always with you
+  struct dirent* dent;
+  while ((dent = readdir(dptr)) != NULL) {
+    // ignore hidden data
+    if (*(dent->d_name) == '.') {
+      continue;
+    }
+    response_.appendToBody(dent->d_name, dent->d_namlen);
+    response_.appendToBody("                       ");
+    response_.appendToBody("TIMESTAMP");  // TODO
+    response_.appendToBody("          ");
+    struct stat st;
+    if (lstat(dent->d_name, &st) == -1 || S_ISDIR(st.st_mode)) {
+      response_.appendToBody("-\n");
+    } else {
+      response_.appendToBody(std::to_string(st.st_size));
+      response_.appendToBody("\n");
+    }
+  }
+
+  // end of list
+  response_.appendToBody("</pre><hr></body>\n</html>\n");
+
+  // to send response
   status_ = SESSION_FOR_CLIENT_SEND;
 }
 
@@ -765,7 +820,8 @@ int Session::writeToCgi() {
   ssize_t n;
 
   // write to cgi process
-  n = cgi_handler_.writeToCgi(&(request_.getBuf()[0]), request_.getBuf().size());
+  n = cgi_handler_.writeToCgi(&(request_.getBuf()[0]),
+                              request_.getBuf().size());
 
   // retry several times even if write failed
   if (n == -1) {
