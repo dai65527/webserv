@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/11 22:02:10 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/11 22:24:36 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -922,12 +922,13 @@ int Session::writeToFile() {
   return 0;
 }
 
-const std::vector<std::string> Session::storeMetaVariables(const std::string& cgiuri) {
+const std::vector<std::string> Session::storeMetaVariables(
+    const std::string& cgiuri) {
   std::vector<std::string> envp;
   std::string tmp;
   const std::map<std::string, std::string>& headers = request_.getHeaders();
   tmp = "AUTH_TYPE=";
-  tmp += getFromHeaders(headers, "authorization");
+  tmp += getFromHeaders(headers, "authorization");  //?
   envp.push_back(tmp);
   tmp = "CONTENT_LENGTH=";
   tmp += getFromHeaders(headers, "content-length");  // if  not find "";
@@ -936,9 +937,9 @@ const std::vector<std::string> Session::storeMetaVariables(const std::string& cg
   tmp += getFromHeaders(headers, "content-type");
   envp.push_back(tmp);
   tmp = "GATEWAY_INTERFACE=";  //プロトコル名称入れてもらう？
-  tmp += getFromHeaders(headers, "gateway-interface");
+  tmp += getFromHeaders(headers, "gateway-interface");  //?
   envp.push_back(tmp);
-  tmp = "PATH_INFO=";//testerで求める挙動は違うようだ（discord #webserv)
+  tmp = "PATH_INFO=";  // testerで求める挙動は違うようだ（discord #webserv)
   std::string path_info = getPathInfo(cgiuri);
   tmp += path_info;
   envp.push_back(tmp);
@@ -946,9 +947,7 @@ const std::vector<std::string> Session::storeMetaVariables(const std::string& cg
   tmp += findRoot();
   tmp += path_info;
   envp.push_back(tmp);
-  tmp =
-      "QUERY_STRING=";  //?test.cgi?a=b&c=d
-                        //->parseするのはcgiの責任parseしたのから再構築してもいい、直してもいい
+  tmp = "QUERY_STRING=";
   tmp += request_.getQuery();
   envp.push_back(tmp);
   tmp = "REMOTE_ADDR=";
@@ -968,8 +967,8 @@ const std::vector<std::string> Session::storeMetaVariables(const std::string& cg
   tmp = "REQUEST_URI=";
   tmp += request_.getUri();
   envp.push_back(tmp);
-  tmp = "SCRIPT_NAME=";  // cgi script名(cgi_uriの最後を使う)ft_splitで！
-  tmp += "TEST";
+  tmp = "SCRIPT_NAME=";
+  tmp += cgiuri;
   envp.push_back(tmp);
   tmp = "SERVER_NAME=";
   tmp += getFromHeaders(headers, "host");
@@ -985,8 +984,8 @@ const std::vector<std::string> Session::storeMetaVariables(const std::string& cg
   return envp;
 }
 
-std::string Session::getFromHeaders(const std::map<std::string, std::string>& headers,
-                            const std::string key) {
+std::string Session::getFromHeaders(
+    const std::map<std::string, std::string>& headers, const std::string key) {
   std::map<std::string, std::string>::const_iterator itr = headers.find(key);
   if (itr == headers.end()) {
     return "";
