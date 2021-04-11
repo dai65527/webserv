@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 08:14:01 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/28 16:03:22 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/11 11:43:01 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,4 +163,21 @@ bool isDirectory(const std::string& path) {
     return false;
   }
   return S_ISDIR(pathstat.st_mode);
+}
+
+std::string basename(const std::string& path) {
+  if (path.empty()) {
+    return "";
+  }
+
+  size_t end = path.find_last_not_of('/');
+  if (end == std::string::npos) {
+    return path.empty() ? "" : "/";
+  }
+
+  size_t begin = path.find_last_of('/', end);
+  if (begin == std::string::npos) {
+    return path.substr(0, end + 1);
+  }
+  return path.substr(begin + 1, end - begin);
 }
