@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/10 16:57:14 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/11 09:15:11 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,6 @@ class Session {
   void startCreateResponseToPost();
   void createErrorResponse(HTTPStatusCode http_status);
   int sendResponse();
-  std::string findUploadStore(const std::string& uri) const;
 
   // load config
   void setupServerAndLocationConfig();
@@ -80,18 +79,19 @@ class Session {
   // directrory listing
   void startDirectoryListing(const std::string& filepath);
 
-  // write to file
-  std::string createFilename() const;
-  void startWritingToFile(const std::string& filepath);
-  int writeToFile();
-  std::string getFileExtension() const;
-
   // cgi process
   void createCgiProcess(const std::string& filepath, const std::string& cgiuri);
   std::string findCgiPathFromUri() const;
   bool isCgiFile(const std::string& filepath) const;
   int writeToCgi();
   int readFromCgi();
+
+  // write to file
+  void startWritingToFile();
+  std::string findUploadStore(const std::string& uri) const;
+  std::string createFilename() const;
+  std::string getFileExtension() const;
+  int writeToFile();
 
  public:
   virtual ~Session();

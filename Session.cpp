@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/11 08:10:16 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/11 09:09:42 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,9 +181,7 @@ int Session::receiveRequest() {
   return checkReceiveReturn(ret);
 }
 
-/*
-** check return value of request_.receive(sock_fd_);
-*/
+// check return value of request_.receive(sock_fd_);
 int Session::checkReceiveReturn(int ret) {
   /* firstly check the return value is ERROR or NOT*/
   if (ret == REQ_ERR_BAD_REQUEST) {
@@ -301,12 +299,10 @@ void Session::startCreateResponseToGet() {
 }
 
 void Session::startCreateResponseToPost() {
-  std::string filepath;
-
   // check path includes cgi extension
   const std::string cgiuri = findCgiPathFromUri();
   if (!cgiuri.empty()) {
-    filepath = findRoot() + cgiuri;
+    std::string filepath = findRoot() + cgiuri;
     if (filepath.empty()) {
       createErrorResponse(HTTP_404);
     } else {
@@ -315,42 +311,8 @@ void Session::startCreateResponseToPost() {
     return;
   }
 
-  // check if request uri upload path
-  std::string upload_store =
-      findUploadStore(request_.getUri());  // relative path from root
-  if (upload_store.empty()) {
-    createErrorResponse(HTTP_405);
-    return;
-  }
-
-  // create and append filename to upload store
-  if (*(upload_store.end() - 1) != '/') {
-    upload_store.push_back('/');  // append "/" if missing
-  }
-  upload_store.append(createFilename());  // append filename
-
-  // create filepath
-  filepath = findRoot();
-  if (*(filepath.end() - 1) != '/' || upload_store[0] != '/') {
-    filepath.append("/");  // append "/" if missing
-  }
-  filepath.append(upload_store);
-
-  // create response header
-  response_.createStatusLine(HTTP_201);
-  response_.addHeader("Location", upload_store);
-
-  // start to readfrom file
-  startWritingToFile(filepath);
-}
-
-std::string Session::createFilename() const {
-  std::string filename = "file";  // basename (tmp)
-  char buf[512];
-
-  getTimeStamp(buf, 512, "%y%m%d%H%M%S");
-  return std::string("file") + buf + "_" + std::to_string(rand()) +
-         getFileExtension();
+  // try to write to file if not cgi
+  startWritingToFile();
 }
 
 // check HTTP Request method are avairable
@@ -398,45 +360,6 @@ int Session::sendResponse() {
   }
   retry_count_ = 0;  // reset retry_count if success
   return 0;
-}
-
-std::string Session::findUploadStore(const std::string& uri) const {
-  if (location_config_ != NULL &&
-      isLocationMatch(location_config_->getUploadPass(), uri)) {
-    return location_config_->getUploadStore();
-  }
-  std::cout << server_config_->getUploadPass() << std::endl;
-  if (server_config_ != NULL &&
-      isLocationMatch(server_config_->getUploadPass(), uri)) {
-    return server_config_->getUploadStore();
-  }
-  return "";
-}
-
-// get file extension from mime type
-std::string Session::getFileExtension() const {
-  // find content-type header
-  std::map<std::string, std::string>::const_iterator itr =
-      request_.getHeaders().find("content-type");
-  if (itr == request_.getHeaders().end()) {
-    return "";  // return empty strin
-  }
-
-  // get mime type from header
-  std::string mime_type;
-  size_t posend = std::min(itr->second.find(' '), itr->second.find(';'));
-  if (posend == std::string::npos) {
-    mime_type = itr->second;
-  } else {
-    mime_type = itr->second.substr(0, posend);
-  }
-
-  // get file extension
-  itr = map_mime_ext_.find(mime_type);
-  if (itr == map_mime_ext_.end()) {
-    return "";  // no mime type matched
-  }
-  return "." + itr->second;  // return extention found
 }
 
 /*
@@ -953,10 +876,35 @@ int Session::readFromCgi() {
 }
 
 /*
-** file writers (TODO!!)
+** file writers
 */
 
-void Session::startWritingToFile(const std::string& filepath) {
+void Session::startWritingToFile() {
+  // check if request uri upload path
+  std::string upload_store =
+      findUploadStore(request_.getUri());  // relative path from root
+  if (upload_store.empty()) {
+    createErrorResponse(HTTP_405);
+    return;
+  }
+
+  // create and append filename to upload store
+  if (*(upload_store.end() - 1) != '/') {
+    upload_store.push_back('/');  // append "/" if missing
+  }
+  upload_store.append(createFilename());  // append filename
+
+  // create filepath
+  std::string filepath = findRoot();
+  if (*(filepath.end() - 1) != '/' || upload_store[0] != '/') {
+    filepath.append("/");  // append "/" if missing
+  }
+  filepath.append(upload_store);
+
+  // create response header
+  response_.createStatusLine(HTTP_201);
+  response_.addHeader("Location", upload_store);
+
   // open file
   file_fd_ = open(filepath.c_str(), O_RDWR | O_CREAT, 0644);  // toriaezu
   if (file_fd_ == -1) {
@@ -973,6 +921,54 @@ void Session::startWritingToFile(const std::string& filepath) {
   }
 
   status_ = SESSION_FOR_FILE_WRITE;
+}
+
+std::string Session::findUploadStore(const std::string& uri) const {
+  if (location_config_ != NULL &&
+      isLocationMatch(location_config_->getUploadPass(), uri)) {
+    return location_config_->getUploadStore();
+  }
+  std::cout << server_config_->getUploadPass() << std::endl;
+  if (server_config_ != NULL &&
+      isLocationMatch(server_config_->getUploadPass(), uri)) {
+    return server_config_->getUploadStore();
+  }
+  return "";
+}
+
+std::string Session::createFilename() const {
+  std::string filename = "file";  // basename (tmp)
+  char buf[512];
+
+  getTimeStamp(buf, 512, "%y%m%d%H%M%S");
+  return std::string("file") + buf + "_" + std::to_string(rand()) +
+         getFileExtension();
+}
+
+// get file extension from mime type
+std::string Session::getFileExtension() const {
+  // find content-type header
+  std::map<std::string, std::string>::const_iterator itr =
+      request_.getHeaders().find("content-type");
+  if (itr == request_.getHeaders().end()) {
+    return "";  // return empty strin
+  }
+
+  // get mime type from header
+  std::string mime_type;
+  size_t posend = std::min(itr->second.find(' '), itr->second.find(';'));
+  if (posend == std::string::npos) {
+    mime_type = itr->second;
+  } else {
+    mime_type = itr->second.substr(0, posend);
+  }
+
+  // get file extension
+  itr = map_mime_ext_.find(mime_type);
+  if (itr == map_mime_ext_.end()) {
+    return "";  // no mime type matched
+  }
+  return "." + itr->second;  // return extention found
 }
 
 int Session::writeToFile() {
@@ -1017,6 +1013,14 @@ int Session::writeToFile() {
   // to next read
   return 0;
 }
+
+/*
+** initMapMimeExt
+**
+** initialize maps MIME TYPE (to/from) file extension.
+** covering common mime types listed in mdn docs below.
+** https://developer.mozilla.org/ja/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+*/
 
 void Session::initMapMineExt() {
   static bool flg_set;
