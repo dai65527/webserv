@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/11 22:24:36 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/11 23:04:34 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -973,8 +973,8 @@ const std::vector<std::string> Session::storeMetaVariables(
   tmp = "SERVER_NAME=";
   tmp += getFromHeaders(headers, "host");
   envp.push_back(tmp);
-  tmp = "SERVER_PORT=";  // port (findServerでipをメンバとしてもらってしまう)
-  tmp += "TEST";
+  tmp = "SERVER_PORT=";
+  tmp += std::string(ft_itoa(port_));
   envp.push_back(tmp);
   tmp = "SERVER_PROTOCOL=HTTP/1.1";
   envp.push_back(tmp);
