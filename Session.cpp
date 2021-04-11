@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/11 21:32:43 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/11 22:02:10 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -938,11 +938,13 @@ const std::vector<std::string> Session::storeMetaVariables(const std::string& cg
   tmp = "GATEWAY_INTERFACE=";  //プロトコル名称入れてもらう？
   tmp += getFromHeaders(headers, "gateway-interface");
   envp.push_back(tmp);
-  tmp = "PATH_INFO=";  // cgi-bin/xxx.cgi/taro/xxx.htm (requestのURIから使える)
-  tmp += getPathInfo(cgiuri);       // need func to get path_info
+  tmp = "PATH_INFO=";//testerで求める挙動は違うようだ（discord #webserv)
+  std::string path_info = getPathInfo(cgiuri);
+  tmp += path_info;
   envp.push_back(tmp);
-  tmp = "PATH_TRANSLATED=";  // PATH_INFO
-  tmp += "TEST";             // need func to create path_translated
+  tmp = "PATH_TRANSLATED=";  // Document root + PATH_INFO
+  tmp += findRoot();
+  tmp += path_info;
   envp.push_back(tmp);
   tmp =
       "QUERY_STRING=";  //?test.cgi?a=b&c=d
