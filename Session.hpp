@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/11 00:07:34 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/11 21:18:22 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,11 +89,12 @@ class Session {
   int writeToCgi();
   int readFromCgi();
   char** storeArgvs();
-  const std::vector<std::string> storeMetaVariables();
+  const std::vector<std::string> storeMetaVariables(const std::string& cgiuri);
   void storeMetaVariables(const char** meta_variables,
                           const std::vector<std::string>& envp);
   std::string getFromHeaders(const std::map<std::string, std::string>& headers,
                               const std::string key);
+  std::string getPathInfo(const std::string& cgiuri);
 
  public:
   virtual ~Session();

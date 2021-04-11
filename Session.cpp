@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/11 00:45:11 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/11 21:32:43 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -742,7 +742,7 @@ bool Session::isCgiFile(const std::string& filepath) const {
 void Session::createCgiProcess(const std::string& filepath,
                                const std::string& cgiuri) {
   // prepare argvs and env vars here and pass them to cgiHandler
-  const std::vector<std::string> meta_variables = storeMetaVariables();
+  const std::vector<std::string> meta_variables = storeMetaVariables(cgiuri);
   HTTPStatusCode http_status =
       cgi_handler_.createCgiProcess(filepath, meta_variables);
   if (http_status != HTTP_200) {
@@ -922,7 +922,7 @@ int Session::writeToFile() {
   return 0;
 }
 
-const std::vector<std::string> Session::storeMetaVariables() {
+const std::vector<std::string> Session::storeMetaVariables(const std::string& cgiuri) {
   std::vector<std::string> envp;
   std::string tmp;
   const std::map<std::string, std::string>& headers = request_.getHeaders();
@@ -939,7 +939,7 @@ const std::vector<std::string> Session::storeMetaVariables() {
   tmp += getFromHeaders(headers, "gateway-interface");
   envp.push_back(tmp);
   tmp = "PATH_INFO=";  // cgi-bin/xxx.cgi/taro/xxx.htm (requestのURIから使える)
-  tmp += "TEST";       // need func to get path_info
+  tmp += getPathInfo(cgiuri);       // need func to get path_info
   envp.push_back(tmp);
   tmp = "PATH_TRANSLATED=";  // PATH_INFO
   tmp += "TEST";             // need func to create path_translated
@@ -990,4 +990,10 @@ std::string Session::getFromHeaders(const std::map<std::string, std::string>& he
     return "";
   }
   return (*itr).second;
+}
+
+std::string Session::getPathInfo(const std::string& cgiuri) {
+  std::string path_info = request_.getUri();
+  path_info.erase(0, cgiuri.length());
+  return path_info;
 }
