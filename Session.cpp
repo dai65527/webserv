@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/11 12:45:21 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/12 13:27:31 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -641,7 +641,7 @@ int Session::readFromFile() {
 ** directory listing creators (todo!!)
 */
 
-void Session::startDirectoryListing(const std::string& filepath) {
+void Session::startDirectoryListing(const std::string& dirpath) {
   DIR* dptr;
 
   // check autoindex is on
@@ -655,7 +655,7 @@ void Session::startDirectoryListing(const std::string& filepath) {
   }
 
   // open directory
-  dptr = opendir(filepath.c_str());
+  dptr = opendir(dirpath.c_str());
   if (dptr == NULL) {
     createErrorResponse(HTTP_404);
     return;
@@ -675,7 +675,7 @@ void Session::startDirectoryListing(const std::string& filepath) {
   // create title
   response_.appendToBody("<body bgcolor=\"white\">\n");
   response_.appendToBody("<h1>Index of ");
-  response_.appendToBody(request_.uri_);
+  response_.appendToBody(request_.getUri());
   response_.appendToBody("</h1>\n<hr>\n");
 
   // create list
@@ -687,12 +687,42 @@ void Session::startDirectoryListing(const std::string& filepath) {
     if (*(dent->d_name) == '.') {
       continue;
     }
-    response_.appendToBody(dent->d_name, dent->d_namlen);
-    response_.appendToBody("                       ");
-    response_.appendToBody("TIMESTAMP");  // TODO
-    response_.appendToBody("          ");
+
+    // get file stat
     struct stat st;
-    if (lstat(dent->d_name, &st) == -1 || S_ISDIR(st.st_mode)) {
+    if (lstat((dirpath + "/" + dent->d_name).c_str(), &st) == -1) {
+      closedir(dptr);
+      createErrorResponse(HTTP_500);
+      return;
+    }
+
+    // get filename
+    std::string filename(dent->d_name);
+    if (S_ISDIR(st.st_mode)) {
+      filename.append("/");
+    }
+
+    // create link
+    response_.appendToBody("<a href=\"");
+    response_.appendToBody(request_.getUri());
+    if (request_.getUri().empty() ||
+        request_.getUri()[request_.getUri().size() - 1] != '/') {
+      response_.appendToBody("/");
+    }
+    response_.appendToBody(filename);
+    response_.appendToBody("\">");
+    response_.appendToBody(filename);
+    response_.appendToBody("</a>");
+
+    response_.appendToBody("                       ");
+
+    // [TODO] TIMESTAMP
+    response_.appendToBody("TIMESTAMP");  // TODO
+
+    response_.appendToBody("          ");
+
+    // file size
+    if (S_ISDIR(st.st_mode)) {
       response_.appendToBody("-\n");
     } else {
       response_.appendToBody(std::to_string(st.st_size));
@@ -702,6 +732,8 @@ void Session::startDirectoryListing(const std::string& filepath) {
 
   // end of list
   response_.appendToBody("</pre><hr></body>\n</html>\n");
+
+  closedir(dptr);
 
   // to send response
   status_ = SESSION_FOR_CLIENT_SEND;
