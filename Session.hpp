@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/11 09:15:11 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/12 23:14:44 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ class Session {
   const ServerConfig* findServer() const;
   const LocationConfig* findLocation() const;
   bool isLocationMatch(const std::string& loc_route,
-                            const std::string& uri_path) const;
+                       const std::string& uri_path) const;
 
   // read from file
   void startReadingFromFile(const std::string& filepath);
@@ -78,6 +78,12 @@ class Session {
 
   // directrory listing
   void startDirectoryListing(const std::string& filepath);
+  bool isAutoIndexOn() const;
+  int createFileList(const std::string& dirpath,
+                     std::list<struct FileInfo>* files) const;
+  void createDirectoryListingHeader();
+  void createDirectoryListingBody(const std::list<struct FileInfo>& files);
+  void createDirectoryList(const std::list<struct FileInfo>& files);
 
   // cgi process
   void createCgiProcess(const std::string& filepath, const std::string& cgiuri);

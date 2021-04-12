@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 08:14:01 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/12 22:02:52 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/12 22:11:06 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -190,23 +190,14 @@ size_t getTimeStamp(char* buf, size_t bufsize, const char* fmt,
 }
 
 size_t getTimeStamp(char* buf, size_t bufsize, const char* fmt) {
-  struct timeval tv;
-  struct tm time;
-
   // get time
+  struct timeval tv;
   if (gettimeofday(&tv, NULL) == -1) {
     buf[0] = '\0';
     return 0;
   }
 
-  // convert unixtime to char string
-  std::string tv_str = std::to_string(tv.tv_sec);
-
-  // convert char string to struct tm
-  strptime(tv_str.c_str(), "%s", &time);
-
-  // convert tm to string
-  return strftime(buf, bufsize, fmt, &time);
+  return getTimeStamp(buf, bufsize, fmt, tv.tv_sec);
 }
 
 std::string basename(const std::string& path) {
