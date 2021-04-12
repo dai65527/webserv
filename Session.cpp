@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/13 01:15:30 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/13 02:33:39 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -763,9 +763,10 @@ bool Session::isCgiFile(const std::string& filepath) const {
 void Session::createCgiProcess(const std::string& filepath,
                                const std::string& cgiuri) {
   // prepare argvs and env vars here and pass them to cgiHandler
+  char** argv = storeArgv(cgiuri);
   const std::vector<std::string> meta_variables = storeMetaVariables(cgiuri);
   HTTPStatusCode http_status =
-      cgi_handler_.createCgiProcess(filepath, meta_variables);
+      cgi_handler_.createCgiProcess(filepath, argv, meta_variables);
   if (http_status != HTTP_200) {
     std::cout << "[error] failed to create cgi process" << std::endl;
     createErrorResponse(http_status);
@@ -1021,13 +1022,19 @@ int Session::writeToFile() {
   return 0;
 }
 
+char** Session::storeArgv(const std::string& cgiuri) {
+  std::string argv = cgiuri;
+  argv += getPathInfo(cgiuri);
+  return ft_split(argv.c_str(), '/');
+}
+
 const std::vector<std::string> Session::storeMetaVariables(
     const std::string& cgiuri) {
   std::vector<std::string> envp;
   std::string tmp;
   const std::map<std::string, std::string>& headers = request_.getHeaders();
   tmp = "AUTH_TYPE=";
-  tmp += getFromHeaders(headers, "authorization");  //?
+  tmp += getFromHeaders(headers, "authorization");  // TBC!
   envp.push_back(tmp);
   tmp = "CONTENT_LENGTH=";
   tmp += getFromHeaders(headers, "content-length");
@@ -1053,10 +1060,10 @@ const std::vector<std::string> Session::storeMetaVariables(
   tmp += getIpAddress();
   envp.push_back(tmp);
   tmp = "REMOTE_IDENT=";
-  tmp += "TEST";
+  tmp += "TEST";  // TBC!
   envp.push_back(tmp);
   tmp = "REMOTE_USER=";
-  tmp += "TEST";
+  tmp += "TEST";  // TBC!
   envp.push_back(tmp);
   tmp = "REQUEST_METHOD=";
   tmp += request_.getMethod();
@@ -1101,9 +1108,9 @@ std::string Session::getIpAddress() {
   uint32_t tmp;
   std::string ret;
 
-    tmp = ip_;
-    unit = (uint8_t)tmp;
-    ret = ft_itoa(unit);
+  tmp = ip_;
+  unit = (uint8_t)tmp;
+  ret = ft_itoa(unit);
   if (isLitteleEndian()) {
     for (int i = 0; i < 3; ++i) {
       ret += ".";

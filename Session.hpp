@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/13 00:09:34 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/13 02:32:38 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,12 +89,12 @@ class Session {
   bool isCgiFile(const std::string& filepath) const;
   int writeToCgi();
   int readFromCgi();
-  char** storeArgvs();
+  char** storeArgv(const std::string& cgiuri);
   const std::vector<std::string> storeMetaVariables(const std::string& cgiuri);
   void storeMetaVariables(const char** meta_variables,
                           const std::vector<std::string>& envp);
   std::string getFromHeaders(const std::map<std::string, std::string>& headers,
-                              const std::string key);
+                             const std::string key);
   std::string getPathInfo(const std::string& cgiuri);
   std::string getIpAddress();
   int isLitteleEndian();
