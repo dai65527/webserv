@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/13 00:58:52 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/13 01:15:30 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1060,7 +1060,6 @@ const std::vector<std::string> Session::storeMetaVariables(
   envp.push_back(tmp);
   tmp = "REQUEST_METHOD=";
   tmp += request_.getMethod();
-  std::cout << "Method: " << request_.getMethod() << std::endl;
   envp.push_back(tmp);
   tmp = "REQUEST_URI=";
   tmp += request_.getUri();
@@ -1102,10 +1101,10 @@ std::string Session::getIpAddress() {
   uint32_t tmp;
   std::string ret;
 
-  if (isLitteleEndian()) {
     tmp = ip_;
     unit = (uint8_t)tmp;
     ret = ft_itoa(unit);
+  if (isLitteleEndian()) {
     for (int i = 0; i < 3; ++i) {
       ret += ".";
       tmp = tmp >> 8;
@@ -1113,9 +1112,6 @@ std::string Session::getIpAddress() {
       ret += ft_itoa(unit);
     }
   } else {
-    tmp = ip_;
-    unit = (uint8_t)tmp;
-    ret = ft_itoa(unit);
     for (int i = 0; i < 3; ++i) {
       ret.insert(0, ".");
       tmp = tmp >> 8;
