@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/12 21:14:16 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/12 23:33:34 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1030,9 +1030,9 @@ const std::vector<std::string> Session::storeMetaVariables(
   tmp += getFromHeaders(headers, "authorization");  //?
   envp.push_back(tmp);
   tmp = "CONTENT_LENGTH=";
-  tmp += getFromHeaders(headers, "content-length");  // if  not find "";
+  tmp += getFromHeaders(headers, "content-length");
   envp.push_back(tmp);
-  tmp = "CONTENT_TYPE=";  // how to get content-type??? 入れてもらう！
+  tmp = "CONTENT_TYPE=";
   tmp += getFromHeaders(headers, "content-type");
   envp.push_back(tmp);
   tmp = "GATEWAY_INTERFACE=";  //プロトコル名称入れてもらう？
@@ -1073,7 +1073,7 @@ const std::vector<std::string> Session::storeMetaVariables(
   tmp += getFromHeaders(headers, "host");
   envp.push_back(tmp);
   tmp = "SERVER_PORT=";
-  tmp += std::string(ft_itoa(port_));
+  tmp += std::string(ft_itoa(ft_htons(port_)));
   envp.push_back(tmp);
   tmp = "SERVER_PROTOCOL=HTTP/1.1";
   envp.push_back(tmp);
@@ -1096,6 +1096,7 @@ std::string Session::getPathInfo(const std::string& cgiuri) {
   std::string path_info = request_.getUri();
   path_info.erase(0, cgiuri.length());
   return path_info;
+}
 /*
 ** initMapMimeExt
 **
