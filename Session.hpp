@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/12 21:13:15 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/13 00:09:34 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,8 @@ class Session {
   std::string getFromHeaders(const std::map<std::string, std::string>& headers,
                               const std::string key);
   std::string getPathInfo(const std::string& cgiuri);
+  std::string getIpAddress();
+  int isLitteleEndian();
 
   // write to file
   void startWritingToFile();

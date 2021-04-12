@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/12 23:33:34 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/13 00:58:52 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1050,8 +1050,7 @@ const std::vector<std::string> Session::storeMetaVariables(
   tmp += request_.getQuery();
   envp.push_back(tmp);
   tmp = "REMOTE_ADDR=";
-  tmp += "TEST";
-  //(findServerでportをメンバとしてもらってしまう)
+  tmp += getIpAddress();
   envp.push_back(tmp);
   tmp = "REMOTE_IDENT=";
   tmp += "TEST";
@@ -1097,6 +1096,45 @@ std::string Session::getPathInfo(const std::string& cgiuri) {
   path_info.erase(0, cgiuri.length());
   return path_info;
 }
+
+std::string Session::getIpAddress() {
+  uint8_t unit;
+  uint32_t tmp;
+  std::string ret;
+
+  if (isLitteleEndian()) {
+    tmp = ip_;
+    unit = (uint8_t)tmp;
+    ret = ft_itoa(unit);
+    for (int i = 0; i < 3; ++i) {
+      ret += ".";
+      tmp = tmp >> 8;
+      unit = (uint8_t)tmp;
+      ret += ft_itoa(unit);
+    }
+  } else {
+    tmp = ip_;
+    unit = (uint8_t)tmp;
+    ret = ft_itoa(unit);
+    for (int i = 0; i < 3; ++i) {
+      ret.insert(0, ".");
+      tmp = tmp >> 8;
+      unit = (uint8_t)tmp;
+      ret.insert(0, ft_itoa(unit));
+    }
+  }
+  return ret;
+}
+
+int Session::isLitteleEndian() {
+  uint16_t n;
+  uint8_t* uc;
+
+  n = 1;
+  uc = (uint8_t*)&n;
+  return (*uc);
+}
+
 /*
 ** initMapMimeExt
 **
