@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/02 14:03:38 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/11 09:09:42 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,9 @@
 
 #include "webserv_utils.hpp"
 
+std::map<std::string, std::string> Session::map_mime_ext_;
+std::map<std::string, std::string> Session::map_ext_mime_;
+
 /*
 ** constructor
 **
@@ -35,7 +38,9 @@ Session::Session(int sock_fd, const MainConfig& main_config)
       status_(SESSION_FOR_CLIENT_RECV),
       main_config_(main_config),
       server_config_(NULL),
-      location_config_(NULL) {}
+      location_config_(NULL) {
+  initMapMineExt();
+}
 
 Session::~Session(){};
 
@@ -116,7 +121,7 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
       std::cout << "[webserv] read data from file" << std::endl;
       return (1);
     }
-  } else if (status_ == SESSION_FOR_FILE_READ && FD_ISSET(file_fd_, wfds)) {
+  } else if (status_ == SESSION_FOR_FILE_WRITE && FD_ISSET(file_fd_, wfds)) {
     if (writeToFile() == -1) {
       return (-1);
     } else {
@@ -176,9 +181,7 @@ int Session::receiveRequest() {
   return checkReceiveReturn(ret);
 }
 
-/*
-** check return value of request_.receive(sock_fd_);
-*/
+// check return value of request_.receive(sock_fd_);
 int Session::checkReceiveReturn(int ret) {
   /* firstly check the return value is ERROR or NOT*/
   if (ret == REQ_ERR_BAD_REQUEST) {
@@ -240,11 +243,11 @@ void Session::startCreateResponse() {
     return;
   }
 
-  // case POST (for now, just try to use cgi in startReadingFromFile)
-  // if (request_.getMethod() == "POST" && !isMethodAllowed(HTTP_POST)) {
-  // startReadingFromFile();  // header will checked in startReadingFromFile
-  // return;
-  // }
+  // case POST
+  if (request_.getMethod() == "POST" && isMethodAllowed(HTTP_POST)) {
+    startCreateResponseToPost();  // write to file or cgi
+    return;
+  }
 
   // case others (PUT, DELETE and TRACE)
   // not inpl them for now
@@ -293,6 +296,23 @@ void Session::startCreateResponseToGet() {
     return;
   }
   createErrorResponse(HTTP_404);
+}
+
+void Session::startCreateResponseToPost() {
+  // check path includes cgi extension
+  const std::string cgiuri = findCgiPathFromUri();
+  if (!cgiuri.empty()) {
+    std::string filepath = findRoot() + cgiuri;
+    if (filepath.empty()) {
+      createErrorResponse(HTTP_404);
+    } else {
+      createCgiProcess(filepath, cgiuri);
+    }
+    return;
+  }
+
+  // try to write to file if not cgi
+  startWritingToFile();
 }
 
 // check HTTP Request method are avairable
@@ -492,8 +512,7 @@ void Session::startReadingFromFile(const std::string& filepath) {
   }
 
   // create response header
-  addResponseHeaderOfFile(filepath);          // add response header
-
+  addResponseHeaderOfFile(filepath);  // add response header
   status_ = SESSION_FOR_FILE_READ;
 }
 
@@ -524,13 +543,15 @@ std::string Session::findFile(const std::string& uri) const {
 }
 
 // find root config (called from findFile())
-std::string Session::findRoot() const {
+const std::string& Session::findRoot() const {
   // TODO: need to check location but later
-  if (server_config_->getRoot().empty()) {
-    return main_config_.getRoot();
-  } else {
+  if (location_config_ != NULL && !location_config_->getRoot().empty()) {
+    return location_config_->getRoot();
+  }
+  if (server_config_ != NULL && !server_config_->getRoot().empty()) {
     return server_config_->getRoot();
   }
+  return main_config_.getRoot();
 }
 
 // find file as index directive (called from findFile())
@@ -765,7 +786,8 @@ int Session::writeToCgi() {
   ssize_t n;
 
   // write to cgi process
-  n = cgi_handler_.writeToCgi(&(request_.getBuf()[0]), request_.getBuf().size());
+  n = cgi_handler_.writeToCgi(&(request_.getBody()[0]),
+                              request_.getBody().size());
 
   // retry several times even if write failed
   if (n == -1) {
@@ -792,10 +814,10 @@ int Session::writeToCgi() {
   retry_count_ = 0;
 
   // erase written data
-  request_.eraseBuf(n);
+  request_.eraseBody(n);
 
   // written all data
-  if (request_.getBuf().empty()) {
+  if (request_.getBody().empty()) {
     close(cgi_handler_.getInputFd());
     status_ = SESSION_FOR_CGI_READ;  // to read from cgi process
     return 0;
@@ -854,39 +876,118 @@ int Session::readFromCgi() {
 }
 
 /*
-** file writers (TODO!!)
+** file writers
 */
 
 void Session::startWritingToFile() {
-  file_fd_ = open("./test_req.txt", O_RDWR | O_CREAT, 0644);  // toriaezu
-  if (file_fd_ == -1) {
-    createErrorResponse(HTTP_404);
-    status_ = SESSION_FOR_CLIENT_SEND;
+  // check if request uri upload path
+  std::string upload_store =
+      findUploadStore(request_.getUri());  // relative path from root
+  if (upload_store.empty()) {
+    createErrorResponse(HTTP_405);
+    return;
   }
-  fcntl(file_fd_, F_SETFL, O_NONBLOCK);
+
+  // create and append filename to upload store
+  if (*(upload_store.end() - 1) != '/') {
+    upload_store.push_back('/');  // append "/" if missing
+  }
+  upload_store.append(createFilename());  // append filename
+
+  // create filepath
+  std::string filepath = findRoot();
+  if (*(filepath.end() - 1) != '/' || upload_store[0] != '/') {
+    filepath.append("/");  // append "/" if missing
+  }
+  filepath.append(upload_store);
+
+  // create response header
+  response_.createStatusLine(HTTP_201);
+  response_.addHeader("Location", upload_store);
+
+  // open file
+  file_fd_ = open(filepath.c_str(), O_RDWR | O_CREAT, 0644);  // toriaezu
+  if (file_fd_ == -1) {
+    createErrorResponse(HTTP_500);
+    status_ = SESSION_FOR_CLIENT_SEND;
+    return;
+  }
+
+  // set as non block
+  if (fcntl(file_fd_, F_SETFL, O_NONBLOCK) == -1) {
+    createErrorResponse(HTTP_500);
+    status_ = SESSION_FOR_CLIENT_SEND;
+    return;
+  }
+
   status_ = SESSION_FOR_FILE_WRITE;
+}
+
+std::string Session::findUploadStore(const std::string& uri) const {
+  if (location_config_ != NULL &&
+      isLocationMatch(location_config_->getUploadPass(), uri)) {
+    return location_config_->getUploadStore();
+  }
+  std::cout << server_config_->getUploadPass() << std::endl;
+  if (server_config_ != NULL &&
+      isLocationMatch(server_config_->getUploadPass(), uri)) {
+    return server_config_->getUploadStore();
+  }
+  return "";
+}
+
+std::string Session::createFilename() const {
+  std::string filename = "file";  // basename (tmp)
+  char buf[512];
+
+  getTimeStamp(buf, 512, "%y%m%d%H%M%S");
+  return std::string("file") + buf + "_" + std::to_string(rand()) +
+         getFileExtension();
+}
+
+// get file extension from mime type
+std::string Session::getFileExtension() const {
+  // find content-type header
+  std::map<std::string, std::string>::const_iterator itr =
+      request_.getHeaders().find("content-type");
+  if (itr == request_.getHeaders().end()) {
+    return "";  // return empty strin
+  }
+
+  // get mime type from header
+  std::string mime_type;
+  size_t posend = std::min(itr->second.find(' '), itr->second.find(';'));
+  if (posend == std::string::npos) {
+    mime_type = itr->second;
+  } else {
+    mime_type = itr->second.substr(0, posend);
+  }
+
+  // get file extension
+  itr = map_mime_ext_.find(mime_type);
+  if (itr == map_mime_ext_.end()) {
+    return "";  // no mime type matched
+  }
+  return "." + itr->second;  // return extention found
 }
 
 int Session::writeToFile() {
   ssize_t n;
 
   // write to file
-  n = write(file_fd_, &(request_.getBuf()[0]), request_.getBuf().size());
+  n = write(file_fd_, &(request_.getBody()[0]), request_.getBody().size());
   // retry several times even if write failed
   if (n == -1) {
     std::cout << "[error] failed to write to file" << std::endl;
 
     // give up if reached retry count to maximum
     if (retry_count_ == RETRY_TIME_MAX) {
+      close(file_fd_);
       retry_count_ = 0;
 
       // close connection
       std::cout << "[error] close file" << std::endl;
-      // close(file_fd_);
-
-      // send response to notify request failed
-      //  response_buf_ = "500 server error"; /* (tmp setter) error msg
-      //  generator in Request class*/
+      createErrorResponse(HTTP_500);
       status_ = SESSION_FOR_CLIENT_SEND;  // to send response to client
       return 0;
     }
@@ -899,17 +1000,155 @@ int Session::writeToFile() {
   retry_count_ = 0;
 
   // erase written data
-  request_.eraseBuf(n);
+  request_.eraseBody(n);
 
   // written all data
-  if (request_.getBuf().empty()) {
+  if (request_.getBody().empty()) {
     close(file_fd_);
 
     // create response to notify the client
     // response_buf_ = "201 created";
     status_ = SESSION_FOR_CLIENT_SEND;  // to send response to client
-    return 0;
   }
   // to next read
   return 0;
+}
+
+/*
+** initMapMimeExt
+**
+** initialize maps MIME TYPE (to/from) file extension.
+** covering common mime types listed in mdn docs below.
+** https://developer.mozilla.org/ja/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+*/
+
+void Session::initMapMineExt() {
+  static bool flg_set;
+  if (flg_set) {
+    return;
+  }
+  flg_set = true;
+
+  // set extention to MIME
+  map_ext_mime_["aac"] = "audio/aac";              // AAC 音声
+  map_ext_mime_["abw"] = "application/x-abiword";  // AbiWord文書
+  map_ext_mime_["arc"] =
+      "application/x-freearc";  //(複数のファイルが埋め込まれた)アーカイブ文書
+  map_ext_mime_["avi"] = "video/x-msvideo";  // AVI: Audio Video Interleave
+  map_ext_mime_["azw"] =
+      "application/vnd.amazon.ebook";  // Amazon Kindle eBook 形式
+  map_ext_mime_["bin"] =
+      "application/octet-stream";  //任意の種類のバイナリーデータ
+  map_ext_mime_["bmp"] = "image/bmp";            // Windows OS/2
+                                                 //ビットマップ画像
+  map_ext_mime_["bz"] = "application/x-bzip";    // BZip アーカイブ
+  map_ext_mime_["bz2"] = "application/x-bzip2";  // BZip2 アーカイブ
+  map_ext_mime_["csh"] = "application/x-csh";    // C-Shell スクリプト
+  map_ext_mime_["css"] = "text/css";  //カスケーディングスタイルシート
+                                      //(CSS)
+  map_ext_mime_["csv"] = "text/csv";            //カンマ区切り値 (CSV)
+  map_ext_mime_["doc"] = "application/msword";  // Microsoft Word
+  map_ext_mime_["docx"] =
+      "application/"
+      "vnd.openxmlformats-officedocument.wordprocessingml.document";  // Microsoft
+                                                                      // Word
+                                                                      // (OpenXML)
+  map_ext_mime_["eot"] =
+      "application/vnd.ms-fontobject";  // MS 埋め込み OpenTypeフォント
+  map_ext_mime_["epub"] = "application/epub+zip";  //電子出版 (EPUB)
+  map_ext_mime_["gz"] = "application/gzip";        // GZip 圧縮アーカイブ
+  map_ext_mime_["gif"] = "image/gif";  //グラフィック交換形式 (GIF)
+  map_ext_mime_["htm"] = "text/html";  //ハイパーテキストマークアップ言語
+                                       //(HTML)
+  map_ext_mime_["html"] =
+      "text/html";  //ハイパーテキストマークアップ言語//(HTML)
+  map_ext_mime_["ico"] = "image/vnd.microsoft.icon";  //アイコン形式
+  map_ext_mime_["ics"] = "text/calendar";             // iCalendar 形式
+  map_ext_mime_["jar"] = "application/java-archive";  // Java Archive (JAR)
+  map_ext_mime_["jpeg"] = "image/jpeg";               // JPEG 画像
+  map_ext_mime_["jpg"] = "image/jpeg";                // JPEG 画像
+  map_ext_mime_["js"] = "text/javascript";            // JavaScript
+  map_ext_mime_["json"] = "application/json";         // JSON 形式
+  map_ext_mime_["jsonld"] = "application/ld+json";    // JSON-LD 形式
+  map_ext_mime_["midi"] = "audio/x-midi";    // Musical Instrument Digital
+                                             // Interface (MIDI)
+  map_ext_mime_["mid"] = "audio/midi";       // Musical Instrument Digital
+                                             // Interface (MIDI)
+  map_ext_mime_["mjs"] = "text/javascript";  // JavaScript モジュール
+  map_ext_mime_["mp3"] = "audio/mpeg";       // MP3 音声
+  map_ext_mime_["mpeg"] = "video/mpeg";      // MPEG 動画
+  map_ext_mime_["mpkg"] =
+      "application/vnd.apple.installer+xml";  // Apple Installer Package
+  map_ext_mime_["odp"] =
+      "application/vnd.oasis.opendocument.presentation";  // OpenDocuemnt
+                                                          //プレゼンテーション文書
+  map_ext_mime_["ods"] =
+      "application/vnd.oasis.opendocument.spreadsheet";  // OpenDocuemnt
+                                                         //表計算文書
+  map_ext_mime_["odt"] =
+      "application/vnd.oasis.opendocument.text";  // OpenDocument テキスト文書
+  map_ext_mime_["oga"] = "audio/ogg";             // OGG 音声
+  map_ext_mime_["ogv"] = "video/ogg";             // OGG 動画
+  map_ext_mime_["ogx"] = "application/ogg";       // OGG
+  map_ext_mime_["opus"] = "audio/opus";           // Opus 音声
+  map_ext_mime_["otf"] = "font/otf";              // OpenType フォント
+  map_ext_mime_["png"] = "image/png";             // Portable Network Graphics
+  map_ext_mime_["pdf"] =
+      "application/pdf";  // Adobe Portable Document Format (PDF)
+  map_ext_mime_["php"] =
+      "application/x-httpd-php";  // Hypertext Preprocessor (Personal Home Page)
+  map_ext_mime_["ppt"] =
+      "application/vnd.ms-powerpoint";  // Microsoft PowerPoint
+  map_ext_mime_["pptx"] =
+      "application/"
+      "vnd.openxmlformats-officedocument.presentationml.presentation";  // Microsoft
+                                                                        // PowerPoint
+                                                                        // (OpenXML)
+  map_ext_mime_["rar"] = "application/vnd.rar";  // RAR アーカイブ
+  map_ext_mime_["rtf"] = "application/rtf";  //リッチテキスト形式 (RTF)
+  map_ext_mime_["sh"] = "application/x-sh";  // Bourne shell スクリプト
+  map_ext_mime_["svg"] = "image/svg+xml";    // Scalable Vector Graphics (SVG)
+  map_ext_mime_["swf"] =
+      "application/x-shockwave-flash";  // Small web format (SWF) または Adobe
+                                        // Flash 文書
+  map_ext_mime_["tar"] = "application/x-tar";  // Tape Archive (TAR)
+  map_ext_mime_["tif"] = "image/tiff";   // Tagged Image File Format (TIFF)
+  map_ext_mime_["tiff"] = "image/tiff";  // Tagged Image File Format (TIFF)
+  map_ext_mime_["ts"] = "video/mp2t";    // MPEG transport stream
+  map_ext_mime_["ttf"] = "font/ttf";     // TrueType フォント
+  map_ext_mime_["txt"] = "text/plain";   //テキストファイル (一般に
+                                         // ASCII or ISO
+                                         // 8859-<em>n</em>)
+  map_ext_mime_["vsd"] = "application/vnd.visio";  // Microsoft Visio
+  map_ext_mime_["wav"] = "audio/wav";              // Waveform 音声形式
+  map_ext_mime_["weba"] = "audio/webm";            // WEBM 音声
+  map_ext_mime_["webm"] = "video/webm";            // WEBM 動画
+  map_ext_mime_["webp"] = "image/webp";            // WEBP 画像
+  map_ext_mime_["woff"] = "font/woff";    // Web Open Font Format (WOFF)
+  map_ext_mime_["woff2"] = "font/woff2";  // Web Open Font Format (WOFF)
+  map_ext_mime_["xhtml"] = "application/xhtml+xml";   // XHTML
+  map_ext_mime_["xls"] = "application/vnd.ms-excel";  // Microsoft Excel
+  map_ext_mime_["xlsx"] =
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";  //    Microsoft Excel (OpenXML)
+  map_ext_mime_["xml"] = "application/xml";  // XML
+                                             //(一般のユーザから読める場合)
+  map_ext_mime_["xml"] = "text/xml";  // XML
+                                      //(一般のユーザから読めない場合)
+  map_ext_mime_["xul"] = "application/vnd.mozilla.xul+xml";  // XUL
+  map_ext_mime_["zip"] = "application/zip";  // ZIP アーカイブ
+  map_ext_mime_["3gp"] = "audio/3gpp";  // 3GPP 音声/動画コンテナー (動画含まず)
+  map_ext_mime_["3gp"] = "video/3gpp";  // 3GPP 音声/動画コンテナー
+  map_ext_mime_["3g2"] =
+      "audio/3gpp2";  // 3GPP2 音声/動画コンテナー (動画含まず)
+  map_ext_mime_["3g2"] = "video/3gpp2";  // 3GPP2 音声/動画コンテナー
+  map_ext_mime_["7z"] = "application/x-7z-compressed";  // 7-zipアーカイブ
+
+  // set extention to MIME
+  for (std::map<std::string, std::string>::const_iterator itr =
+           map_ext_mime_.begin();
+       itr != map_ext_mime_.end(); ++itr) {
+    map_mime_ext_[itr->second] = itr->first;
+  }
+  map_mime_ext_["audio/3gpp"] = "3gp";
+  map_mime_ext_["audio/3gpp2"] = "3g2";
 }

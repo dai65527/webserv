@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+         #
+#    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/01/05 17:34:06 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/27 21:37:13 by dhasegaw         ###   ########.fr        #
+#    Updated: 2021/04/09 10:16:34 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,7 +39,7 @@ OUTDIR		:=	.
 all:		$(NAME)
 
 $(NAME):	$(LIBFT) $(OBJS)
-			$(CXX) -L$(LIBFTDIR) $(patsubst lib%,-l%,$(basename $(LIBFT))) \
+			$(CXX) $(CPPFLAGS) -L$(LIBFTDIR) $(patsubst lib%,-l%,$(basename $(LIBFT))) \
 			$(SRCS) -o $(NAME) -I$(LIBFTDIR)
 
 $(LIBFT):
@@ -56,6 +56,7 @@ test:		$(NAME)
 .PHONY:		clean
 clean:
 			rm -f $(OBJS)
+			make fclean -C $(LIBFTDIR)
 
 .PHONY:		fclean
 fclean:		clean

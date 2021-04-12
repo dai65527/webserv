@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/31 16:29:16 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/01 19:14:57 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ Response::~Response() {}
 
 int Response::createStatusLine(HTTPStatusCode http_status_) {
   // status line
-  status_header_.append("HTTP/1.1 ");
+  status_header_ = "HTTP/1.1 ";
   status_header_.append(std::to_string(http_status_));
   status_header_.append(" ");
   status_header_.append(response_code_message_[http_status_]);

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+         #
+#    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/29 15:00:49 by dhasegaw         ###   ########.fr        #
+#    Updated: 2021/04/10 22:34:51 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -37,8 +37,11 @@ TESTSRCNAME	:=	test_main.cc \
 				test_findServer.cc \
 				test_isMethodAllowed.cc \
 				test_findCgiPathFromUri.cc \
-				test_checkHTTP413.cc 
+				test_checkHTTP413.cc \
+				test_mapMime.cc \
+				test_getFileExtension.cc
 TESTSRCDIR	:=	.
+
 ### config ###
 
 # no need to edit
@@ -61,7 +64,7 @@ all:		test
 $(NAME):	$(LIBFT) $(OBJS)
 			$(CXX) $(CPPFLAGS) $(OBJS) \
 			-L$(LIBFTDIR) $(patsubst lib%,-l%,$(basename $(LIBFT))) \
-		 	-o $(NAME)
+			-o $(NAME)
 
 .PHONY:		test
 test:		$(NAME)
