@@ -6,13 +6,15 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 08:14:01 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/12 14:31:21 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/12 22:02:52 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/time.h>
+#include <time.h>
 
 #include <string>
 
@@ -165,6 +167,14 @@ bool isDirectory(const std::string& path) {
   }
   return S_ISDIR(pathstat.st_mode);
 }
+
+/*
+** getTimeStamp
+**
+** Obtain time stamp of time when function called and store to buf (bufsize).
+** The timestamp will follow `fmt' aruguments. (refer to `man strftime' for
+** detail)
+*/
 
 size_t getTimeStamp(char* buf, size_t bufsize, const char* fmt,
                     time_t unixtime) {

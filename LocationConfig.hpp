@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/01 23:59:30 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/21 19:54:42 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/06 14:47:03 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,10 @@
 #include <string>
 
 #include "CommonConfigStore.hpp"
-#include "MainOnlyConfigStore.hpp"
+#include "ServerLocationConfigStore.hpp"
 
-class LocationConfig : public CommonConfigStore {
+class LocationConfig : public CommonConfigStore,
+                       public ServerLocationConfigStore {
  private:
   std::string route_;  // location path
 
