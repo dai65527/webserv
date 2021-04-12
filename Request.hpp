@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/10 22:57:30 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/12 21:10:17 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ class Request {
   virtual ~Request();
 
   // const std::string& getBuf() const;
-  const std::vector<char>& getBuf() const;
+  // const std::vector<char>& getBuf() const;
   const std::string& getMethod() const;
   const std::string& getUri() const;
   const std::map<std::string, std::string>& getHeaders() const;
@@ -84,7 +84,7 @@ class Request {
 
   int receive(int sock_fd);
   int appendRawData(char* raw_data);
-  void eraseBuf(ssize_t n);
+  void eraseBody(ssize_t n);
   int parseRequest();
 
 #ifdef UNIT_TEST

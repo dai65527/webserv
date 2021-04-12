@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/11 00:44:20 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/12 21:10:26 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,6 @@ Request::Request()
 Request::~Request() {}
 
 /* getters */
-const std::vector<char>& Request::getBuf() const { return buf_; }
 const std::string& Request::getMethod() const { return method_; }
 const std::string& Request::getUri() const { return uri_; }
 const std::map<std::string, std::string>& Request::getHeaders() const {
@@ -408,9 +407,8 @@ ssize_t Request::parseChunkedBody(size_t pos) {
   return REQ_CONTINUE_RECV;
 }
 
-void Request::eraseBuf(ssize_t n) {
-  std::vector<char>::iterator itr = buf_.begin() + n;
-  buf_.erase(buf_.begin(), itr);
+void Request::eraseBody(ssize_t n) {
+  body_.erase(body_.begin(), body_.begin() + n);
 }
 
 // check

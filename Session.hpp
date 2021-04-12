@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/11 21:18:22 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/12 21:13:15 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,10 @@ class Session {
 #ifdef UNIT_TEST
  public:
 #endif
+  static std::map<std::string, std::string> map_mime_ext_;
+  static std::map<std::string, std::string> map_ext_mime_;
+  static void initMapMineExt();
+
   int sock_fd_;
   int file_fd_;
   int retry_count_;
@@ -57,6 +61,7 @@ class Session {
   // response
   void startCreateResponse();
   void startCreateResponseToGet();
+  void startCreateResponseToPost();
   void createErrorResponse(HTTPStatusCode http_status);
   int sendResponse();
 
@@ -71,16 +76,12 @@ class Session {
   void startReadingFromFile(const std::string& filepath);
   std::string findFileFromDir(const std::string& dirpath) const;
   std::string findFile(const std::string& uri) const;
-  std::string findRoot() const;
+  const std::string& findRoot() const;
   bool isIndex(const std::string& filename) const;
   int readFromFile();
 
   // directrory listing
   void startDirectoryListing(const std::string& filepath);
-
-  // write to file
-  void startWritingToFile();
-  int writeToFile();
 
   // cgi process
   void createCgiProcess(const std::string& filepath, const std::string& cgiuri);
@@ -95,6 +96,13 @@ class Session {
   std::string getFromHeaders(const std::map<std::string, std::string>& headers,
                               const std::string key);
   std::string getPathInfo(const std::string& cgiuri);
+
+  // write to file
+  void startWritingToFile();
+  std::string findUploadStore(const std::string& uri) const;
+  std::string createFilename() const;
+  std::string getFileExtension() const;
+  int writeToFile();
 
  public:
   virtual ~Session();
