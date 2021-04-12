@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/12 14:39:09 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/12 15:45:29 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -640,11 +640,41 @@ int Session::readFromFile() {
 /*
 ** directory listing creators (todo!!)
 */
+struct FileInfo {
+  struct stat st;
+  struct dirent dent;
+};
+
+// compare func to sort list of files
+static bool compFiles(const struct FileInfo& a, const struct FileInfo& b) {
+  // directory first
+  if (S_ISDIR(a.st.st_mode) && !S_ISDIR(b.st.st_mode)) {
+    return true;
+  } else if (!S_ISDIR(a.st.st_mode) && S_ISDIR(b.st.st_mode)) {
+    return false;
+  }
+
+  // modified time (don't care nano time)
+  if (a.st.st_mtimespec.tv_sec < b.st.st_mtimespec.tv_sec) {
+    return true;
+  } else if (a.st.st_mtimespec.tv_sec > b.st.st_mtimespec.tv_sec) {
+    return false;
+  }
+
+  // file name
+  if (ft_strncmp(a.dent.d_name, b.dent.d_name, a.dent.d_namlen) < 0) {
+    return true;
+  }
+  return false;
+}
 
 // create html for directory listing
 // TODO: TIME HEADER
 void Session::startDirectoryListing(const std::string& dirpath) {
   DIR* dptr;
+  struct FileInfo finfo;
+  struct dirent* dent;
+  std::list<struct FileInfo> files;
 
   // check autoindex is on
   if ((location_config_ && location_config_->getAutoIndex()) ||
@@ -663,6 +693,28 @@ void Session::startDirectoryListing(const std::string& dirpath) {
     return;
   }
 
+  // read directory and make list of files
+  while ((dent = readdir(dptr)) != NULL) {
+    // ignore hidden data
+    if (*(dent->d_name) == '.') {
+      continue;
+    }
+
+    // get file stat
+    if (lstat((dirpath + "/" + dent->d_name).c_str(), &finfo.st) == -1) {
+      closedir(dptr);
+      createErrorResponse(HTTP_500);
+      return;
+    }
+
+    finfo.dent = *dent;
+    files.push_back(finfo);
+  }
+  closedir(dptr);
+
+  // sort list of files
+  files.sort(compFiles);
+
   // add header
   response_.createStatusLine(HTTP_200);
   response_.addHeader("Content-Type", "text/html");
@@ -680,27 +732,15 @@ void Session::startDirectoryListing(const std::string& dirpath) {
   response_.appendToBody(request_.getUri());
   response_.appendToBody("</h1>\n<hr>\n");
 
-  // create list
+  // create directory list
   response_.appendToBody(
       "<pre>\n<a href=\"../\">../</a>\n");  // .. always with you
-  struct dirent* dent;
-  while ((dent = readdir(dptr)) != NULL) {
-    // ignore hidden data
-    if (*(dent->d_name) == '.') {
-      continue;
-    }
 
-    // get file stat
-    struct stat st;
-    if (lstat((dirpath + "/" + dent->d_name).c_str(), &st) == -1) {
-      closedir(dptr);
-      createErrorResponse(HTTP_500);
-      return;
-    }
-
+  for (std::list<struct FileInfo>::const_iterator itr = files.begin();
+       itr != files.end(); ++itr) {
     // get filename
-    std::string filename(dent->d_name);
-    if (S_ISDIR(st.st_mode)) {
+    std::string filename(itr->dent.d_name);
+    if (S_ISDIR(itr->st.st_mode)) {
       filename.append("/");
     }
 
@@ -720,24 +760,22 @@ void Session::startDirectoryListing(const std::string& dirpath) {
 
     char buf[128];
     size_t ts_len =
-        getTimeStamp(buf, 128, "%d-%b-%Y %k:%M", st.st_mtimespec.tv_sec);
+        getTimeStamp(buf, 128, "%d-%b-%Y %k:%M", itr->st.st_mtimespec.tv_sec);
     response_.appendToBody(buf, ts_len);
 
     response_.appendToBody("                          ");
 
     // file size
-    if (S_ISDIR(st.st_mode)) {
+    if (S_ISDIR(itr->st.st_mode)) {
       response_.appendToBody("-\n");
     } else {
-      response_.appendToBody(std::to_string(st.st_size));
+      response_.appendToBody(std::to_string(itr->st.st_size));
       response_.appendToBody("\n");
     }
   }
 
   // end of list
   response_.appendToBody("</pre><hr></body>\n</html>\n");
-
-  closedir(dptr);
 
   // to send response
   status_ = SESSION_FOR_CLIENT_SEND;
