@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/12 13:27:31 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/12 14:39:09 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -641,6 +641,8 @@ int Session::readFromFile() {
 ** directory listing creators (todo!!)
 */
 
+// create html for directory listing
+// TODO: TIME HEADER
 void Session::startDirectoryListing(const std::string& dirpath) {
   DIR* dptr;
 
@@ -714,12 +716,14 @@ void Session::startDirectoryListing(const std::string& dirpath) {
     response_.appendToBody(filename);
     response_.appendToBody("</a>");
 
-    response_.appendToBody("                       ");
+    response_.appendToBody("                                        ");
 
-    // [TODO] TIMESTAMP
-    response_.appendToBody("TIMESTAMP");  // TODO
+    char buf[128];
+    size_t ts_len =
+        getTimeStamp(buf, 128, "%d-%b-%Y %k:%M", st.st_mtimespec.tv_sec);
+    response_.appendToBody(buf, ts_len);
 
-    response_.appendToBody("          ");
+    response_.appendToBody("                          ");
 
     // file size
     if (S_ISDIR(st.st_mode)) {
