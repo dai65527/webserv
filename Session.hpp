@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/13 02:32:38 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/14 00:27:44 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 #include "Request.hpp"
 #include "Response.hpp"
 #include "SessionStatus.hpp"
+#include "webserv_utils.hpp"
 
 #define SOFTWARE_NAME "nginDX"
 
@@ -96,8 +97,6 @@ class Session {
   std::string getFromHeaders(const std::map<std::string, std::string>& headers,
                              const std::string key);
   std::string getPathInfo(const std::string& cgiuri);
-  std::string getIpAddress();
-  int isLitteleEndian();
 
   // write to file
   void startWritingToFile();

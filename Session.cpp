@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/14 00:17:12 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/14 00:28:04 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1024,7 +1024,7 @@ int Session::writeToFile() {
 
 char** Session::storeArgv(const std::string& cgiuri) {
   std::string argv = cgiuri;
-  /* in case of XXX.cgi?argv1+argv2 */
+  /* in case of XXX.cgi?argv1+argv2, if there is "=" in query string, "+" becomes literal not delimitter */
   if (request_.getQuery().find("=") == std::string::npos &&
       request_.getQuery().find("+") != std::string::npos) {
     argv.replace(0, 1, "+");
@@ -1066,7 +1066,7 @@ const std::vector<std::string> Session::storeMetaVariables(
   tmp += request_.getQuery();
   envp.push_back(tmp);
   tmp = "REMOTE_ADDR=";
-  tmp += getIpAddress();
+  tmp += getIpAddress(ip_);
   envp.push_back(tmp);
   tmp = "REMOTE_IDENT=";
   tmp += "TEST";  // TBC!
@@ -1110,41 +1110,6 @@ std::string Session::getPathInfo(const std::string& cgiuri) {
   std::string path_info = request_.getUri();
   path_info.erase(0, cgiuri.length());
   return path_info;
-}
-
-std::string Session::getIpAddress() {
-  uint8_t unit;
-  uint32_t tmp;
-  std::string ret;
-
-  tmp = ip_;
-  unit = (uint8_t)tmp;
-  ret = ft_itoa(unit);
-  if (isLitteleEndian()) {
-    for (int i = 0; i < 3; ++i) {
-      ret += ".";
-      tmp = tmp >> 8;
-      unit = (uint8_t)tmp;
-      ret += ft_itoa(unit);
-    }
-  } else {
-    for (int i = 0; i < 3; ++i) {
-      ret.insert(0, ".");
-      tmp = tmp >> 8;
-      unit = (uint8_t)tmp;
-      ret.insert(0, ft_itoa(unit));
-    }
-  }
-  return ret;
-}
-
-int Session::isLitteleEndian() {
-  uint16_t n;
-  uint8_t* uc;
-
-  n = 1;
-  uc = (uint8_t*)&n;
-  return (*uc);
 }
 
 /*

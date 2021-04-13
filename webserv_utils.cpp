@@ -3,22 +3,22 @@
 /*                                                        :::      ::::::::   */
 /*   webserv_utils.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 08:14:01 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/06 16:21:51 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/14 00:40:36 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "webserv_utils.hpp"
+
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <time.h>
-
-#include <string>
-
-#include "HttpStatusCode.hpp"
+extern "C" {
 #include "libft.h"
+}
 
 /*
 ** isHttpStatusCode
@@ -193,4 +193,49 @@ size_t getTimeStamp(char* buf, size_t bufsize, const char* fmt) {
 
   // convert tm to string
   return strftime(buf, bufsize, fmt, &time);
+}
+
+/*
+** isLitteleEndian
+** find Little or Big endian of the environment
+*/
+
+int isLitteleEndian() {
+  uint16_t n;
+  uint8_t* uc;
+
+  n = 1;
+  uc = (uint8_t*)&n;
+  return (*uc);
+}
+
+/*
+** getIpAddress
+** convert uint32_t to 192.168.0.1 style string
+*/
+
+std::string getIpAddress(uint32_t ip) {
+  uint8_t unit;
+  uint32_t tmp;
+  std::string ret;
+
+  tmp = ip;
+  unit = (uint8_t)tmp;
+  ret = ft_itoa(unit);
+  if (isLitteleEndian()) {
+    for (int i = 0; i < 3; ++i) {
+      ret += ".";
+      tmp = tmp >> 8;
+      unit = (uint8_t)tmp;
+      ret += ft_itoa(unit);
+    }
+  } else {
+    for (int i = 0; i < 3; ++i) {
+      ret.insert(0, ".");
+      tmp = tmp >> 8;
+      unit = (uint8_t)tmp;
+      ret.insert(0, ft_itoa(unit));
+    }
+  }
+  return ret;
 }
