@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/13 14:25:20 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/14 00:17:12 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1025,7 +1025,8 @@ int Session::writeToFile() {
 char** Session::storeArgv(const std::string& cgiuri) {
   std::string argv = cgiuri;
   /* in case of XXX.cgi?argv1+argv2 */
-  if (request_.getQuery().find("+") != std::string::npos) {
+  if (request_.getQuery().find("=") == std::string::npos &&
+      request_.getQuery().find("+") != std::string::npos) {
     argv.replace(0, 1, "+");
     argv += "+";
     argv += request_.getQuery();
