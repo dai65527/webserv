@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 08:14:01 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/14 00:40:36 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/14 01:33:12 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,27 +215,32 @@ int isLitteleEndian() {
 */
 
 std::string getIpAddress(uint32_t ip) {
-  uint8_t unit;
-  uint32_t tmp;
+  uint8_t* ip_array;
   std::string ret;
+  char* tmp;
 
-  tmp = ip;
-  unit = (uint8_t)tmp;
-  ret = ft_itoa(unit);
+  ip_array = reinterpret_cast<uint8_t*>(&ip);
   if (isLitteleEndian()) {
-    for (int i = 0; i < 3; ++i) {
-      ret += ".";
-      tmp = tmp >> 8;
-      unit = (uint8_t)tmp;
-      ret += ft_itoa(unit);
+    for (int i = 3; i > -1; --i) {
+      if (i != 3) {
+        ret.insert(0, ".");
+      }
+      tmp = ft_itoa(ip_array[i]);
+      ret.insert(0, tmp);
+      free(tmp);
     }
+    printf("%s\n", ret.c_str());
   } else {
-    for (int i = 0; i < 3; ++i) {
-      ret.insert(0, ".");
-      tmp = tmp >> 8;
-      unit = (uint8_t)tmp;
-      ret.insert(0, ft_itoa(unit));
+    for (int i = 0; i < 4; ++i) {
+      if (i != 0) {
+        ret.insert(0, ".");
+      }
+      tmp = ft_itoa(ip_array[i]);
+      ret.insert(0, tmp);
+      free(tmp);
     }
+    printf("%s\n", ret.c_str());
   }
+  printf("%s\n", ret.c_str());
   return ret;
 }
