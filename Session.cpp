@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/14 00:28:04 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/14 23:13:29 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -764,7 +764,7 @@ void Session::createCgiProcess(const std::string& filepath,
                                const std::string& cgiuri) {
   // prepare argvs and env vars here and pass them to cgiHandler
   char** argv = storeArgv(cgiuri);
-  const std::vector<std::string> meta_variables = storeMetaVariables(cgiuri);
+  char** meta_variables = storeMetaVariables(cgiuri);
   HTTPStatusCode http_status =
       cgi_handler_.createCgiProcess(filepath, argv, meta_variables);
   if (http_status != HTTP_200) {
@@ -1037,7 +1037,7 @@ char** Session::storeArgv(const std::string& cgiuri) {
   return ft_split(argv.c_str(), '/');
 }
 
-const std::vector<std::string> Session::storeMetaVariables(
+char** Session::storeMetaVariables(
     const std::string& cgiuri) {
   std::vector<std::string> envp;
   std::string tmp;
@@ -1094,7 +1094,12 @@ const std::vector<std::string> Session::storeMetaVariables(
   tmp = "SERVER_SOFTWARE=";
   tmp += SOFTWARE_NAME;
   envp.push_back(tmp);
-  return envp;
+  char** meta_variables = (char**)malloc(sizeof(char*) * 18);
+  if (!meta_variables) {
+    return NULL;
+  }
+  vecToChar(meta_variables, envp);
+  return meta_variables;
 }
 
 std::string Session::getFromHeaders(
@@ -1110,6 +1115,15 @@ std::string Session::getPathInfo(const std::string& cgiuri) {
   std::string path_info = request_.getUri();
   path_info.erase(0, cgiuri.length());
   return path_info;
+}
+
+void Session::vecToChar(
+    char** meta_variables,
+    std::vector<std::string>& envp) {
+  for (size_t i = 0; i < envp.size(); ++i) {
+    meta_variables[i] = const_cast<char*>(envp[i].c_str());
+  }
+  meta_variables[envp.size()] = NULL;
 }
 
 /*

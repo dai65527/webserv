@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/07 23:25:56 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/13 02:23:52 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/14 23:14:06 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,9 @@ int CgiHandler::getInputFd() const { return input_fd_; }
 int CgiHandler::getOutputFd() const { return output_fd_; }
 
 // HTTPStatusCode CgiHandler::createCgiProcess(const std::string& path) {
-HTTPStatusCode CgiHandler::createCgiProcess(
-    const std::string& filepath, char** argv,
-    const std::vector<std::string>& meta_variables_str) {
+HTTPStatusCode CgiHandler::createCgiProcess(const std::string& filepath,
+                                            char** argv,
+                                            char** meta_variables) {
   // create a pipe connect to stdin of cgi process
   int pipe_stdin[2];
   if (pipe(pipe_stdin) == -1) {
@@ -73,9 +73,7 @@ HTTPStatusCode CgiHandler::createCgiProcess(
     close(pipe_stdout[1]);
 
     // excecute cgi process
-    const char* meta_variables[18];
-    storeMetaVariables(meta_variables, meta_variables_str);
-    execve(filepath.c_str(), argv, (char**)meta_variables);
+    execve(filepath.c_str(), argv, meta_variables);
     exit(1);
   }
 
@@ -118,13 +116,4 @@ int CgiHandler::readFromCgi(char* buf, size_t size) {
     return 0;
   }
   return ret;
-}
-
-void CgiHandler::storeMetaVariables(
-    const char* meta_variables[],
-    const std::vector<std::string>& meta_variables_str) {
-  for (size_t i = 0; i < meta_variables_str.size(); ++i) {
-    meta_variables[i] = meta_variables_str[i].c_str();
-  }
-  meta_variables[meta_variables_str.size()] = NULL;
 }
