@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/14 23:13:29 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/14 23:28:21 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -767,6 +767,8 @@ void Session::createCgiProcess(const std::string& filepath,
   char** meta_variables = storeMetaVariables(cgiuri);
   HTTPStatusCode http_status =
       cgi_handler_.createCgiProcess(filepath, argv, meta_variables);
+  free(argv);
+  free(meta_variables);
   if (http_status != HTTP_200) {
     std::cout << "[error] failed to create cgi process" << std::endl;
     createErrorResponse(http_status);
@@ -1087,7 +1089,9 @@ char** Session::storeMetaVariables(
   tmp += getFromHeaders(headers, "host");
   envp.push_back(tmp);
   tmp = "SERVER_PORT=";
-  tmp += std::string(ft_itoa(ft_htons(port_)));
+  char* server_port = ft_itoa(ft_htons(port_));
+  tmp += std::string(server_port);
+  free(server_port);
   envp.push_back(tmp);
   tmp = "SERVER_PROTOCOL=HTTP/1.1";
   envp.push_back(tmp);
