@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 08:14:01 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/12 22:11:06 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/14 09:08:10 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,7 +207,7 @@ std::string basename(const std::string& path) {
 
   size_t end = path.find_last_not_of('/');
   if (end == std::string::npos) {
-    return path.empty() ? "" : "/";
+    return "/";
   }
 
   size_t begin = path.find_last_of('/', end);
