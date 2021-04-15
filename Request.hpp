@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/09 10:17:41 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/15 11:05:10 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,8 +70,7 @@ class Request {
   Request();
   virtual ~Request();
 
-  // const std::string& getBuf() const;
-  // const std::vector<char>& getBuf() const;
+  void resetAll();
   const std::string& getMethod() const;
   const std::string& getUri() const;
   const std::map<std::string, std::string>& getHeaders() const;

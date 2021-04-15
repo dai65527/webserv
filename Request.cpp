@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/09 10:30:07 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/15 11:09:49 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,22 @@ const std::map<std::string, std::string>& Request::getQuery() const {
 size_t Request::getContentLength() const { return content_length_; }
 const std::vector<char>& Request::getBody() const { return body_; }
 int Request::getFlgChunked() const { return flg_chunked_; };
+
+// reset all for next request
+void Request::resetAll() {
+  parse_progress_ = REQ_BEFORE_PARSE;
+  flg_chunked_ = false;
+  pos_prev_ = 0;
+  content_length_ = 0;
+  chunk_size_ = 0;
+  buf_.clear();
+  body_.clear();
+  header_field_.clear();
+  method_.clear();
+  uri_.clear();
+  query_.clear();
+  headers_.clear();
+}
 
 /* make string from a part of buf*/
 std::string Request::bufToString(size_t begin, size_t end) {
