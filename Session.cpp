@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/12 23:32:27 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/15 09:43:41 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,13 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 
 #include <iostream>
 
+#include "webserv_settings.hpp"
 #include "webserv_utils.hpp"
 
 std::map<std::string, std::string> Session::map_mime_ext_;
@@ -40,6 +42,7 @@ Session::Session(int sock_fd, const MainConfig& main_config)
       server_config_(NULL),
       location_config_(NULL) {
   initMapMineExt();
+  updateConnectionTime();
 }
 
 Session::~Session(){};
@@ -112,6 +115,7 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
       return (-1);
     } else {
       std::cout << "[webserv] received request data" << std::endl;
+      updateConnectionTime();
       return (1);
     }
   } else if (status_ == SESSION_FOR_FILE_READ && FD_ISSET(file_fd_, rfds)) {
@@ -149,16 +153,48 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
       std::cout << "[webserv] sent response data" << std::endl;
       return (-1);
     } else {
+      updateConnectionTime();
       return (1);
     }
-  } else {
-    return (0);
   }
+
+  // check connection time out
+  if ((status_ == SESSION_FOR_CLIENT_RECV ||
+       status_ == SESSION_FOR_CLIENT_SEND) &&
+      checkConnectionTimeOut()) {
+    return (-1);
+  }
+  return (0);
 }
 
 /*
 ** PRIVATE FUNCTIONS
 */
+
+/*
+** connection manager
+*/
+
+void Session::updateConnectionTime() {
+  struct timeval tv;
+  if (gettimeofday(&tv, NULL) == -1) {
+    time_last_connect_ = 0;
+  } else {
+    time_last_connect_ = tv.tv_sec;
+  }
+}
+
+bool Session::checkConnectionTimeOut() const {
+  struct timeval tv;
+  if (gettimeofday(&tv, NULL) == -1) {
+    return true;
+  }
+
+  if (time_last_connect_ + KEEP_ALIVE_SEC < tv.tv_sec) {
+    return true;
+  }
+  return false;
+}
 
 /*
 ** request handler

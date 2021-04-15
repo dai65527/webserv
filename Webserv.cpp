@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 21:48:48 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 23:03:15 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/15 08:52:45 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,7 +116,7 @@ int Webserv::setToSelect() {
 }
 
 int Webserv::selectAndExecute() {
-  std::cout << "selecting..." << std::endl;
+  // std::cout << "selecting..." << std::endl;
   n_fd_ = select(max_fd_ + 1, &rfds_, &wfds_, NULL, &tv_timeout_);
   if (n_fd_ == -1) {
     std::cout << "[error]: select" << std::endl;
