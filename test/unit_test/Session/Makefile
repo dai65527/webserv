@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
+#    By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/04/10 22:34:51 by dnakano          ###   ########.fr        #
+#    Updated: 2021/04/15 23:23:34 by dhasegaw         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,7 +39,8 @@ TESTSRCNAME	:=	test_main.cc \
 				test_findCgiPathFromUri.cc \
 				test_checkHTTP413.cc \
 				test_mapMime.cc \
-				test_getFileExtension.cc
+				test_getFileExtension.cc \
+				test_CgiArgvEnvp.cc
 TESTSRCDIR	:=	.
 
 ### config ###
