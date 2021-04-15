@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/16 00:46:22 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/16 01:54:15 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,13 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 
 #include <iostream>
 
+#include "webserv_settings.hpp"
 #include "webserv_utils.hpp"
 
 std::map<std::string, std::string> Session::map_mime_ext_;
@@ -40,9 +42,10 @@ Session::Session(int sock_fd, const MainConfig& main_config)
       server_config_(NULL),
       location_config_(NULL) {
   initMapMineExt();
+  updateConnectionTime();
 }
 
-Session::~Session(){};
+Session::~Session() { close(sock_fd_); };
 
 /*
 ** assignation operator overload
@@ -104,6 +107,12 @@ int Session::setFdToSelect(fd_set* rfds, fd_set* wfds) {
 /*
 ** checkSelectedAndExecute
 ** check the session is selected by select syscall using FD_ISSET.
+**
+** Return val
+**  1: session was selected and executed correctly
+**  0: session was not selected
+**  -1: session was selected but to close
+**  -2: session was not selected and to close
 */
 
 int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
@@ -112,6 +121,7 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
       return (-1);
     } else {
       std::cout << "[webserv] received request data" << std::endl;
+      updateConnectionTime();
       return (1);
     }
   } else if (status_ == SESSION_FOR_FILE_READ && FD_ISSET(file_fd_, rfds)) {
@@ -146,19 +156,57 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
     }
   } else if (status_ == SESSION_FOR_CLIENT_SEND && FD_ISSET(sock_fd_, wfds)) {
     if (sendResponse() != 0) {
-      std::cout << "[webserv] sent response data" << std::endl;
       return (-1);
     } else {
+      updateConnectionTime();
       return (1);
     }
-  } else {
-    return (0);
   }
+
+  // check connection time out
+  if ((status_ == SESSION_FOR_CLIENT_RECV ||
+       status_ == SESSION_FOR_CLIENT_SEND) &&
+      checkConnectionTimeOut()) {
+    return (-2);
+  }
+  return (0);
 }
 
 /*
 ** PRIVATE FUNCTIONS
 */
+
+/*
+** connection manager
+*/
+
+void Session::updateConnectionTime() {
+  struct timeval tv;
+  if (gettimeofday(&tv, NULL) == -1) {
+    time_last_connect_ = 0;
+  } else {
+    time_last_connect_ = tv.tv_sec;
+  }
+}
+
+bool Session::checkConnectionTimeOut() const {
+  struct timeval tv;
+  if (gettimeofday(&tv, NULL) == -1) {
+    return true;
+  }
+
+  if (time_last_connect_ + KEEP_ALIVE_SEC < tv.tv_sec) {
+    return true;
+  }
+  return false;
+}
+
+// connect to list
+void Session::resetAll() {
+  retry_count_ = 0;
+  request_.resetAll();
+  response_.resetAll();
+}
 
 /*
 ** request handler
@@ -176,6 +224,8 @@ int Session::receiveRequest() {
       retry_count_++;
     }
     return 0;
+  } else if (ret == REQ_CLOSE_CON) {
+    return -1;
   }
   retry_count_ = 0;
   return checkReceiveReturn(ret);
@@ -236,6 +286,13 @@ int Session::checkReceiveReturn(int ret) {
 
 // check request, load proper config and start creating response
 void Session::startCreateResponse() {
+  // check connection header
+  std::map<std::string, std::string>::const_iterator itr;
+  itr = request_.getHeaders().find("connection");
+  if (itr != request_.getHeaders().end() && itr->second == "close") {
+    response_.setConnectionToClose();
+  }
+
   // case GET
   if ((request_.getMethod() == "GET" && isMethodAllowed(HTTP_GET)) ||
       (request_.getMethod() == "HEAD" && isMethodAllowed(HTTP_HEAD))) {
@@ -355,8 +412,12 @@ int Session::sendResponse() {
     return 0;
   }
   if (n == 0) {
-    close(sock_fd_);
-    return 1;  // return 1 if all data sent (this session will be closed)
+    if (response_.isConnectionToClose()) {
+      return 1;  // return 1 if all data sent and is not keep alive (this
+                 // session will be closed)
+    }
+    resetAll();                         // reset session
+    status_ = SESSION_FOR_CLIENT_RECV;  // wait for next request
   }
   retry_count_ = 0;  // reset retry_count if success
   return 0;

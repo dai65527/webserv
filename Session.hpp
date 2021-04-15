@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/15 12:05:02 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/16 01:54:24 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ class Session {
 
   int sock_fd_;
   int file_fd_;
+  long time_last_connect_;
   int retry_count_;
   SessionStatus status_;
   const MainConfig& main_config_;
@@ -54,6 +55,11 @@ class Session {
   Session();
   Session(Session const& other);
   Session& operator=(Session const& other);
+
+  // connection
+  void resetAll();
+  bool checkConnectionTimeOut() const;
+  void updateConnectionTime();
 
   // request
   int receiveRequest();

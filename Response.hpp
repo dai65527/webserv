@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 20:22:22 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/31 16:30:05 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/15 11:00:59 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ class Response {
   std::vector<char> body_;
   int send_progress_; // 0: first send, 1: sending header, 2: sending body
   size_t bytes_already_sent_;
+  bool connection_to_close_;
 
   int createCompleteHeader();
 
@@ -42,6 +43,10 @@ class Response {
  public:
   Response();
   virtual ~Response();
+
+  bool isConnectionToClose() const;
+  void setConnectionToClose();
+  void resetAll();
   int addHeader(const std::string& key, const std::string& value);
   int createStatusLine(HTTPStatusCode http_status_);
   int createDefaultErrorResponse(HTTPStatusCode http_status_);
