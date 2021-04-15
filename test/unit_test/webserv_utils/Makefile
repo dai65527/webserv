@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
+#    By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/04/11 11:09:45 by dnakano          ###   ########.fr        #
+#    Updated: 2021/04/15 11:43:47 by dhasegaw         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,8 @@ SRCNAME		:=	webserv_utils.cpp
 SRCDIR		:=	../../..
 INCLUDEDIR	:=	../../..
 TESTSRCNAME	:=	test_main.cc \
-				test_basename.cc 
+				test_basename.cc \
+				test_getIpAddress.cc 
 TESTSRCDIR	:=	.
 ### config ###
 

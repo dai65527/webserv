@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 08:14:01 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/15 11:33:36 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/15 11:55:42 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -250,7 +250,6 @@ std::string getIpAddress(uint32_t ip) {
       ret.insert(0, tmp);
       free(tmp);
     }
-    printf("%s\n", ret.c_str());
   } else {
     for (int i = 0; i < 4; ++i) {
       if (i != 0) {
@@ -260,8 +259,6 @@ std::string getIpAddress(uint32_t ip) {
       ret.insert(0, tmp);
       free(tmp);
     }
-    printf("%s\n", ret.c_str());
   }
-  printf("%s\n", ret.c_str());
   return ret;
 }
