@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/15 12:29:57 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/15 15:04:53 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -203,6 +203,7 @@ bool Session::checkConnectionTimeOut() const {
 
 // connect to list
 void Session::resetAll() {
+  retry_count_ = 0;
   request_.resetAll();
   response_.resetAll();
 }
