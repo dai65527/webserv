@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/15 11:09:49 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/15 12:30:11 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,9 +80,11 @@ int Request::compareBuf(size_t begin, const char* str) {
 ** receive request using recv syscall
 **
 ** return values: (negatives are ERRPR)
-** REQ_FIN_PARSE_HEADER 2 //finished parsing header
-** REQ_CONTINUE_RECV 1 //continue to receive
-** REQ_FIN_RECV 0 // finished receiving
+** REQ_FIN_PARSE_HEADER //finished parsing header
+** REQ_CONTINUE_RECV //continue to receive
+** REQ_FIN_RECV // finished receiving
+** REQ_ERR_RECV // error on recv
+** REQ_CLOSE_CON // connection already closed by client
 ** REQ_ERR_HTTP_VERSION -2 //HTTP505
 ** REQ_ERR_LEN_REQUIRED -3 //HTTP411
 ** REQ_ERR_BAD_REQUEST -4 //HTTP400
@@ -97,9 +99,9 @@ int Request::receive(int sock_fd) {
   ret = recv(sock_fd, read_buf, BUFFER_SIZE, 0);
   if (ret < 0) {
     return REQ_ERR_RECV;
+  } else if (ret == 0) {  // if ret == 0, the socket_is closed
+    return REQ_CLOSE_CON;
   }
-  write(1, read_buf, ret);
-  write(1, "\n", 1);
   buf_.insert(buf_.end(), read_buf, read_buf + ret);
 #else
   (void)sock_fd;
