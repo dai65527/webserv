@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/12 23:14:44 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/15 10:57:30 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ class Session {
 
   int sock_fd_;
   int file_fd_;
+  long time_last_connect_;
   int retry_count_;
   SessionStatus status_;
   const MainConfig& main_config_;
@@ -49,6 +50,11 @@ class Session {
   Session();
   Session(Session const& other);
   Session& operator=(Session const& other);
+
+  // connection
+  void resetAll();
+  bool checkConnectionTimeOut() const;
+  void updateConnectionTime();
 
   // request
   int receiveRequest();
