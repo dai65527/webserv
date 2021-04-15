@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 08:14:01 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/14 01:33:12 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/15 11:33:36 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -175,24 +175,45 @@ bool isDirectory(const std::string& path) {
 ** detail)
 */
 
-size_t getTimeStamp(char* buf, size_t bufsize, const char* fmt) {
-  struct timeval tv;
-  struct tm time;
+size_t getTimeStamp(char* buf, size_t bufsize, const char* fmt,
+                    time_t unixtime) {
+  // convert unixtime to char string
+  std::string tv_str = std::to_string(unixtime);
 
+  // convert char string to struct tm
+  struct tm time;
+  strptime(tv_str.c_str(), "%s", &time);
+
+  // convert tm to string
+  return strftime(buf, bufsize, fmt, &time);
+}
+
+size_t getTimeStamp(char* buf, size_t bufsize, const char* fmt) {
   // get time
+  struct timeval tv;
   if (gettimeofday(&tv, NULL) == -1) {
     buf[0] = '\0';
     return 0;
   }
 
-  // convert unixtime to char string
-  std::string tv_str = std::to_string(tv.tv_sec);
+  return getTimeStamp(buf, bufsize, fmt, tv.tv_sec);
+}
 
-  // convert char string to struct tm
-  strptime(tv_str.c_str(), "%s", &time);
+std::string basename(const std::string& path) {
+  if (path.empty()) {
+    return "";
+  }
 
-  // convert tm to string
-  return strftime(buf, bufsize, fmt, &time);
+  size_t end = path.find_last_not_of('/');
+  if (end == std::string::npos) {
+    return "/";
+  }
+
+  size_t begin = path.find_last_of('/', end);
+  if (begin == std::string::npos) {
+    return path.substr(0, end + 1);
+  }
+  return path.substr(begin + 1, end - begin);
 }
 
 /*

@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/14 23:09:49 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/15 11:35:29 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,12 @@ class Session {
 
   // directrory listing
   void startDirectoryListing(const std::string& filepath);
+  bool isAutoIndexOn() const;
+  int createFileList(const std::string& dirpath,
+                     std::list<struct FileInfo>* files) const;
+  void createDirectoryListingHeader();
+  void createDirectoryListingBody(const std::list<struct FileInfo>& files);
+  void createDirectoryList(const std::list<struct FileInfo>& files);
 
   // cgi process
   void createCgiProcess(const std::string& filepath, const std::string& cgiuri);

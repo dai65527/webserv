@@ -6,7 +6,11 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2021/04/14 23:28:21 by dhasegaw         ###   ########.fr       */
+=======
+/*   Updated: 2021/04/12 23:32:27 by dnakano          ###   ########.fr       */
+>>>>>>> 8df2582e07613ecc31e7a6fb9a1694c3582e11e8
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -662,14 +666,166 @@ int Session::readFromFile() {
 ** directory listing creators (todo!!)
 */
 
-void Session::startDirectoryListing(const std::string& filepath) {
+// struct to store info of each file
+struct FileInfo {
+  struct stat st;
+  struct dirent dent;
+};
+
+// compare func to sort list of files
+static bool compFiles(const struct FileInfo& a, const struct FileInfo& b) {
+  // directory first
+  if (S_ISDIR(a.st.st_mode) && !S_ISDIR(b.st.st_mode)) {
+    return true;
+  } else if (!S_ISDIR(a.st.st_mode) && S_ISDIR(b.st.st_mode)) {
+    return false;
+  }
+
+  // modified time (don't care nano time)
+  if (a.st.st_mtimespec.tv_sec < b.st.st_mtimespec.tv_sec) {
+    return true;
+  } else if (a.st.st_mtimespec.tv_sec > b.st.st_mtimespec.tv_sec) {
+    return false;
+  }
+
+  // file name
+  if (ft_strncmp(a.dent.d_name, b.dent.d_name, a.dent.d_namlen) < 0) {
+    return true;
+  }
+  return false;
+}
+
+bool Session::isAutoIndexOn() const {
+  return ((location_config_ && location_config_->getAutoIndex()) ||
+          (server_config_ && server_config_->getAutoIndex()) ||
+          main_config_.getAutoIndex());
+}
+
+void Session::createDirectoryListingHeader() {
+  response_.appendToBody("<html>\n<head><title>Index of ");
+  response_.appendToBody(request_.getUri());
+  response_.appendToBody("</title></head>\n");
+}
+
+void Session::createDirectoryList(const std::list<struct FileInfo>& files) {
+  response_.appendToBody(
+      "<pre>\n<a href=\"../\">../</a>\n");  // .. always with you
+
+  for (std::list<struct FileInfo>::const_iterator itr = files.begin();
+       itr != files.end(); ++itr) {
+    // get filename
+    std::string filename(itr->dent.d_name);
+    if (S_ISDIR(itr->st.st_mode)) {
+      filename.append("/");
+    }
+
+    // create link
+    response_.appendToBody("<a href=\"");
+    response_.appendToBody(request_.getUri());
+    if (request_.getUri().empty() ||
+        request_.getUri()[request_.getUri().size() - 1] != '/') {
+      response_.appendToBody("/");
+    }
+    response_.appendToBody(filename);
+    response_.appendToBody("\">");
+    response_.appendToBody(filename);
+    response_.appendToBody("</a>");
+
+    response_.appendToBody("                                        ");
+
+    char buf[128];
+    size_t ts_len =
+        getTimeStamp(buf, 128, "%d-%b-%Y %k:%M", itr->st.st_mtimespec.tv_sec);
+    response_.appendToBody(buf, ts_len);
+
+    response_.appendToBody("                          ");
+
+    // file size
+    if (S_ISDIR(itr->st.st_mode)) {
+      response_.appendToBody("-\n");
+    } else {
+      response_.appendToBody(std::to_string(itr->st.st_size));
+      response_.appendToBody("\n");
+    }
+  }
+
+  // end of list
+  response_.appendToBody("</pre><hr></body>\n</html>\n");
+}
+
+void Session::createDirectoryListingBody(
+    const std::list<struct FileInfo>& files) {
+  // html header
+  createDirectoryListingHeader();
+
+  // create title
+  response_.appendToBody("<body bgcolor=\"white\">\n");
+  response_.appendToBody("<h1>Index of ");
+  response_.appendToBody(request_.getUri());
+  response_.appendToBody("</h1>\n<hr>\n");
+
+  // create directory list
+  createDirectoryList(files);
+}
+
+int Session::createFileList(const std::string& dirpath,
+                            std::list<struct FileInfo>* files) const {
+  // open directory
+  DIR* dptr = opendir(dirpath.c_str());
+  if (dptr == NULL) {
+    return -1;
+  }
+
+  // read directory and make list of files
+  struct FileInfo finfo;
+  struct dirent* dent;
+  while ((dent = readdir(dptr)) != NULL) {
+    // ignore hidden data
+    if (*(dent->d_name) == '.') {
+      continue;
+    }
+
+    // get file stat
+    if (lstat((dirpath + "/" + dent->d_name).c_str(), &finfo.st) == -1) {
+      closedir(dptr);
+      return -1;
+    }
+
+    finfo.dent = *dent;
+    files->push_back(finfo);
+  }
+  closedir(dptr);
+
+  // sort list of files
+  files->sort(compFiles);
+  return 0;
+}
+
+// create html for directory listing
+// TODO: TIME HEADER
+void Session::startDirectoryListing(const std::string& dirpath) {
+  std::list<struct FileInfo> files;
+
+  // check autoindex is on
+  if (!isAutoIndexOn()) {
+    createErrorResponse(HTTP_403);
+    return;
+  }
+
+  if (createFileList(dirpath, &files) < 0) {
+    createErrorResponse(HTTP_500);
+    return;
+  }
+
+  // add header
   response_.createStatusLine(HTTP_200);
   response_.addHeader("Content-Type", "text/html");
+  // response_.addHeader("Date", timestamp);  // add after merged
 
-  // [TEMP] response
-  response_.appendToBody("<h1>autoindex not yet implemented: ", 35);
-  response_.appendToBody(filepath.c_str(), filepath.length());
-  response_.appendToBody("</h1>\n", 6);
+  /*** create body ***/
+  createDirectoryListingBody(files);  // html body
+
+  // to send response
   status_ = SESSION_FOR_CLIENT_SEND;
 }
 
