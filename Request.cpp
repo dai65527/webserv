@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/15 12:30:11 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/15 15:04:41 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,9 @@ std::string Request::bufToString(size_t begin, size_t end) {
 /* compare char literal and a part of buf*/
 int Request::compareBuf(size_t begin, const char* str) {
   size_t len = ft_strlen(str);
+  if (begin + len > buf_.size()) {
+    return 1;
+  }
   for (size_t i = 0; i < len; ++i) {
     if (buf_[i + begin] != str[i]) {
       return 1;
