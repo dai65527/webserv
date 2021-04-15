@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/12 21:10:17 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/16 01:05:12 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,6 @@ class Request {
  private:
 #endif
  public:  // just for test!!!!
-  // std::string buf_; /*temporary saving before parsing and finally becomes
-  // body*/
   std::vector<char> buf_;
   int parse_progress_;
   int flg_chunked_;
@@ -57,7 +55,6 @@ class Request {
   std::string header_field_;
   std::string method_;
   std::string uri_;
-  // std::map<std::string, std::string> query_;
   std::string query_;
   std::map<std::string, std::string> headers_;
   std::vector<char> body_;
@@ -71,12 +68,9 @@ class Request {
   Request();
   virtual ~Request();
 
-  // const std::string& getBuf() const;
-  // const std::vector<char>& getBuf() const;
   const std::string& getMethod() const;
   const std::string& getUri() const;
   const std::map<std::string, std::string>& getHeaders() const;
-  // const std::map<std::string, std::string>& getQuery() const;
   const std::string& getQuery() const;
   size_t getContentLength() const;
   const std::vector<char>& getBody() const;

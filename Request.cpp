@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/12 21:10:26 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/16 01:03:04 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -232,30 +232,6 @@ size_t Request::parseUri(size_t pos) {
          ++pos;
        }
        query_ = bufToString(copy_begin, pos);
-  //   while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r') {
-  //     size_t begin = ++pos;
-  //     while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r' &&
-  //            buf_[pos] != '&') {
-  //       ++pos;
-  //     }
-  //     size_t pos_equal = begin;
-  //     while (pos_equal != buf_.size()) {
-  //       if (buf_[pos_equal] == '=') {
-  //         break;
-  //       }
-  //       ++pos_equal;
-  //     }
-  //     if (pos_equal == buf_.size()) {
-  //       continue;
-  //     }
-  //     std::string key = bufToString(begin, pos_equal);
-  //     ++pos_equal;
-  //     std::string value = bufToString(pos_equal, pos);
-  //     query_[key] = value;
-  //     if (buf_[pos] != '&') {
-  //       break;
-  //     }
-  //   }
   }
   return pos;
 }
