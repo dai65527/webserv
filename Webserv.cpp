@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 21:48:48 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/15 08:52:45 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/15 11:53:20 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,32 +116,31 @@ int Webserv::setToSelect() {
 }
 
 int Webserv::selectAndExecute() {
-  // std::cout << "selecting..." << std::endl;
+  // select
   n_fd_ = select(max_fd_ + 1, &rfds_, &wfds_, NULL, &tv_timeout_);
   if (n_fd_ == -1) {
     std::cout << "[error]: select" << std::endl;
-  } else if (n_fd_ == 0) {
-    return (1);
   }
 
   // check each session if it is ready to recv/send
   int ret;
   for (std::list<Session*>::iterator itr = sessions_.begin();
-       itr != sessions_.end() && n_fd_ > 0;) {
+       itr != sessions_.end();) {
     ret = (*itr)->checkSelectedAndExecute(&rfds_, &wfds_);
 
-    if (ret == 0) {
+    if (ret == 0) {  // case not selected
       ++itr;
       continue;
-    }
-
-    if (ret == -1) {
+    } else if (ret == -1 || ret == -2) {  // case to close connection
       delete *itr;
       itr = sessions_.erase(itr);
-    } else {
+      if (ret == -1) {
+        n_fd_--;
+      }
+    } else {  // case selected
       ++itr;
+      n_fd_--;
     }
-    n_fd_--;
   }
 
   // accept new connection and add to sessions list

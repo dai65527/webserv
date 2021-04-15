@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/15 09:43:41 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/15 12:04:11 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ Session::Session(int sock_fd, const MainConfig& main_config)
   updateConnectionTime();
 }
 
-Session::~Session(){};
+Session::~Session() { close(sock_fd_); };
 
 /*
 ** assignation operator overload
@@ -107,6 +107,12 @@ int Session::setFdToSelect(fd_set* rfds, fd_set* wfds) {
 /*
 ** checkSelectedAndExecute
 ** check the session is selected by select syscall using FD_ISSET.
+**
+** Return val
+**  1: session was selected and executed correctly
+**  0: session was not selected
+**  -1: session was selected but to close
+**  -2: session was not selected and to close
 */
 
 int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
@@ -150,7 +156,6 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
     }
   } else if (status_ == SESSION_FOR_CLIENT_SEND && FD_ISSET(sock_fd_, wfds)) {
     if (sendResponse() != 0) {
-      std::cout << "[webserv] sent response data" << std::endl;
       return (-1);
     } else {
       updateConnectionTime();
@@ -162,7 +167,7 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
   if ((status_ == SESSION_FOR_CLIENT_RECV ||
        status_ == SESSION_FOR_CLIENT_SEND) &&
       checkConnectionTimeOut()) {
-    return (-1);
+    return (-2);
   }
   return (0);
 }
@@ -194,6 +199,12 @@ bool Session::checkConnectionTimeOut() const {
     return true;
   }
   return false;
+}
+
+// connect to list
+void Session::resetAll() {
+  request_.resetAll();
+  response_.resetAll();
 }
 
 /*
@@ -272,6 +283,13 @@ int Session::checkReceiveReturn(int ret) {
 
 // check request, load proper config and start creating response
 void Session::startCreateResponse() {
+  // check connection header
+  std::map<std::string, std::string>::const_iterator itr;
+  itr = request_.getHeaders().find("connection");
+  if (itr != request_.getHeaders().end() && itr->second == "close") {
+    response_.setConnectionToClose();
+  }
+
   // case GET
   if ((request_.getMethod() == "GET" && isMethodAllowed(HTTP_GET)) ||
       (request_.getMethod() == "HEAD" && isMethodAllowed(HTTP_HEAD))) {
@@ -391,8 +409,12 @@ int Session::sendResponse() {
     return 0;
   }
   if (n == 0) {
-    close(sock_fd_);
-    return 1;  // return 1 if all data sent (this session will be closed)
+    if (response_.isConnectionToClose()) {
+      return 1;  // return 1 if all data sent and is not keep alive (this
+                 // session will be closed)
+    }
+    resetAll();                         // reset session
+    status_ = SESSION_FOR_CLIENT_RECV;  // wait for next request
   }
   retry_count_ = 0;  // reset retry_count if success
   return 0;

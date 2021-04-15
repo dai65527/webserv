@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/15 09:36:25 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/15 10:57:30 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ class Session {
   Session& operator=(Session const& other);
 
   // connection
+  void resetAll();
   bool checkConnectionTimeOut() const;
   void updateConnectionTime();
 
