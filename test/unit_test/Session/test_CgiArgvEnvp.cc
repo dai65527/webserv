@@ -42,8 +42,8 @@ TEST_F(test_CgiArgvEnvp, argvOK1) {
   appendVec(session->request_.buf_,
             "GET /sample.cgi/argv1/argv2/ HTTP/1.1\r\nHost: localhost\r\n\r\n");
   EXPECT_EQ(session->receiveRequest(), 0);
-  char** argv = session->storeArgv("/sample.cgi");
-  EXPECT_EQ("sample.cgi", std::string(argv[0]));
+  char** argv = session->storeArgv("./html/sample.cgi", "/sample.cgi");
+  EXPECT_EQ("./html/sample.cgi", std::string(argv[0]));
   EXPECT_EQ("argv1", std::string(argv[1]));
   EXPECT_EQ("argv2", std::string(argv[2]));
   EXPECT_EQ(NULL, argv[3]);
@@ -53,21 +53,33 @@ TEST_F(test_CgiArgvEnvp, argvOK2) {
   appendVec(session->request_.buf_,
             "GET /sample.cgi?argv1+argv2 HTTP/1.1\r\nHost: localhost\r\n\r\n");
   EXPECT_EQ(session->receiveRequest(), 0);
-  char** argv = session->storeArgv("/sample.cgi");
-  EXPECT_EQ("sample.cgi", std::string(argv[0]));
+  char** argv = session->storeArgv("./html/sample.cgi", "/sample.cgi");
+  EXPECT_EQ("./html/sample.cgi", std::string(argv[0]));
   EXPECT_EQ("argv1", std::string(argv[1]));
   EXPECT_EQ("argv2", std::string(argv[2]));
   EXPECT_EQ(NULL, argv[3]);
 }
 
-TEST_F(test_CgiArgvEnvp, Noargv) {
+TEST_F(test_CgiArgvEnvp, argvOK3) {
   appendVec(session->request_.buf_,
-            "GET /sample.cgi?argv1+argv2=argv3+argv4 HTTP/1.1\r\nHost: "
-            "localhost\r\n\r\n");
+            "GET /cgi-bin/sample.cgi/argv1/argv2 HTTP/1.1\r\nHost: localhost\r\n\r\n");
   EXPECT_EQ(session->receiveRequest(), 0);
-  char** argv = session->storeArgv("/sample.cgi");
-  EXPECT_EQ("sample.cgi", std::string(argv[0]));
-  EXPECT_EQ(NULL, argv[1]);
+  char** argv = session->storeArgv("./html/cgi-bin/sample.cgi", "/cgi-bin/sample.cgi");
+  EXPECT_EQ("./html/cgi-bin/sample.cgi", std::string(argv[0]));
+  EXPECT_EQ("argv1", std::string(argv[1]));
+  EXPECT_EQ("argv2", std::string(argv[2]));
+  EXPECT_EQ(NULL, argv[3]);
+}
+
+TEST_F(test_CgiArgvEnvp, argvOK4) {
+  appendVec(session->request_.buf_,
+            "GET /cgi-bin/sample.cgi?argv1+argv2 HTTP/1.1\r\nHost: localhost\r\n\r\n");
+  EXPECT_EQ(session->receiveRequest(), 0);
+  char** argv = session->storeArgv("./html/cgi-bin/sample.cgi", "cgi-bin/sample.cgi");
+  EXPECT_EQ("./html/cgi-bin/sample.cgi", std::string(argv[0]));
+  EXPECT_EQ("argv1", std::string(argv[1]));
+  EXPECT_EQ("argv2", std::string(argv[2]));
+  EXPECT_EQ(NULL, argv[3]);
 }
 
 TEST_F(test_CgiArgvEnvp, NoargvDueToEqual) {
@@ -75,8 +87,8 @@ TEST_F(test_CgiArgvEnvp, NoargvDueToEqual) {
             "GET /sample.cgi?argv1+argv2=argv3+argv4 HTTP/1.1\r\nHost: "
             "localhost\r\n\r\n");
   EXPECT_EQ(session->receiveRequest(), 0);
-  char** argv = session->storeArgv("/sample.cgi");
-  EXPECT_EQ("sample.cgi", std::string(argv[0]));
+  char** argv = session->storeArgv("./html/sample.cgi", "/sample.cgi");
+  EXPECT_EQ("./html/sample.cgi", std::string(argv[0]));
   EXPECT_EQ(NULL, argv[1]);
 }
 

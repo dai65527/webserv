@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/16 12:20:27 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/16 23:59:03 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -462,8 +462,8 @@ const ServerConfig* Session::findServer() {
   // just for unit_test
   (void)addr;
   (void)addrlen;
-  in_addr_t ip_ = 0x12345678;
-  uint16_t port_ = 0x1234;
+  ip_ = 0x12345678;
+  port_ = 0x1234;
 #endif /* UNIT_TEST */
 
   // iterate for all server directive in main_config
@@ -976,12 +976,22 @@ bool Session::isCgiFile(const std::string& filepath) const {
 void Session::createCgiProcess(const std::string& filepath,
                                const std::string& cgiuri) {
   // prepare argvs and env vars here and pass them to cgiHandler
-  char** argv = storeArgv(cgiuri);
+  char** argv = storeArgv(filepath, cgiuri);
   char** meta_variables = storeMetaVariables(cgiuri);
+  if (!meta_variables) {
+    for (int i = 0; argv[i] != NULL; ++i) {
+      free(argv[i]);
+    }
+    free(argv);
+    throw std::bad_alloc();
+  }
   HTTPStatusCode http_status =
       cgi_handler_.createCgiProcess(filepath, argv, meta_variables);
 
   // free argv and meta_variables after using them
+  for (int i = 0; argv[i] != NULL; ++i) {
+    free(argv[i]);
+  }
   free(argv);
   for (int i = 0; meta_variables[i] != NULL; ++i) {
     free(meta_variables[i]);
@@ -1243,88 +1253,117 @@ int Session::writeToFile() {
   return 0;
 }
 
-char** Session::storeArgv(const std::string& cgiuri) {
-  std::string argv = cgiuri;
+char** Session::storeArgv(const std::string& filepath,
+                          const std::string& cgiuri) {
+  std::string argv = filepath;
+  char** ret;
   /* in case of XXX.cgi?argv1+argv2, if there is "=" in query string, "+"
    * becomes literal not delimitter */
   if (request_.getQuery().find("=") == std::string::npos &&
       request_.getQuery().find("+") != std::string::npos) {
-    argv.replace(0, 1, "+");
     argv += "+";
     argv += request_.getQuery();
-    return ft_split(argv.c_str(), '+');
+    ret = ft_split(argv.c_str(), '+');
+    if (!ret) {
+      throw std::bad_alloc();
+    }
+    return ret;
   }
-  /* in case of XXX.cgi/argv1/argv2 */
+  /* in case of /cgi-bin/XXX.cgi/argv1/argv2 */
   argv += getPathInfo(cgiuri);
-  return ft_split(argv.c_str(), '/');
+  ret = ft_split(argv.c_str(), '/');
+  if (!ret) {
+    throw std::bad_alloc();
+  }
+  int begin = 0;
+  for (int i = 0; ret[i] != NULL; ++i) {
+    if (ft_strnstr(ret[i], ".cgi", ft_strlen(ret[i])) != NULL) {
+      free(ret[i]);
+      ret[i] = ft_strdup(filepath.c_str());
+      if (!ret[i]) {
+        while (--i >= 0) {
+          free(ret[i]);
+        }
+        free(ret);
+        throw std::bad_alloc();
+      }
+      begin = i;
+      while (--i >= 0) {
+        free(ret[i]);
+      }
+      break;
+    }
+  }
+  return ret + begin;
 }
 
 char** Session::storeMetaVariables(const std::string& cgiuri) {
-  std::vector<std::string> envp;
+  std::vector<std::string> meta_variables;
   std::string tmp;
   const std::map<std::string, std::string>& headers = request_.getHeaders();
   tmp = "AUTH_TYPE=";
   tmp += getFromHeaders(headers, "authorization");  // TBC!
-  envp.push_back(tmp);
+  meta_variables.push_back(tmp);
   tmp = "CONTENT_LENGTH=";
   tmp += getFromHeaders(headers, "content-length");
-  envp.push_back(tmp);
+  meta_variables.push_back(tmp);
   tmp = "CONTENT_TYPE=";
   tmp += getFromHeaders(headers, "content-type");
-  envp.push_back(tmp);
+  meta_variables.push_back(tmp);
   tmp = "GATEWAY_INTERFACE=";  //プロトコル名称入れてもらう？
   tmp += getFromHeaders(headers, "gateway-interface");  //?
-  envp.push_back(tmp);
+  meta_variables.push_back(tmp);
   tmp = "PATH_INFO=";  // testerで求める挙動は違うようだ（discord #webserv)
-  std::string path_info = getPathInfo(cgiuri);
-  tmp += path_info;
-  envp.push_back(tmp);
+  tmp += getPathInfo(cgiuri);
+  meta_variables.push_back(tmp);
   tmp = "PATH_TRANSLATED=";  // Document root + PATH_INFO if there is PATH_INFO
-  if (path_info != "") {
+  if (getPathInfo(cgiuri) != "") {
     tmp += findRoot();
-    tmp += path_info;
+    tmp += getPathInfo(cgiuri);
   }
-  envp.push_back(tmp);
+  meta_variables.push_back(tmp);
   tmp = "QUERY_STRING=";
   tmp += request_.getQuery();
-  envp.push_back(tmp);
+  meta_variables.push_back(tmp);
   tmp = "REMOTE_ADDR=";
   tmp += getIpAddress(ip_);
-  envp.push_back(tmp);
+  meta_variables.push_back(tmp);
   tmp = "REMOTE_IDENT=";
   tmp += "TEST";  // TBC!
-  envp.push_back(tmp);
+  meta_variables.push_back(tmp);
   tmp = "REMOTE_USER=";
   tmp += "TEST";  // TBC!
-  envp.push_back(tmp);
+  meta_variables.push_back(tmp);
   tmp = "REQUEST_METHOD=";
   tmp += request_.getMethod();
-  envp.push_back(tmp);
+  meta_variables.push_back(tmp);
   tmp = "REQUEST_URI=";
   tmp += request_.getUri();
-  envp.push_back(tmp);
+  meta_variables.push_back(tmp);
   tmp = "SCRIPT_NAME=";
   tmp += cgiuri;
-  envp.push_back(tmp);
+  meta_variables.push_back(tmp);
   tmp = "SERVER_NAME=";
   tmp += getFromHeaders(headers, "host");
-  envp.push_back(tmp);
+  meta_variables.push_back(tmp);
   tmp = "SERVER_PORT=";
   char* server_port = ft_itoa(ft_htons(port_));
-  tmp += std::string(server_port);
-  free(server_port);
-  envp.push_back(tmp);
-  tmp = "SERVER_PROTOCOL=HTTP/1.1";
-  envp.push_back(tmp);
-  tmp = "SERVER_SOFTWARE=";
-  tmp += SOFTWARE_NAME;
-  envp.push_back(tmp);
-  char** meta_variables = (char**)malloc(sizeof(char*) * (envp.size() + 1));
-  if (!meta_variables) {
+  if (!server_port) {
     return NULL;
   }
-  vecToChar(meta_variables, envp);
-  return meta_variables;
+  tmp += server_port;
+  free(server_port);
+  meta_variables.push_back(tmp);
+  tmp = "SERVER_PROTOCOL=HTTP/1.1";
+  meta_variables.push_back(tmp);
+  tmp = "SERVER_SOFTWARE=";
+  tmp += SOFTWARE_NAME;
+  meta_variables.push_back(tmp);
+  char** envp = vecToChar(meta_variables);
+  if (!envp) {
+    return NULL;
+  }
+  return envp;
 }
 
 std::string Session::getFromHeaders(
@@ -1342,11 +1381,23 @@ std::string Session::getPathInfo(const std::string& cgiuri) {
   return path_info;
 }
 
-void Session::vecToChar(char** meta_variables, std::vector<std::string>& envp) {
-  for (size_t i = 0; i < envp.size(); ++i) {
-    meta_variables[i] = ft_strdup(envp[i].c_str());
+char** Session::vecToChar(std::vector<std::string>& meta_variables) {
+  char** envp = (char**)malloc(sizeof(char*) * (meta_variables.size() + 1));
+  if (!envp) {
+    return NULL;
   }
-  meta_variables[envp.size()] = NULL;
+  for (size_t i = 0; i < meta_variables.size(); ++i) {
+    envp[i] = ft_strdup(meta_variables[i].c_str());
+    if (!envp[i]) {
+      while (--i >= 0) {
+        free(envp[i]);
+      }
+      free(envp);
+      return NULL;
+    }
+  }
+  envp[meta_variables.size()] = NULL;
+  return envp;
 }
 
 /*
