@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/16 00:46:22 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/16 11:51:00 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -401,8 +401,8 @@ const ServerConfig* Session::findServer() {
   // just for unit_test
   (void)addr;
   (void)addrlen;
-  in_addr_t ip_ = 0x12345678;
-  uint16_t port_ = 0x1234;
+  in_addr_t ip = 0x12345678;
+  uint16_t port = 0x1234;
 #endif /* UNIT_TEST */
 
   // iterate for all server directive in main_config
@@ -662,14 +662,166 @@ int Session::readFromFile() {
 ** directory listing creators (todo!!)
 */
 
-void Session::startDirectoryListing(const std::string& filepath) {
+// struct to store info of each file
+struct FileInfo {
+  struct stat st;
+  struct dirent dent;
+};
+
+// compare func to sort list of files
+static bool compFiles(const struct FileInfo& a, const struct FileInfo& b) {
+  // directory first
+  if (S_ISDIR(a.st.st_mode) && !S_ISDIR(b.st.st_mode)) {
+    return true;
+  } else if (!S_ISDIR(a.st.st_mode) && S_ISDIR(b.st.st_mode)) {
+    return false;
+  }
+
+  // modified time (don't care nano time)
+  if (a.st.st_mtimespec.tv_sec < b.st.st_mtimespec.tv_sec) {
+    return true;
+  } else if (a.st.st_mtimespec.tv_sec > b.st.st_mtimespec.tv_sec) {
+    return false;
+  }
+
+  // file name
+  if (ft_strncmp(a.dent.d_name, b.dent.d_name, a.dent.d_namlen) < 0) {
+    return true;
+  }
+  return false;
+}
+
+bool Session::isAutoIndexOn() const {
+  return ((location_config_ && location_config_->getAutoIndex()) ||
+          (server_config_ && server_config_->getAutoIndex()) ||
+          main_config_.getAutoIndex());
+}
+
+void Session::createDirectoryListingHeader() {
+  response_.appendToBody("<html>\n<head><title>Index of ");
+  response_.appendToBody(request_.getUri());
+  response_.appendToBody("</title></head>\n");
+}
+
+void Session::createDirectoryList(const std::list<struct FileInfo>& files) {
+  response_.appendToBody(
+      "<pre>\n<a href=\"../\">../</a>\n");  // .. always with you
+
+  for (std::list<struct FileInfo>::const_iterator itr = files.begin();
+       itr != files.end(); ++itr) {
+    // get filename
+    std::string filename(itr->dent.d_name);
+    if (S_ISDIR(itr->st.st_mode)) {
+      filename.append("/");
+    }
+
+    // create link
+    response_.appendToBody("<a href=\"");
+    response_.appendToBody(request_.getUri());
+    if (request_.getUri().empty() ||
+        request_.getUri()[request_.getUri().size() - 1] != '/') {
+      response_.appendToBody("/");
+    }
+    response_.appendToBody(filename);
+    response_.appendToBody("\">");
+    response_.appendToBody(filename);
+    response_.appendToBody("</a>");
+
+    response_.appendToBody("                                        ");
+
+    char buf[128];
+    size_t ts_len =
+        getTimeStamp(buf, 128, "%d-%b-%Y %k:%M", itr->st.st_mtimespec.tv_sec);
+    response_.appendToBody(buf, ts_len);
+
+    response_.appendToBody("                          ");
+
+    // file size
+    if (S_ISDIR(itr->st.st_mode)) {
+      response_.appendToBody("-\n");
+    } else {
+      response_.appendToBody(std::to_string(itr->st.st_size));
+      response_.appendToBody("\n");
+    }
+  }
+
+  // end of list
+  response_.appendToBody("</pre><hr></body>\n</html>\n");
+}
+
+void Session::createDirectoryListingBody(
+    const std::list<struct FileInfo>& files) {
+  // html header
+  createDirectoryListingHeader();
+
+  // create title
+  response_.appendToBody("<body bgcolor=\"white\">\n");
+  response_.appendToBody("<h1>Index of ");
+  response_.appendToBody(request_.getUri());
+  response_.appendToBody("</h1>\n<hr>\n");
+
+  // create directory list
+  createDirectoryList(files);
+}
+
+int Session::createFileList(const std::string& dirpath,
+                            std::list<struct FileInfo>* files) const {
+  // open directory
+  DIR* dptr = opendir(dirpath.c_str());
+  if (dptr == NULL) {
+    return -1;
+  }
+
+  // read directory and make list of files
+  struct FileInfo finfo;
+  struct dirent* dent;
+  while ((dent = readdir(dptr)) != NULL) {
+    // ignore hidden data
+    if (*(dent->d_name) == '.') {
+      continue;
+    }
+
+    // get file stat
+    if (lstat((dirpath + "/" + dent->d_name).c_str(), &finfo.st) == -1) {
+      closedir(dptr);
+      return -1;
+    }
+
+    finfo.dent = *dent;
+    files->push_back(finfo);
+  }
+  closedir(dptr);
+
+  // sort list of files
+  files->sort(compFiles);
+  return 0;
+}
+
+// create html for directory listing
+// TODO: TIME HEADER
+void Session::startDirectoryListing(const std::string& dirpath) {
+  std::list<struct FileInfo> files;
+
+  // check autoindex is on
+  if (!isAutoIndexOn()) {
+    createErrorResponse(HTTP_403);
+    return;
+  }
+
+  if (createFileList(dirpath, &files) < 0) {
+    createErrorResponse(HTTP_500);
+    return;
+  }
+
+  // add header
   response_.createStatusLine(HTTP_200);
   response_.addHeader("Content-Type", "text/html");
+  // response_.addHeader("Date", timestamp);  // add after merged
 
-  // [TEMP] response
-  response_.appendToBody("<h1>autoindex not yet implemented: ", 35);
-  response_.appendToBody(filepath.c_str(), filepath.length());
-  response_.appendToBody("</h1>\n", 6);
+  /*** create body ***/
+  createDirectoryListingBody(files);  // html body
+
+  // to send response
   status_ = SESSION_FOR_CLIENT_SEND;
 }
 
@@ -762,19 +914,13 @@ bool Session::isCgiFile(const std::string& filepath) const {
 
 void Session::createCgiProcess(const std::string& filepath,
                                const std::string& cgiuri) {
-  // prepare argvs and env vars here and pass them to cgiHandlerc
+  // prepare argvs and env vars here and pass them to cgiHandler
   char** argv = storeArgv(cgiuri);
   char** meta_variables = storeMetaVariables(cgiuri);
   HTTPStatusCode http_status =
       cgi_handler_.createCgiProcess(filepath, argv, meta_variables);
-
-  //free argv and meta_variables after using them
   free(argv);
-  for (int i = 0; meta_variables[i] != NULL; ++i) {
-    free(meta_variables[i]);
-  }
   free(meta_variables);
-  
   if (http_status != HTTP_200) {
     std::cout << "[error] failed to create cgi process" << std::endl;
     createErrorResponse(http_status);
@@ -1032,8 +1178,7 @@ int Session::writeToFile() {
 
 char** Session::storeArgv(const std::string& cgiuri) {
   std::string argv = cgiuri;
-  /* in case of XXX.cgi?argv1+argv2, if there is "=" in query string, "+"
-   * becomes literal not delimitter */
+  /* in case of XXX.cgi?argv1+argv2, if there is "=" in query string, "+" becomes literal not delimitter */
   if (request_.getQuery().find("=") == std::string::npos &&
       request_.getQuery().find("+") != std::string::npos) {
     argv.replace(0, 1, "+");
@@ -1046,67 +1191,66 @@ char** Session::storeArgv(const std::string& cgiuri) {
   return ft_split(argv.c_str(), '/');
 }
 
-char** Session::storeMetaVariables(const std::string& cgiuri) {
+char** Session::storeMetaVariables(
+    const std::string& cgiuri) {
   std::vector<std::string> envp;
   std::string tmp;
   const std::map<std::string, std::string>& headers = request_.getHeaders();
-  tmp = "AUTH_TYPE=";                               // 0
+  tmp = "AUTH_TYPE=";
   tmp += getFromHeaders(headers, "authorization");  // TBC!
   envp.push_back(tmp);
-  tmp = "CONTENT_LENGTH=";  // 1
+  tmp = "CONTENT_LENGTH=";
   tmp += getFromHeaders(headers, "content-length");
   envp.push_back(tmp);
-  tmp = "CONTENT_TYPE=";  // 2
+  tmp = "CONTENT_TYPE=";
   tmp += getFromHeaders(headers, "content-type");
   envp.push_back(tmp);
-  tmp = "GATEWAY_INTERFACE=";  //プロトコル名称入れてもらう？ //3
+  tmp = "GATEWAY_INTERFACE=";  //プロトコル名称入れてもらう？
   tmp += getFromHeaders(headers, "gateway-interface");  //?
   envp.push_back(tmp);
-  tmp = "PATH_INFO=";  // testerで求める挙動は違うようだ（discord #webserv) //4
+  tmp = "PATH_INFO=";  // testerで求める挙動は違うようだ（discord #webserv)
   std::string path_info = getPathInfo(cgiuri);
   tmp += path_info;
   envp.push_back(tmp);
-  tmp = "PATH_TRANSLATED=";  // Document root + PATH_INFO //5
-  if (path_info != "") {
+  tmp = "PATH_TRANSLATED=";  // Document root + PATH_INFO
   tmp += findRoot();
   tmp += path_info;
-  }
   envp.push_back(tmp);
-  tmp = "QUERY_STRING=";  // 6
+  tmp = "QUERY_STRING=";
   tmp += request_.getQuery();
   envp.push_back(tmp);
-  tmp = "REMOTE_ADDR=";  // 7
+  tmp = "REMOTE_ADDR=";
   tmp += getIpAddress(ip_);
   envp.push_back(tmp);
-  tmp = "REMOTE_IDENT=";  // 8
-  tmp += "TEST";          // TBC!
+  tmp = "REMOTE_IDENT=";
+  tmp += "TEST";  // TBC!
   envp.push_back(tmp);
-  tmp = "REMOTE_USER=";  // 9
-  tmp += "TEST";         // TBC!
+  tmp = "REMOTE_USER=";
+  tmp += "TEST";  // TBC!
   envp.push_back(tmp);
-  tmp = "REQUEST_METHOD=";  // 10
+  tmp = "REQUEST_METHOD=";
   tmp += request_.getMethod();
   envp.push_back(tmp);
-  tmp = "REQUEST_URI=";  // 11
+  tmp = "REQUEST_URI=";
   tmp += request_.getUri();
   envp.push_back(tmp);
-  tmp = "SCRIPT_NAME=";  // 12
+  tmp = "SCRIPT_NAME=";
   tmp += cgiuri;
   envp.push_back(tmp);
-  tmp = "SERVER_NAME=";  // 13
+  tmp = "SERVER_NAME=";
   tmp += getFromHeaders(headers, "host");
   envp.push_back(tmp);
-  tmp = "SERVER_PORT=";  // 14
+  tmp = "SERVER_PORT=";
   char* server_port = ft_itoa(ft_htons(port_));
   tmp += std::string(server_port);
   free(server_port);
   envp.push_back(tmp);
-  tmp = "SERVER_PROTOCOL=HTTP/1.1";  // 15
+  tmp = "SERVER_PROTOCOL=HTTP/1.1";
   envp.push_back(tmp);
-  tmp = "SERVER_SOFTWARE=";  // 16
+  tmp = "SERVER_SOFTWARE=";
   tmp += SOFTWARE_NAME;
   envp.push_back(tmp);
-  char** meta_variables = (char**)malloc(sizeof(char*) * (envp.size() + 1));
+  char** meta_variables = (char**)malloc(sizeof(char*) * 18);
   if (!meta_variables) {
     return NULL;
   }
@@ -1129,9 +1273,11 @@ std::string Session::getPathInfo(const std::string& cgiuri) {
   return path_info;
 }
 
-void Session::vecToChar(char** meta_variables, std::vector<std::string>& envp) {
+void Session::vecToChar(
+    char** meta_variables,
+    std::vector<std::string>& envp) {
   for (size_t i = 0; i < envp.size(); ++i) {
-    meta_variables[i] = ft_strdup(envp[i].c_str());
+    meta_variables[i] = const_cast<char*>(envp[i].c_str());
   }
   meta_variables[envp.size()] = NULL;
 }
