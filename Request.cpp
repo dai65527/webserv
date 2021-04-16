@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/12 21:10:26 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/16 01:53:16 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,22 @@ size_t Request::getContentLength() const { return content_length_; }
 const std::vector<char>& Request::getBody() const { return body_; }
 int Request::getFlgChunked() const { return flg_chunked_; };
 
+// reset all for next request
+void Request::resetAll() {
+  parse_progress_ = REQ_BEFORE_PARSE;
+  flg_chunked_ = false;
+  pos_prev_ = 0;
+  content_length_ = 0;
+  chunk_size_ = 0;
+  buf_.clear();
+  body_.clear();
+  header_field_.clear();
+  method_.clear();
+  uri_.clear();
+  query_.clear();
+  headers_.clear();
+}
+
 /* make string from a part of buf*/
 std::string Request::bufToString(size_t begin, size_t end) {
   if (end > begin) {
@@ -53,6 +69,9 @@ std::string Request::bufToString(size_t begin, size_t end) {
 /* compare char literal and a part of buf*/
 int Request::compareBuf(size_t begin, const char* str) {
   size_t len = ft_strlen(str);
+  if (begin + len > buf_.size()) {
+    return 1;
+  }
   for (size_t i = 0; i < len; ++i) {
     if (buf_[i + begin] != str[i]) {
       return 1;
@@ -67,9 +86,11 @@ int Request::compareBuf(size_t begin, const char* str) {
 ** receive request using recv syscall
 **
 ** return values: (negatives are ERRPR)
-** REQ_FIN_PARSE_HEADER 2 //finished parsing header
-** REQ_CONTINUE_RECV 1 //continue to receive
-** REQ_FIN_RECV 0 // finished receiving
+** REQ_FIN_PARSE_HEADER //finished parsing header
+** REQ_CONTINUE_RECV //continue to receive
+** REQ_FIN_RECV // finished receiving
+** REQ_ERR_RECV // error on recv
+** REQ_CLOSE_CON // connection already closed by client
 ** REQ_ERR_HTTP_VERSION -2 //HTTP505
 ** REQ_ERR_LEN_REQUIRED -3 //HTTP411
 ** REQ_ERR_BAD_REQUEST -4 //HTTP400
@@ -84,10 +105,9 @@ int Request::receive(int sock_fd) {
   ret = recv(sock_fd, read_buf, BUFFER_SIZE, 0);
   if (ret < 0) {
     return REQ_ERR_RECV;
+  } else if (ret == 0) {  // if ret == 0, the socket_is closed
+    return REQ_CLOSE_CON;
   }
-  //else if (ret == 0) {} /*when brawsers shut down the connection, this may be required */
-  write(1, read_buf, ret);
-  write(1, "\n", 1);
   buf_.insert(buf_.end(), read_buf, read_buf + ret);
 #else
   (void)sock_fd;
@@ -232,30 +252,6 @@ size_t Request::parseUri(size_t pos) {
          ++pos;
        }
        query_ = bufToString(copy_begin, pos);
-  //   while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r') {
-  //     size_t begin = ++pos;
-  //     while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r' &&
-  //            buf_[pos] != '&') {
-  //       ++pos;
-  //     }
-  //     size_t pos_equal = begin;
-  //     while (pos_equal != buf_.size()) {
-  //       if (buf_[pos_equal] == '=') {
-  //         break;
-  //       }
-  //       ++pos_equal;
-  //     }
-  //     if (pos_equal == buf_.size()) {
-  //       continue;
-  //     }
-  //     std::string key = bufToString(begin, pos_equal);
-  //     ++pos_equal;
-  //     std::string value = bufToString(pos_equal, pos);
-  //     query_[key] = value;
-  //     if (buf_[pos] != '&') {
-  //       break;
-  //     }
-  //   }
   }
   return pos;
 }

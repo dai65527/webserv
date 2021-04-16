@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/01 22:44:35 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 08:12:58 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/15 09:22:35 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,7 @@
 #include "Session.hpp"
 #include "Socket.hpp"
 #include "MainConfig.hpp"
-
-#define SELECT_TIMEOUT_MS 2500
+#include "webserv_settings.hpp"
 
 class Webserv {
  private:

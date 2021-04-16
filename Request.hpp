@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/12 21:10:17 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/16 01:53:56 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ extern "C" {
 #define REQ_CONTINUE_RECV 1      // continue to receive
 #define REQ_FIN_RECV 0           // finished receiving
 #define REQ_ERR_RECV -1          // fail syscall of recv
+#define REQ_CLOSE_CON -5         // socket closed by client
 #define REQ_ERR_HTTP_VERSION -2  // HTTP505
 #define REQ_ERR_LEN_REQUIRED -3  // HTTP411
 #define REQ_ERR_BAD_REQUEST -4   // HTTP400
@@ -46,8 +47,6 @@ class Request {
  private:
 #endif
  public:  // just for test!!!!
-  // std::string buf_; /*temporary saving before parsing and finally becomes
-  // body*/
   std::vector<char> buf_;
   int parse_progress_;
   int flg_chunked_;
@@ -57,7 +56,6 @@ class Request {
   std::string header_field_;
   std::string method_;
   std::string uri_;
-  // std::map<std::string, std::string> query_;
   std::string query_;
   std::map<std::string, std::string> headers_;
   std::vector<char> body_;
@@ -71,12 +69,10 @@ class Request {
   Request();
   virtual ~Request();
 
-  // const std::string& getBuf() const;
-  // const std::vector<char>& getBuf() const;
+  void resetAll();
   const std::string& getMethod() const;
   const std::string& getUri() const;
   const std::map<std::string, std::string>& getHeaders() const;
-  // const std::map<std::string, std::string>& getQuery() const;
   const std::string& getQuery() const;
   size_t getContentLength() const;
   const std::vector<char>& getBody() const;
