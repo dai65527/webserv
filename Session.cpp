@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/16 23:59:03 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/19 01:32:32 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -993,25 +993,18 @@ void Session::createCgiProcess(const std::string& filepath,
     free(argv[i]);
   }
   free(argv);
-  for (int i = 0; meta_variables[i] != NULL; ++i) {
-    free(meta_variables[i]);
-  }
-  free(meta_variables);
+  // for (int i = 0; meta_variables[i] != NULL; ++i) {
+  //   free(meta_variables[i]);
+  // }
+  // free(meta_variables);
 
   if (http_status != HTTP_200) {
     std::cout << "[error] failed to create cgi process" << std::endl;
     createErrorResponse(http_status);
   }
 
-  // [TEMP] create response header
   response_.createStatusLine(HTTP_200);
-  response_.addHeader("Content-Type", "text/html");
 
-  // [TEMP] response
-  (void)cgiuri;
-  response_.appendToBody("<h1>cgi not yet implemented: ", 29);
-  response_.appendToBody(filepath.c_str(), filepath.length());
-  response_.appendToBody("</h1>\n", 6);
   if (request_.getMethod() == "POST" || request_.getMethod() == "PUT") {
     status_ = SESSION_FOR_CGI_WRITE;
     return;
@@ -1109,9 +1102,36 @@ int Session::readFromCgi() {
   }
 
   // append data to response
-  response_.appendToBody(read_buf, n);
+  ssize_t end_header = parseReadBuf(read_buf, n);
+  if (end_header == -1) {
+    createErrorResponse(HTTP_502);  // Bad Gateway but does not close session
+    return 0;
+  }
+  response_.appendToBody(read_buf + end_header + 1, n - (end_header + 1));
 
   return 0;
+}
+
+/*
+** parse read buf from cgi script
+** if there is content-type header, set header
+*/
+
+ssize_t Session::parseReadBuf(char* read_buf, ssize_t n) {
+  ssize_t i = 0;
+  while (i < n) {
+    if (!ft_strncmp(read_buf + i, "\n\n", 2)) {
+      if (i == 0 || read_buf[i - 1] <= 31 ||
+          ft_strchr("()<>@,;:\\\"/[]?={} \t", read_buf[i - 1]) != NULL) {
+        return -1;  // find No valid header
+      } else {
+        return i + 1;  // find valid header and then return the pos of end
+                       // of header
+      }
+    }
+    ++i;
+  }
+  return -1;  // find No valid header
 }
 
 /*
@@ -1481,8 +1501,8 @@ void Session::initMapMineExt() {
   map_ext_mime_["png"] = "image/png";             // Portable Network Graphics
   map_ext_mime_["pdf"] =
       "application/pdf";  // Adobe Portable Document Format (PDF)
-  map_ext_mime_["php"] =
-      "application/x-httpd-php";  // Hypertext Preprocessor (Personal Home Page)
+  map_ext_mime_["php"] = "application/x-httpd-php";  // Hypertext Preprocessor
+                                                     // (Personal Home Page)
   map_ext_mime_["ppt"] =
       "application/vnd.ms-powerpoint";  // Microsoft PowerPoint
   map_ext_mime_["pptx"] =

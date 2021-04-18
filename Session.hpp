@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/16 23:55:13 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/18 22:50:41 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,6 +108,7 @@ class Session {
                              const std::string key);
   std::string getPathInfo(const std::string& cgiuri);
   char** vecToChar(std::vector<std::string>& meta_variables);
+  ssize_t parseReadBuf(char* read_buf, ssize_t n);
 
   // write to file
   void startWritingToFile();
