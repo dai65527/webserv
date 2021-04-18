@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/19 01:32:32 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/19 02:12:19 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -992,11 +992,11 @@ void Session::createCgiProcess(const std::string& filepath,
   for (int i = 0; argv[i] != NULL; ++i) {
     free(argv[i]);
   }
-  free(argv);
-  // for (int i = 0; meta_variables[i] != NULL; ++i) {
-  //   free(meta_variables[i]);
-  // }
-  // free(meta_variables);
+  // free(argv); /* double free when argv given in XXX.cgi/aaa/bbb form*/
+  for (int i = 0; meta_variables[i] != NULL; ++i) {
+    free(meta_variables[i]);
+  }
+  free(meta_variables);
 
   if (http_status != HTTP_200) {
     std::cout << "[error] failed to create cgi process" << std::endl;
@@ -1314,7 +1314,7 @@ char** Session::storeArgv(const std::string& filepath,
       break;
     }
   }
-  return ret + begin;
+  return ret;
 }
 
 char** Session::storeMetaVariables(const std::string& cgiuri) {
