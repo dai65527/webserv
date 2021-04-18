@@ -383,7 +383,7 @@ main
 
 
 ### retry_afterディレクティブ
-`429 Too Many Requests` のレスポンスを返す際に、`Retry-After` ヘッダで指定する値を入力する。秒数で指定する。
+`503 Service Unavaileble`のレスポンスを返す際に、`Retry-After` ヘッダで指定する値を入力する。秒数で指定する。
 
 (nginxにない)
 
