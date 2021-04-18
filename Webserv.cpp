@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 21:48:48 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/24 23:03:15 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/18 10:29:07 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,8 +151,10 @@ int Webserv::selectAndExecute() {
       // accept all incoming connections (rest of n_fd_)
       while (n_fd_-- > 0) {
         int accepted_fd = (*itr)->acceptRequest();
-        if (accepted_fd >= 0) {
-          sessions_.push_back(new Session(accepted_fd, config_));
+        if (sessions_.size() >= static_cast<size_t>(config_.getMaxSessions())) {
+          sessions_.push_back(new Session(accepted_fd, config_, true));
+        } else if (accepted_fd >= 0) {
+          sessions_.push_back(new Session(accepted_fd, config_, false));
         }
       }
     }
