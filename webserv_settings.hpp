@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/29 09:57:21 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/29 09:59:20 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/15 09:21:58 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,5 +14,7 @@
 #define WEBSERV_SETTINGS_HPP
 
 #define WEBSERV_NAME "nginDX"
+#define SELECT_TIMEOUT_MS 500
+#define KEEP_ALIVE_SEC 75
 
 #endif /* WEBSERV_SETTINGS_HPP */

@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/01 19:14:57 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/15 11:03:32 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,21 @@ std::map<HTTPStatusCode, std::string> Response::response_code_message_;
 
 Response::Response() : send_progress_(0), bytes_already_sent_(0) {
   initResponseCodeMessage();
+  connection_to_close_ = false;
 }
 
 Response::~Response() {}
+
+void Response::resetAll() {
+  send_progress_ = 0;
+  bytes_already_sent_ = 0;
+  status_header_.clear();
+  body_.clear();
+}
+
+bool Response::isConnectionToClose() const { return connection_to_close_; }
+
+void Response::setConnectionToClose() { connection_to_close_ = true; }
 
 int Response::createStatusLine(HTTPStatusCode http_status_) {
   // status line
@@ -47,17 +59,32 @@ int Response::addHeader(const std::string& key, const std::string& value) {
   return 0;
 }
 
-int Response::createDefaultErrorResponse(HTTPStatusCode http_status_) {
+int Response::createDefaultErrorResponse(HTTPStatusCode http_status) {
+  // connection to close on these errors
+  // https://software.fujitsu.com/jp/manual/manualfiles/m140003/b1ws1026/04z200/b1026-00-03-02-21.html
+  switch (http_status) {
+    case HTTP_400:
+    case HTTP_408:
+    case HTTP_411:
+    case HTTP_413:
+    case HTTP_414:
+    case HTTP_500:
+    case HTTP_501:
+    case HTTP_503:
+      connection_to_close_ = true;
+    default:
+      break;
+  }
+
   // create status line and common header
-  createStatusLine(http_status_);
+  createStatusLine(http_status);
 
   // add Headers
   addHeader("Content-Type", "text/html");
-  addHeader("Connection", "close");
 
   // create body
   std::string status_msg =
-      std::to_string(http_status_) + " " + response_code_message_[http_status_];
+      std::to_string(http_status) + " " + response_code_message_[http_status];
   body_.clear();
   appendToBody("<html>\r\n");
   appendToBody("<head><title>" + status_msg + "</title></ head>\r\n");
@@ -144,6 +171,11 @@ ssize_t Response::sendData(int sock_fd) {
 // create headers which cannot be defined before create body
 int Response::createCompleteHeader() {
   addHeader("Content-Length", std::to_string(body_.size()));
+  if (connection_to_close_) {
+    addHeader("Connection", "close");
+  } else {
+    addHeader("Connection", "keep-alive");
+  }
   status_header_.append("\r\n");
   return 0;
 }
