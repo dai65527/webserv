@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/19 10:15:36 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/19 10:17:23 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,11 @@ std::map<std::string, std::string> Session::map_ext_mime_;
 **    - status is initialized SESSION_FOR_CLIENT_RECV first
 */
 
-Session::Session(int sock_fd, const MainConfig& main_config)
+Session::Session(int sock_fd, const MainConfig& main_config,
+                 bool flg_exceed_max_session)
     : sock_fd_(sock_fd),
       retry_count_(0),
+      flg_exceed_max_session_(flg_exceed_max_session),
       status_(SESSION_FOR_CLIENT_RECV),
       main_config_(main_config),
       server_config_(NULL),
@@ -286,6 +288,11 @@ int Session::checkReceiveReturn(int ret) {
 
 // check request, load proper config and start creating response
 void Session::startCreateResponse() {
+  if (flg_exceed_max_session_) {
+    createErrorResponse(HTTP_503);
+    return;
+  }
+
   // check connection header
   std::map<std::string, std::string>::const_iterator itr;
   itr = request_.getHeaders().find("connection");
@@ -393,6 +400,11 @@ void Session::createErrorResponse(HTTPStatusCode http_status) {
 
   // createDefaultErrorResponse
   response_.createDefaultErrorResponse(http_status);
+
+  if (flg_exceed_max_session_) {
+    response_.addHeader("Retry-After",
+                        std::to_string(main_config_.getRetryAfter()));
+  }
   status_ = SESSION_FOR_CLIENT_SEND;
 }
 

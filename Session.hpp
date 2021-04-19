@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/18 08:57:01 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/19 10:17:33 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ class Session {
   int file_fd_;
   long time_last_connect_;
   int retry_count_;
+  bool flg_exceed_max_session_;
   SessionStatus status_;
   const MainConfig& main_config_;
   const ServerConfig* server_config_;
@@ -45,7 +46,7 @@ class Session {
   Request request_;
   Response response_;
   CgiHandler cgi_handler_;
-  pid_t cgi_pid_;
+  pid_t cgi_pid_;  // is this needed???
 
   Session();
   Session(Session const& other);
@@ -108,7 +109,8 @@ class Session {
 
  public:
   virtual ~Session();
-  Session(int sock_fd_, const MainConfig& main_config);
+  Session(int sock_fd_, const MainConfig& main_config,
+          bool flg_exceed_max_session);
 
   // getters
   int getSockFd() const;
