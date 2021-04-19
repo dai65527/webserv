@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/19 10:14:34 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/19 10:15:36 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -330,7 +330,7 @@ void Session::startCreateResponseToGet() {
 
   // find file
   filepath = findRoot() + request_.getUri();
-  if (lstat(filepath.c_str(), &pathstat) == -1) {
+  if (stat(filepath.c_str(), &pathstat) == -1) {
     createErrorResponse(HTTP_404);
     return;
   }
@@ -586,7 +586,7 @@ int Session::addResponseHeaderOfFile(const std::string& filepath) {
 
   // last modified
   struct stat pathstat;
-  if (lstat(filepath.c_str(), &pathstat) == -1) {
+  if (stat(filepath.c_str(), &pathstat) == -1) {
     createErrorResponse(HTTP_500);
     return -1;
   }
@@ -603,7 +603,7 @@ std::string Session::findFile(const std::string& uri) const {
   std::string rootpath = findRoot();
   std::string filepath = rootpath + uri;
 
-  if (lstat(filepath.c_str(), &pathstat) == -1) {
+  if (stat(filepath.c_str(), &pathstat) == -1) {
     return "";  // no file or error
   }
 
@@ -862,7 +862,7 @@ int Session::createFileList(const std::string& dirpath,
     }
 
     // get file stat
-    if (lstat((dirpath + "/" + dent->d_name).c_str(), &finfo.st) == -1) {
+    if (stat((dirpath + "/" + dent->d_name).c_str(), &finfo.st) == -1) {
       closedir(dptr);
       return -1;
     }
