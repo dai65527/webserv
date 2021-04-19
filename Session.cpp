@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/18 09:04:19 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/19 10:14:34 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -641,7 +641,12 @@ std::string Session::findFileFromDir(const std::string& dirpath) const {
   struct dirent* dent;
   while ((dent = readdir(dir))) {
     struct stat filestat;
-    if (stat((dirpath + dent->d_name).c_str(), &filestat) == -1) {
+    std::string fullpath = dirpath;
+    if (*fullpath.rbegin() != '/') {
+      fullpath.append("/");
+    }
+    fullpath.append(dent->d_name);
+    if (stat(fullpath.c_str(), &filestat) == -1) {
       return "";
     }
     // case found
