@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/18 22:50:41 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/19 23:27:44 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,8 +105,8 @@ class Session {
   char** storeArgv(const std::string& filepath, const std::string& cgiuri);
   char** storeMetaVariables(const std::string& cgiuri);
   std::string getFromHeaders(const std::map<std::string, std::string>& headers,
-                             const std::string key);
-  std::string getPathInfo(const std::string& cgiuri);
+                             const std::string key) const;
+  std::string getPathInfo(const std::string& cgiuri) const;
   char** vecToChar(std::vector<std::string>& meta_variables);
   ssize_t parseReadBuf(char* read_buf, ssize_t n);
 
@@ -124,6 +124,9 @@ class Session {
   // getters
   int getSockFd() const;
   int getFileFd() const;
+  in_addr_t getIp() const;
+  uint16_t getPort() const;
+  
   const SessionStatus& getStatus() const;
   void addResponseHeaderOfFile(const std::string& filepath);
 
@@ -131,6 +134,29 @@ class Session {
   int setFdToSelect(fd_set* rfds, fd_set* wfds);
   int checkSelectedAndExecute(fd_set* rfds, fd_set* wfds);
   int checkReceiveReturn(int ret);
+
+  class CgiParams {
+   private:
+    const Session& session_;
+    char** argv_;
+    char** envp_;
+
+    CgiParams();
+    CgiParams(CgiParams const& other);
+    CgiParams& operator=(CgiParams const& other);
+
+   public:
+    CgiParams(Session const& session);
+    ~CgiParams();
+
+    char** storeArgv(const std::string& filepath, const std::string& cgiuri,
+                     const Request& request);
+    char** storeMetaVariables(const std::string& cgiuri,
+                              const Request& request);
+
+   private:
+    char** vecToChar(std::vector<std::string>& meta_variables);
+  };
 };
 
 #endif /* SESSION_HPP */

@@ -21,6 +21,7 @@ class test_CgiArgvEnvp : public ::testing::Test {
   MainConfig config;
   Session* session;
   bool flg_thrown;
+  Session::CgiParams *cgi_params;
 
   void appendVec(std::vector<char>& vec, const std::string& str) {
     vec.insert(vec.end(), str.begin(), str.end());
@@ -32,6 +33,7 @@ class test_CgiArgvEnvp : public ::testing::Test {
     session->ip_ = 16777343;  // 127.0.0.1
     session->port_ = 47138;   // 8888
     config.root_ = "./html";
+    cgi_params = new Session::CgiParams(*session);
   }
 
   // 各ケース共通の後処理を書く
@@ -42,7 +44,7 @@ TEST_F(test_CgiArgvEnvp, argvOK1) {
   appendVec(session->request_.buf_,
             "GET /sample.cgi/argv1/argv2/ HTTP/1.1\r\nHost: localhost\r\n\r\n");
   EXPECT_EQ(session->receiveRequest(), 0);
-  char** argv = session->storeArgv("./html/sample.cgi", "/sample.cgi");
+  char** argv = cgi_params->storeArgv("./html/sample.cgi", "/sample.cgi", session->request_);
   EXPECT_EQ("./html/sample.cgi", std::string(argv[0]));
   EXPECT_EQ("argv1", std::string(argv[1]));
   EXPECT_EQ("argv2", std::string(argv[2]));
@@ -53,7 +55,7 @@ TEST_F(test_CgiArgvEnvp, argvOK2) {
   appendVec(session->request_.buf_,
             "GET /sample.cgi?argv1+argv2 HTTP/1.1\r\nHost: localhost\r\n\r\n");
   EXPECT_EQ(session->receiveRequest(), 0);
-  char** argv = session->storeArgv("./html/sample.cgi", "/sample.cgi");
+  char** argv = cgi_params->storeArgv("./html/sample.cgi", "/sample.cgi", session->request_);
   EXPECT_EQ("./html/sample.cgi", std::string(argv[0]));
   EXPECT_EQ("argv1", std::string(argv[1]));
   EXPECT_EQ("argv2", std::string(argv[2]));
@@ -64,7 +66,7 @@ TEST_F(test_CgiArgvEnvp, argvOK3) {
   appendVec(session->request_.buf_,
             "GET /cgi-bin/sample.cgi/argv1/argv2 HTTP/1.1\r\nHost: localhost\r\n\r\n");
   EXPECT_EQ(session->receiveRequest(), 0);
-  char** argv = session->storeArgv("./html/cgi-bin/sample.cgi", "/cgi-bin/sample.cgi");
+  char** argv = cgi_params->storeArgv("./html/cgi-bin/sample.cgi", "/cgi-bin/sample.cgi", session->request_);
   EXPECT_EQ("./html/cgi-bin/sample.cgi", std::string(argv[0]));
   EXPECT_EQ("argv1", std::string(argv[1]));
   EXPECT_EQ("argv2", std::string(argv[2]));
@@ -75,7 +77,7 @@ TEST_F(test_CgiArgvEnvp, argvOK4) {
   appendVec(session->request_.buf_,
             "GET /cgi-bin/sample.cgi?argv1+argv2 HTTP/1.1\r\nHost: localhost\r\n\r\n");
   EXPECT_EQ(session->receiveRequest(), 0);
-  char** argv = session->storeArgv("./html/cgi-bin/sample.cgi", "cgi-bin/sample.cgi");
+  char** argv = cgi_params->storeArgv("./html/cgi-bin/sample.cgi", "cgi-bin/sample.cgi", session->request_);
   EXPECT_EQ("./html/cgi-bin/sample.cgi", std::string(argv[0]));
   EXPECT_EQ("argv1", std::string(argv[1]));
   EXPECT_EQ("argv2", std::string(argv[2]));
@@ -87,7 +89,7 @@ TEST_F(test_CgiArgvEnvp, NoargvDueToEqual) {
             "GET /sample.cgi?argv1+argv2=argv3+argv4 HTTP/1.1\r\nHost: "
             "localhost\r\n\r\n");
   EXPECT_EQ(session->receiveRequest(), 0);
-  char** argv = session->storeArgv("./html/sample.cgi", "/sample.cgi");
+  char** argv = cgi_params->storeArgv("./html/sample.cgi", "/sample.cgi", session->request_);
   EXPECT_EQ("./html/sample.cgi", std::string(argv[0]));
   EXPECT_EQ(NULL, argv[1]);
 }
@@ -97,7 +99,7 @@ TEST_F(test_CgiArgvEnvp, MetaEnvOK1) {
             "GET /sample.cgi?argv1+argv2=argv3+argv4 HTTP/1.1\r\nHost: "
             "localhost\r\n\r\n");
   EXPECT_EQ(session->receiveRequest(), 0);
-  char** envp = session->storeMetaVariables("/sample.cgi");
+  char** envp = cgi_params->storeMetaVariables("/sample.cgi", session->request_);
   EXPECT_EQ("AUTH_TYPE=", std::string(envp[0]));
   EXPECT_EQ("CONTENT_LENGTH=", std::string(envp[1]));
   EXPECT_EQ("CONTENT_TYPE=", std::string(envp[2]));
@@ -124,7 +126,7 @@ TEST_F(test_CgiArgvEnvp, MetaEnvOK2) {
             "POST /sample.cgi/argv1/argv2 HTTP/1.1\r\nHost: "
             "localhost\r\ncontent-length:10\r\n\r\n0123456789\r\n\r\n");
   EXPECT_EQ(session->receiveRequest(), 0);
-  char** envp = session->storeMetaVariables("/sample.cgi");
+  char** envp = cgi_params->storeMetaVariables("/sample.cgi", session->request_);
   EXPECT_EQ("AUTH_TYPE=", std::string(envp[0]));
   EXPECT_EQ("CONTENT_LENGTH=10", std::string(envp[1]));
   EXPECT_EQ("CONTENT_TYPE=", std::string(envp[2]));
