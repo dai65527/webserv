@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/18 10:48:03 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/20 14:05:28 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -569,6 +569,8 @@ const LocationConfig* Session::findLocation() const {
 
 // find and open file and create response header
 void Session::startReadingFromFile(const std::string& filepath) {
+  // check charset (TODO)
+
   // openfile
   file_fd_ = open(filepath.c_str(), O_RDONLY);  // toriaezu
   if (file_fd_ == -1) {
@@ -592,7 +594,50 @@ void Session::startReadingFromFile(const std::string& filepath) {
 void Session::addResponseHeaderOfFile(const std::string& filepath) {
   (void)filepath;
   response_.createStatusLine(HTTP_200);
-  response_.addHeader("Content-Type", "text/html");
+
+  // content type header
+  addContentTypeHeader(filepath);
+}
+
+void Session::addContentTypeHeader(const std::string& filepath) {
+  // get extension from filepath
+  std::string fileext = extension(filepath);
+  if (fileext.empty()) {
+    // treat as unknown mime type if no extension
+    response_.addHeader("Content-Type", "application/octet-stream");
+    return;
+  }
+
+  // find mime type by extension
+  std::map<std::string, std::string>::const_iterator itr =
+      map_ext_mime_.find(fileext);
+  if (fileext.empty()) {
+    // unknow mime
+    response_.addHeader("Content-Type", "application/octet-stream");
+    return;
+  }
+  std::string content_type = itr->second;
+
+  // find charset
+  if (!content_type.compare(0, 5, "text/")) {
+    std::string charset = findCharset();
+    if (!charset.empty()) {
+      content_type.append("; ");
+      content_type.append(charset);
+    }
+  }
+
+  response_.addHeader("Content-Type", content_type);
+}
+
+std::string Session::findCharset() const {
+  if (location_config_ && !location_config_->getCharset().empty()) {
+    return location_config_->getCharset();
+  }
+  if (server_config_ && !server_config_->getCharset().empty()) {
+    return server_config_->getCharset();
+  }
+  return main_config_.getCharset();
 }
 
 // find requested file
@@ -604,7 +649,6 @@ std::string Session::findFile(const std::string& uri) const {
   if (stat(filepath.c_str(), &pathstat) == -1) {
     return "";  // no file or error
   }
-
   if (S_ISREG(pathstat.st_mode)) {
     return filepath;  // file found
   } else if (S_ISDIR(pathstat.st_mode)) {

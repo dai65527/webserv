@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/18 10:44:40 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/20 13:58:19 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,9 @@ class Session {
   void startReadingFromFile(const std::string& filepath);
   std::string findFileFromDir(const std::string& dirpath) const;
   std::string findFile(const std::string& uri) const;
+  void addResponseHeaderOfFile(const std::string& filepath);
+  void addContentTypeHeader(const std::string& filepath);
+  std::string findCharset() const;
   const std::string& findRoot() const;
   bool isIndex(const std::string& filename) const;
   int readFromFile();
@@ -115,7 +118,6 @@ class Session {
   int getSockFd() const;
   int getFileFd() const;
   const SessionStatus& getStatus() const;
-  void addResponseHeaderOfFile(const std::string& filepath);
 
   // functions called from Webserv
   int setFdToSelect(fd_set* rfds, fd_set* wfds);
