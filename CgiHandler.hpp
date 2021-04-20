@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 22:01:23 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/21 00:08:10 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/21 01:33:19 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ class CgiHandler {
                           const std::vector<std::string>& meta_variables_str);
   int writeToCgi(const char* buf, size_t size);
   int finishWriting();
-  int readFromCgi(char* buf, size_t size);
+  int readFromCgi();
 };
 
 #endif /* CGIHANDLER_HPP */

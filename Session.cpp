@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/21 00:06:59 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/21 01:33:50 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1049,10 +1049,9 @@ int Session::writeToCgi() {
 // read from to cgi process (TODO!!)
 int Session::readFromCgi() {
   ssize_t n;
-  char read_buf[BUFFER_SIZE];
 
   // read from cgi process
-  n = cgi_handler_.readFromCgi(read_buf, BUFFER_SIZE);
+  n = cgi_handler_.readFromCgi();
   // retry seveal times even if read failed
   if (n == -1) {
     std::cout << "[error] failed to read from cgi process" << std::endl;
@@ -1086,12 +1085,13 @@ int Session::readFromCgi() {
     // append data to response
     std::string buf =
         std::string(cgi_handler_.getBuf().begin(), cgi_handler_.getBuf().end());
-    ssize_t end_header = parseReadBuf(buf.c_str(), n);
+    ssize_t end_header = parseReadBuf(buf.c_str(), buf.size());
     if (end_header == -1) {
       createErrorResponse(HTTP_502);  // Bad Gateway but does not close session
       return 0;
     }
-    response_.appendToBody(buf.c_str() + end_header + 1, n - (end_header + 1));
+    response_.appendToBody(buf.c_str() + end_header + 1,
+                           buf.size() - (end_header + 1));
     close(cgi_handler_.getOutputFd());  // close pipefd
     status_ = SESSION_FOR_CLIENT_SEND;  // set for send response
     return 0;

@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/07 23:25:56 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/21 00:07:38 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/21 01:34:00 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include <iostream>
 
 #include "HttpStatusCode.hpp"
+
 
 CgiHandler::CgiHandler() {}
 CgiHandler::~CgiHandler() {}
@@ -101,12 +102,13 @@ int CgiHandler::writeToCgi(const char* buf, size_t size) {
 
 // int CgiHandler::finishWriting() {}
 
-int CgiHandler::readFromCgi(char* buf, size_t size) {
+int CgiHandler::readFromCgi() {
   ssize_t ret;
+  char read_buf[BUFFER_SIZE];
 
   // read from cgi process
-  ret = read(output_fd_, buf, size);
-  buf_.insert(buf_.end(), buf, buf + ret);
+  ret = read(output_fd_, read_buf, BUFFER_SIZE);
+  buf_.insert(buf_.end(), read_buf, read_buf + ret);
 
   // retry seveal times even if read failed
   if (ret == -1) {
