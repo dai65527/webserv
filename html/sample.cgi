@@ -5,7 +5,7 @@
 #
 # CGIのヘッダを書き出します。通常は text/html を指定します。
 #
-print "Content-type: text/html\n";
+print "Content-Type: text/html\n";
 print "\n";
 
 #

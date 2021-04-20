@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/19 23:27:44 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/20 11:33:12 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@
 #include "webserv_utils.hpp"
 
 #define SOFTWARE_NAME "nginDX"
+#define SESS_BEFORE_PARSE_CGI_HEADER 0
+#define SESS_FIN_PARSE_CGI_HEADER 1
 
 class Session {
  private:
@@ -51,6 +53,7 @@ class Session {
   pid_t cgi_pid_;
   in_addr_t ip_;
   uint16_t port_;
+  int cgiResponseParseProgress_;
 
   Session();
   Session(Session const& other);
