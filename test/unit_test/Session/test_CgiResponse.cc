@@ -51,7 +51,7 @@ class test_CgiResponse : public ::testing::Test {
 
 TEST_F(test_CgiResponse, OK1) {
   appendVec(session->request_.buf_,
-            "GET /sample.cgi/argv1/argv2/ HTTP/1.1\r\nHost: localhost\r\n\r\n");
+            "GET /sample.cgi/ HTTP/1.1\r\nHost: localhost\r\n\r\n");
   EXPECT_EQ(session->receiveRequest(), 0);
   char** argv = cgi_params->storeArgv("./html/sample.cgi", "/sample.cgi", session->request_);
   char** envp = cgi_params->storeMetaVariables("/sample.cgi", session->request_);
