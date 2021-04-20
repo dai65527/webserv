@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/20 21:20:51 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/21 00:06:59 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,8 +40,7 @@ Session::Session(int sock_fd, const MainConfig& main_config)
       status_(SESSION_FOR_CLIENT_RECV),
       main_config_(main_config),
       server_config_(NULL),
-      location_config_(NULL),
-      cgiResponseParseProgress_(SESS_BEFORE_PARSE_CGI_HEADER) {
+      location_config_(NULL) {
   initMapMineExt();
   updateConnectionTime();
 }
@@ -1084,24 +1083,19 @@ int Session::readFromCgi() {
 
   // check if pipe closed
   if (n == 0) {
-    close(cgi_handler_.getOutputFd());  // close pipefd
-    status_ = SESSION_FOR_CLIENT_SEND;  // set for send response
-    return 0;
-  }
-
-  // append data to response
-  if (cgiResponseParseProgress_ == SESS_BEFORE_PARSE_CGI_HEADER) {
-    ssize_t end_header = parseReadBuf(read_buf, n);
+    // append data to response
+    std::string buf =
+        std::string(cgi_handler_.getBuf().begin(), cgi_handler_.getBuf().end());
+    ssize_t end_header = parseReadBuf(buf.c_str(), n);
     if (end_header == -1) {
       createErrorResponse(HTTP_502);  // Bad Gateway but does not close session
       return 0;
     }
-    if (cgiResponseParseProgress_ == SESS_FIN_PARSE_CGI_HEADER)
-      response_.appendToBody(read_buf + end_header + 1, n - (end_header + 1));
-  } else {
-    response_.appendToBody(read_buf, n);
+    response_.appendToBody(buf.c_str() + end_header + 1, n - (end_header + 1));
+    close(cgi_handler_.getOutputFd());  // close pipefd
+    status_ = SESSION_FOR_CLIENT_SEND;  // set for send response
+    return 0;
   }
-
   return 0;
 }
 
@@ -1110,7 +1104,7 @@ int Session::readFromCgi() {
 ** if there is content-type header, set header
 */
 
-ssize_t Session::parseReadBuf(char* read_buf, ssize_t n) {
+ssize_t Session::parseReadBuf(const char* read_buf, ssize_t n) {
   std::map<std::string, std::string> header;
   ssize_t i = 0;
   ssize_t ret = -1;
@@ -1135,9 +1129,9 @@ ssize_t Session::parseReadBuf(char* read_buf, ssize_t n) {
     }
     header[key] = std::string(&read_buf[begin], &read_buf[i]);
     if (!ft_strncmp(read_buf + i, "\n\n", 2)) {
-      ret = 2;
+      ret = 1;
     } else if (!ft_strncmp(read_buf + i, "\r\n\r\n", 4)) {
-      ret = 4;
+      ret = 3;
     }
     if (ret > 0) {
       if (i == 0) {  // no header provided
@@ -1155,8 +1149,6 @@ ssize_t Session::parseReadBuf(char* read_buf, ssize_t n) {
          itr != header.end(); ++itr) {
       response_.addHeader(itr->first, itr->second);  // add header
     }
-    cgiResponseParseProgress_ =
-        SESS_FIN_PARSE_CGI_HEADER;  // Fin parse cgi response header
     return i + ret;  // Parse OK then return the pos of end of header
   }
   return -1;  // find No valid header

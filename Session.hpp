@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/20 11:33:12 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/21 00:06:09 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,6 @@ class Session {
   pid_t cgi_pid_;
   in_addr_t ip_;
   uint16_t port_;
-  int cgiResponseParseProgress_;
 
   Session();
   Session(Session const& other);
@@ -111,7 +110,7 @@ class Session {
                              const std::string key) const;
   std::string getPathInfo(const std::string& cgiuri) const;
   char** vecToChar(std::vector<std::string>& meta_variables);
-  ssize_t parseReadBuf(char* read_buf, ssize_t n);
+  ssize_t parseReadBuf(const char* read_buf, ssize_t n);
 
   // write to file
   void startWritingToFile();

@@ -14,15 +14,15 @@
 
 #include "MainConfig.hpp"
 #include "Session.hpp"
-#include "webserv_settings.hpp"
 #include "gtest.h"
+#include "webserv_settings.hpp"
 
 class test_CgiResponse : public ::testing::Test {
  protected:
   MainConfig config;
   Session* session;
   bool flg_thrown;
-  Session::CgiParams *cgi_params;
+  Session::CgiParams* cgi_params;
 
   void appendVec(std::vector<char>& vec, const std::string& str) {
     vec.insert(vec.end(), str.begin(), str.end());
@@ -49,14 +49,33 @@ class test_CgiResponse : public ::testing::Test {
   virtual void TearDown() { delete session; }
 };
 
-TEST_F(test_CgiResponse, OK1) {
-  appendVec(session->request_.buf_,
-            "GET /sample.cgi/ HTTP/1.1\r\nHost: localhost\r\n\r\n");
-  EXPECT_EQ(session->receiveRequest(), 0);
-  char** argv = cgi_params->storeArgv("./html/sample.cgi", "/sample.cgi", session->request_);
-  char** envp = cgi_params->storeMetaVariables("/sample.cgi", session->request_);
-  EXPECT_EQ(HTTP_200, session->cgi_handler_.createCgiProcess("./html/sample.cgi", argv, envp));
-  EXPECT_EQ(0, session->readFromCgi());
-  EXPECT_EQ("Content-Type: text/hmtl", session->response_.status_header_);
-  EXPECT_EQ("<HTML>\n", vecToString(session->response_.body_, 0, 8));
+TEST_F(test_CgiResponse, headerOK1) {
+  EXPECT_EQ(24, session->parseReadBuf("Content-Type: text/html\n\n", 26));
+  EXPECT_EQ("Content-Type: text/html\r\n", session->response_.status_header_);
+}
+
+TEST_F(test_CgiResponse, headerOK2) {
+  EXPECT_EQ(
+      34, session->parseReadBuf("Content-Type: text/html\nhoge: foo\n\n", 36));
+  EXPECT_EQ("Content-Type: text/html\r\nhoge: foo\r\n",
+            session->response_.status_header_);
+}
+
+TEST_F(test_CgiResponse, headerNG1) {
+  EXPECT_EQ(-1,
+            session->parseReadBuf("Content-T: text/html\nhoge: foo\n\n", 36));
+  EXPECT_EQ("", session->response_.status_header_);
+}
+
+TEST_F(test_CgiResponse, headerNG2) {
+  EXPECT_EQ(-1, session->parseReadBuf("\n\n", 3));
+  EXPECT_EQ("", session->response_.status_header_);
+}
+
+TEST_F(test_CgiResponse, BodyOK1) {
+  std::string buf("Content-Type: text/html\n\n<HTML>\n");
+  EXPECT_EQ(24, session->parseReadBuf(buf.c_str(), buf.size()));
+  EXPECT_EQ("Content-Type: text/html\r\n", session->response_.status_header_);
+  session->response_.appendToBody(buf.c_str() + 24 + 1, buf.size() - (24 + 1));
+  EXPECT_EQ("<HTML>\n", vecToString(session->response_.body_, 0, buf.size() - (24 + 1)));
 }

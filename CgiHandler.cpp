@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/07 23:25:56 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/14 23:14:06 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/21 00:07:38 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ CgiHandler::~CgiHandler() {}
 pid_t CgiHandler::getPid() const { return pid_; }
 int CgiHandler::getInputFd() const { return input_fd_; }
 int CgiHandler::getOutputFd() const { return output_fd_; }
+const std::vector<char>& CgiHandler::getBuf() const { return buf_; }
 
 // HTTPStatusCode CgiHandler::createCgiProcess(const std::string& path) {
 HTTPStatusCode CgiHandler::createCgiProcess(const std::string& filepath,
@@ -105,6 +106,7 @@ int CgiHandler::readFromCgi(char* buf, size_t size) {
 
   // read from cgi process
   ret = read(output_fd_, buf, size);
+  buf_.insert(buf_.end(), buf, buf + ret);
 
   // retry seveal times even if read failed
   if (ret == -1) {
