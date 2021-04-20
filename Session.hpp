@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/18 10:44:40 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/19 10:17:33 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,7 @@ class Session {
   const std::string& findRoot() const;
   bool isIndex(const std::string& filename) const;
   int readFromFile();
+  int addResponseHeaderOfFile(const std::string& filepath);
 
   // directrory listing
   void startDirectoryListing(const std::string& filepath);
@@ -115,7 +116,6 @@ class Session {
   int getSockFd() const;
   int getFileFd() const;
   const SessionStatus& getStatus() const;
-  void addResponseHeaderOfFile(const std::string& filepath);
 
   // functions called from Webserv
   int setFdToSelect(fd_set* rfds, fd_set* wfds);

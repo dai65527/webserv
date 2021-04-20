@@ -6,16 +6,15 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 08:14:01 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/14 09:08:10 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/18 18:55:36 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <sys/time.h>
-#include <time.h>
 
+#include <ctime>
 #include <string>
 
 #include "HttpStatusCode.hpp"
@@ -178,15 +177,14 @@ bool isDirectory(const std::string& path) {
 
 size_t getTimeStamp(char* buf, size_t bufsize, const char* fmt,
                     time_t unixtime) {
-  // convert unixtime to char string
-  std::string tv_str = std::to_string(unixtime);
-
   // convert char string to struct tm
-  struct tm time;
-  strptime(tv_str.c_str(), "%s", &time);
+  struct tm* time;
+  time = gmtime(&unixtime);
+  strncpy(time->tm_zone, "GMT",
+          strlen(time->tm_zone));  // UTC->GMT (almost same)
 
   // convert tm to string
-  return strftime(buf, bufsize, fmt, &time);
+  return strftime(buf, bufsize, fmt, time);
 }
 
 size_t getTimeStamp(char* buf, size_t bufsize, const char* fmt) {
