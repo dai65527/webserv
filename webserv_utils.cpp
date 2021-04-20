@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 08:14:01 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/20 12:57:28 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/20 17:54:02 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -212,7 +212,12 @@ std::string extension(const std::string& filename) {
     return "";
   }
 
-  return filename.substr(pos_dot + 1);
+  std::string extension = filename.substr(pos_dot + 1);
+  for (std::string::iterator itr = extension.begin(); itr != extension.end();
+       ++itr) {
+    *itr = tolower(*itr);
+  }
+  return extension;
 }
 
 std::string basename(const std::string& path) {
