@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/20 13:50:02 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/20 21:20:51 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1134,7 +1134,6 @@ ssize_t Session::parseReadBuf(char* read_buf, ssize_t n) {
       ++i;
     }
     header[key] = std::string(&read_buf[begin], &read_buf[i]);
-    std::cout << key << " " << header[key] << std::endl;
     if (!ft_strncmp(read_buf + i, "\n\n", 2)) {
       ret = 2;
     } else if (!ft_strncmp(read_buf + i, "\r\n\r\n", 4)) {
@@ -1144,21 +1143,22 @@ ssize_t Session::parseReadBuf(char* read_buf, ssize_t n) {
       if (i == 0) {  // no header provided
         return -1;
       }
-      break ; // go outside of while loop to  check content of header
+      break;  // go outside of while loop to  check content of header
     }
     ++i;
   }
   /* header must include at least one of Content-type, Location or Status*/
-  if (header.find("Content-Type") != header.end() || header.find("Location") != header.end() ||
-  header.find("Status") != header.end()){
-      for (std::map<std::string, std::string>::iterator itr = header.begin(); itr != header.end();
-           ++itr) {
-        response_.addHeader(itr->first, itr->second);  // add header
-      }
-      cgiResponseParseProgress_ =
-          SESS_FIN_PARSE_CGI_HEADER;  // Fin parse cgi response header
-      return i + ret;  // Parse OK then return the pos of end of header
+  if (header.find("Content-Type") != header.end() ||
+      header.find("Location") != header.end() ||
+      header.find("Status") != header.end()) {
+    for (std::map<std::string, std::string>::iterator itr = header.begin();
+         itr != header.end(); ++itr) {
+      response_.addHeader(itr->first, itr->second);  // add header
     }
+    cgiResponseParseProgress_ =
+        SESS_FIN_PARSE_CGI_HEADER;  // Fin parse cgi response header
+    return i + ret;  // Parse OK then return the pos of end of header
+  }
   return -1;  // find No valid header
 }
 
@@ -1305,14 +1305,18 @@ Session::CgiParams::CgiParams(Session const& session)
     : session_(session), argv_(NULL), envp_(NULL) {}
 
 Session::CgiParams::~CgiParams() {
-  for (int i = 0; argv_[i] != NULL; ++i) {
-    free(argv_[i]);
+  if (argv_ != NULL) {
+    for (int i = 0; argv_[i] != NULL; ++i) {
+      free(argv_[i]);
+    }
+    free(argv_);
   }
-  free(argv_);
-  for (int i = 0; envp_[i] != NULL; ++i) {
-    free(envp_[i]);
+  if (envp_ != NULL) {
+    for (int i = 0; envp_[i] != NULL; ++i) {
+      free(envp_[i]);
+    }
+    free(envp_);
   }
-  free(envp_);
 }
 
 char** Session::CgiParams::storeArgv(const std::string& filepath,
