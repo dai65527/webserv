@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/20 18:02:00 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/20 18:16:54 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,8 +141,14 @@ TEST_F(test_isCharsetAccepted, multiTwoWildCardShouldNotMatch1) {
   EXPECT_FALSE(session->isCharsetAccepted("text/html"));
 }
 
+TEST_F(test_isCharsetAccepted, multiTwoWildCardShouldNotMatchJson) {
+  config.charset_ = "q=0.5";
+  session->request_.headers_["accept-charset"] = "utf-8, iso-8859-1;q=0.5";
+  EXPECT_FALSE(session->isCharsetAccepted("application/json"));
+}
+
 TEST_F(test_isCharsetAccepted, multiTwoWildCardShouldNotMatch1ButNotText) {
   config.charset_ = "q=0.5";
   session->request_.headers_["accept-charset"] = "utf-8, iso-8859-1;q=0.5";
-  EXPECT_TRUE(session->isCharsetAccepted("application/json"));
+  EXPECT_TRUE(session->isCharsetAccepted("application/octed-stream"));
 }
