@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/20 13:58:19 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/20 14:57:49 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@ class Session {
   void startReadingFromFile(const std::string& filepath);
   std::string findFileFromDir(const std::string& dirpath) const;
   std::string findFile(const std::string& uri) const;
+  bool isCharsetAccepted() const;
   void addResponseHeaderOfFile(const std::string& filepath);
   void addContentTypeHeader(const std::string& filepath);
   std::string findCharset() const;
@@ -112,7 +113,7 @@ class Session {
  public:
   virtual ~Session();
   Session(int sock_fd_, const MainConfig& main_config,
-          bool flg_exceed_max_session);
+          bool flg_exceed_max_session = false);
 
   // getters
   int getSockFd() const;

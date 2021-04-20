@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/20 14:05:28 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/20 16:19:48 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -569,7 +569,11 @@ const LocationConfig* Session::findLocation() const {
 
 // find and open file and create response header
 void Session::startReadingFromFile(const std::string& filepath) {
-  // check charset (TODO)
+  // check charset
+  if (!isCharsetAccepted()) {
+    createErrorResponse(HTTP_406);
+    return;
+  }
 
   // openfile
   file_fd_ = open(filepath.c_str(), O_RDONLY);  // toriaezu
@@ -589,6 +593,60 @@ void Session::startReadingFromFile(const std::string& filepath) {
   // create response header
   addResponseHeaderOfFile(filepath);  // add response header
   status_ = SESSION_FOR_FILE_READ;
+}
+
+bool Session::isCharsetAccepted() const {
+  std::string charset = findCharset();
+  if (charset.empty()) {
+    return true;
+  }
+  for (std::string::iterator it = charset.begin(); it != charset.end(); ++it) {
+    *it = tolower(*it);
+  }
+
+  std::map<std::string, std::string>::const_iterator itr =
+      request_.getHeaders().find("accept-charset");
+  if (itr == request_.getHeaders().end()) {
+    return true;
+  }
+
+  size_t pos = 0;
+  size_t pos_end;
+  std::string accept_charset;
+  while (1) {
+    pos_end = std::min(itr->second.find(';', pos), itr->second.find(',', pos));
+    accept_charset = itr->second.substr(pos, pos_end - pos);
+    for (std::string::iterator it = accept_charset.begin();
+        it != accept_charset.end(); ++it) {
+      *it = tolower(*it);
+    }
+    if (accept_charset == "*" || accept_charset == charset) {
+      return true;
+    }
+
+    if (pos_end == std::string::npos) {
+      return false;
+    }
+
+    if (itr->second[pos_end] == ';') {
+      pos_end = itr->second.find(',', pos_end);
+    }
+
+    if (pos_end == std::string::npos) {
+      return false;
+    }
+
+    pos = pos_end + 1;
+    if (pos == std::string::npos) {
+      return false;
+    }
+
+    while (pos < itr->second.length() && itr->second[pos] == ' ') {
+      pos++;
+    }
+  }
+
+  return false;
 }
 
 void Session::addResponseHeaderOfFile(const std::string& filepath) {
