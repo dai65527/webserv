@@ -592,7 +592,6 @@ void Session::startReadingFromFile(const std::string& filepath) {
 }
 
 void Session::addResponseHeaderOfFile(const std::string& filepath) {
-  (void)filepath;
   response_.createStatusLine(HTTP_200);
 
   // content type header
@@ -611,7 +610,7 @@ void Session::addContentTypeHeader(const std::string& filepath) {
   // find mime type by extension
   std::map<std::string, std::string>::const_iterator itr =
       map_ext_mime_.find(fileext);
-  if (fileext.empty()) {
+  if (itr == map_ext_mime_.end()) {
     // unknow mime
     response_.addHeader("Content-Type", "application/octet-stream");
     return;
