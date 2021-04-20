@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/15 11:03:32 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/17 23:15:39 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 #include <sys/socket.h>
 
+#include "webserv_utils.hpp"
 #include "webserv_settings.hpp"
 
 std::map<HTTPStatusCode, std::string> Response::response_code_message_;
@@ -46,7 +47,12 @@ int Response::createStatusLine(HTTPStatusCode http_status_) {
 
   // common header
   addHeader("Server", WEBSERV_NAME);
-  // TODO: time header
+
+  // time header
+  char buf[128];
+  // format: Sat, 17 Apr 2021 13:45:20 GMT
+  getTimeStamp(buf, 128, "%a, %d %b %Y %H:%M:%S %Z");
+  addHeader("Date", buf);
 
   return 0;
 }

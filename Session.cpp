@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/20 18:25:55 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/20 21:25:59 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -589,13 +589,35 @@ void Session::startReadingFromFile(const std::string& filepath) {
   fcntl(file_fd_, F_SETFL, O_NONBLOCK);
   if (file_fd_ == -1) {
     close(file_fd_);
-    createErrorResponse(HTTP_503);
+    createErrorResponse(HTTP_500);
     return;
   }
 
   // create response header
-  addResponseHeaderOfFile(filepath, mime_type);  // add response header
+  if (addResponseHeaderOfFile(filepath, mime_type) == -1) {
+    createErrorResponse(HTTP_500);
+    return;
+  }  // add response header
   status_ = SESSION_FOR_FILE_READ;
+}
+
+int Session::addResponseHeaderOfFile(const std::string& filepath,
+                                     const std::string& mime_type) {
+  response_.createStatusLine(HTTP_200);
+
+  addContentTypeHeader(filepath, mime_type);
+
+  // last modified
+  struct stat pathstat;
+  if (stat(filepath.c_str(), &pathstat) == -1) {
+    createErrorResponse(HTTP_500);
+    return -1;
+  }
+  char buf[128];
+  getTimeStamp(buf, 128, "%a, %d %b %Y %H:%M:%S %Z",
+               pathstat.st_mtimespec.tv_sec);
+  response_.addHeader("Last-Modified", buf);
+  return 0;
 }
 
 bool Session::isCharsetAccepted(const std::string& mime_type) const {
@@ -655,14 +677,6 @@ bool Session::isCharsetAccepted(const std::string& mime_type) const {
   }
 
   return false;
-}
-
-void Session::addResponseHeaderOfFile(const std::string& filepath,
-                                      const std::string& mime_type) {
-  response_.createStatusLine(HTTP_200);
-
-  // content type header
-  addContentTypeHeader(filepath, mime_type);
 }
 
 std::string Session::mimeType(const std::string& filepath) const {
@@ -755,7 +769,12 @@ std::string Session::findFileFromDir(const std::string& dirpath) const {
   struct dirent* dent;
   while ((dent = readdir(dir))) {
     struct stat filestat;
-    if (stat((dirpath + dent->d_name).c_str(), &filestat) == -1) {
+    std::string fullpath = dirpath;
+    if (*fullpath.rbegin() != '/') {
+      fullpath.append("/");
+    }
+    fullpath.append(dent->d_name);
+    if (stat(fullpath.c_str(), &filestat) == -1) {
       return "";
     }
     // case found
@@ -971,7 +990,7 @@ int Session::createFileList(const std::string& dirpath,
     }
 
     // get file stat
-    if (lstat((dirpath + "/" + dent->d_name).c_str(), &finfo.st) == -1) {
+    if (stat((dirpath + "/" + dent->d_name).c_str(), &finfo.st) == -1) {
       closedir(dptr);
       return -1;
     }

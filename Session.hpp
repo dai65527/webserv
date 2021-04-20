@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/20 17:59:01 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/20 21:22:24 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,11 +81,10 @@ class Session {
   std::string findFile(const std::string& uri) const;
   std::string mimeType(const std::string& filepath) const;
   bool isCharsetAccepted(const std::string& mime_type) const;
-  void addResponseHeaderOfFile(const std::string& filepath,
+  int addResponseHeaderOfFile(const std::string& filepath,
                                const std::string& mime_type);
   void addContentTypeHeader(const std::string& filepath,
                             const std::string& mime_type);
-  void addContentTypeHeader(const std::string& filepath);
   std::string findCharset() const;
   const std::string& findRoot() const;
   bool isIndex(const std::string& filename) const;
