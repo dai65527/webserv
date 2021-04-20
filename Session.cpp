@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/20 18:12:55 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/20 18:25:55 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -694,7 +694,7 @@ void Session::addContentTypeHeader(const std::string& filepath,
       !content_type.compare("application/javascript")) {
     std::string charset = findCharset();
     if (!charset.empty()) {
-      content_type.append("; ");
+      content_type.append("; charset=");
       content_type.append(charset);
     }
   }
