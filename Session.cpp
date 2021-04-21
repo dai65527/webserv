@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/21 09:28:07 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/21 09:37:30 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -411,6 +411,11 @@ void Session::createErrorResponse(HTTPStatusCode http_status) {
     response_.addHeader("Retry-After",
                         std::to_string(main_config_.getRetryAfter()));
   }
+
+  if (http_status == HTTP_405 && isMethodAllowed(HTTP_OPTIONS)) {
+    createAllowHeader();
+  }
+
   status_ = SESSION_FOR_CLIENT_SEND;
 }
 
