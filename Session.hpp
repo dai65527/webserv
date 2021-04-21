@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/21 00:06:09 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/21 22:15:01 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,12 +104,9 @@ class Session {
   bool isCgiFile(const std::string& filepath) const;
   int writeToCgi();
   int readFromCgi();
-  char** storeArgv(const std::string& filepath, const std::string& cgiuri);
-  char** storeMetaVariables(const std::string& cgiuri);
   std::string getFromHeaders(const std::map<std::string, std::string>& headers,
                              const std::string key) const;
   std::string getPathInfo(const std::string& cgiuri) const;
-  char** vecToChar(std::vector<std::string>& meta_variables);
   ssize_t parseReadBuf(const char* read_buf, ssize_t n);
 
   // write to file
