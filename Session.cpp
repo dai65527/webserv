@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/21 09:37:30 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/22 08:25:31 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1306,8 +1306,8 @@ void Session::createAllowHeader() {
   if (limit_except & HTTP_DELETE) {
     allowed_methods.append(allowed_methods.empty() ? "DELETE" : ", DELETE");
   }
-  if (limit_except & HTTP_DELETE) {
-    allowed_methods.append(allowed_methods.empty() ? "DELETE" : ", HEAD");
+  if (limit_except & HTTP_CONNECT) {
+    allowed_methods.append(allowed_methods.empty() ? "CONNECT" : ", CONNECT");
   }
   if (limit_except & HTTP_OPTIONS) {
     allowed_methods.append(allowed_methods.empty() ? "OPTIONS" : ", OPTIONS");
