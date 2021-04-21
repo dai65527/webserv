@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/15 11:03:32 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/21 11:26:02 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,20 @@ int Response::createStatusLine(HTTPStatusCode http_status_) {
   status_header_.append(std::to_string(http_status_));
   status_header_.append(" ");
   status_header_.append(response_code_message_[http_status_]);
+  status_header_.append("\r\n");
+
+  // common header
+  addHeader("Server", WEBSERV_NAME);
+  // TODO: time header
+
+  return 0;
+}
+
+/* For the case of cgi script create Status code*/
+int Response::createStatusLine(const std::string& value) {
+  // status line
+  status_header_ = "HTTP/1.1 ";
+  status_header_.append(value);
   status_header_.append("\r\n");
 
   // common header

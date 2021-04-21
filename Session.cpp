@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/21 01:33:50 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/21 11:41:46 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -990,7 +990,8 @@ void Session::createCgiProcess(const std::string& filepath,
     createErrorResponse(http_status);
   }
 
-  response_.createStatusLine(HTTP_200);
+  // response_.createStatusLine(HTTP_200); cgi scripts can produce status by
+  // themselves
 
   if (request_.getMethod() == "POST" || request_.getMethod() == "PUT") {
     status_ = SESSION_FOR_CGI_WRITE;
@@ -1120,11 +1121,11 @@ ssize_t Session::parseReadBuf(const char* read_buf, ssize_t n) {
     }
     std::string key = std::string(&read_buf[begin], &read_buf[i]);
     ++i;
-    while (read_buf[i] == ' ') {  // HT??含むかよくわからず(RFCから読み取れず)
+    while (read_buf[i] == ' ') {  // TAB等含むかよくわからず(RFCから読み取れず)
       ++i;
     }
     begin = i;
-    while (read_buf[i] > 31 && read_buf[i] != 127 && read_buf[i] != ' ') {
+    while (read_buf[i] > 31 && read_buf[i] != 127) {
       ++i;
     }
     header[key] = std::string(&read_buf[begin], &read_buf[i]);
@@ -1142,11 +1143,20 @@ ssize_t Session::parseReadBuf(const char* read_buf, ssize_t n) {
     ++i;
   }
   /* header must include at least one of Content-type, Location or Status*/
+  std::map<std::string, std::string>::iterator status_itr =
+      header.find("Status");
   if (header.find("Content-Type") != header.end() ||
-      header.find("Location") != header.end() ||
-      header.find("Status") != header.end()) {
+      header.find("Location") != header.end() || status_itr != header.end()) {
+    if (status_itr != header.end()) {  // status code created in cgi script
+      response_.createStatusLine(status_itr->second);
+    } else { // No status code created in cgi script
+      response_.createStatusLine(HTTP_200);
+    }
     for (std::map<std::string, std::string>::iterator itr = header.begin();
          itr != header.end(); ++itr) {
+      if (itr == status_itr) {  // skip key of status
+        continue;
+      }
       response_.addHeader(itr->first, itr->second);  // add header
     }
     return i + ret;  // Parse OK then return the pos of end of header
