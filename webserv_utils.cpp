@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 08:14:01 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/18 18:55:36 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/20 21:22:53 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,6 +196,27 @@ size_t getTimeStamp(char* buf, size_t bufsize, const char* fmt) {
   }
 
   return getTimeStamp(buf, bufsize, fmt, tv.tv_sec);
+}
+
+std::string extension(const std::string& filename) {
+  // find dot
+  size_t pos_dot = filename.find_last_of('.');
+  if (pos_dot == std::string::npos || pos_dot == 0) {
+    return "";
+  }
+
+  // find slash to eliminate case like "/dir/.hoge" or "/.dir/filename"
+  size_t pos_slash = filename.find_last_of('/');
+  if (pos_slash != std::string::npos && pos_slash + 1 >= pos_dot) {
+    return "";
+  }
+
+  std::string extension = filename.substr(pos_dot + 1);
+  for (std::string::iterator itr = extension.begin(); itr != extension.end();
+       ++itr) {
+    *itr = tolower(*itr);
+  }
+  return extension;
 }
 
 std::string basename(const std::string& path) {
