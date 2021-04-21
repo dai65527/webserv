@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/21 10:01:48 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/22 08:27:38 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -313,6 +313,12 @@ void Session::startCreateResponse() {
     return;
   }
 
+  // case OPTIONS
+  if (request_.getMethod() == "OPTIONS" && isMethodAllowed(HTTP_OPTIONS)) {
+    startCreateResponseToOptions();
+    return;
+  }
+
   // case others (PUT, DELETE and TRACE)
   // not inpl them for now
   createErrorResponse(HTTP_405);
@@ -405,6 +411,11 @@ void Session::createErrorResponse(HTTPStatusCode http_status) {
     response_.addHeader("Retry-After",
                         std::to_string(main_config_.getRetryAfter()));
   }
+
+  if (http_status == HTTP_405 && isMethodAllowed(HTTP_OPTIONS)) {
+    createAllowHeader();
+  }
+
   status_ = SESSION_FOR_CLIENT_SEND;
 }
 
@@ -1372,6 +1383,57 @@ int Session::writeToFile() {
   }
   // to next read
   return 0;
+}
+
+/*
+**  respond to options header
+*/
+
+void Session::startCreateResponseToOptions() {
+  response_.createStatusLine(HTTP_200);
+  createAllowHeader();
+
+  status_ = SESSION_FOR_CLIENT_SEND;
+}
+
+void Session::createAllowHeader() {
+  unsigned long limit_except;
+  if (location_config_) {
+    limit_except = location_config_->getLimitExcept();
+  } else if (server_config_) {
+    limit_except = server_config_->getLimitExcept();
+  } else {
+    limit_except = main_config_.getLimitExcept();
+  }
+
+  std::string allowed_methods;
+  if (limit_except & HTTP_GET) {
+    allowed_methods.append("GET");
+  }
+  if (limit_except & HTTP_HEAD) {
+    allowed_methods.append(allowed_methods.empty() ? "HEAD" : ", HEAD");
+  }
+  if (limit_except & HTTP_POST) {
+    allowed_methods.append(allowed_methods.empty() ? "POST" : ", POST");
+  }
+  if (limit_except & HTTP_PUT) {
+    allowed_methods.append(allowed_methods.empty() ? "PUT" : ", PUT");
+  }
+  if (limit_except & HTTP_DELETE) {
+    allowed_methods.append(allowed_methods.empty() ? "DELETE" : ", DELETE");
+  }
+  if (limit_except & HTTP_CONNECT) {
+    allowed_methods.append(allowed_methods.empty() ? "CONNECT" : ", CONNECT");
+  }
+  if (limit_except & HTTP_OPTIONS) {
+    allowed_methods.append(allowed_methods.empty() ? "OPTIONS" : ", OPTIONS");
+  }
+  if (limit_except & HTTP_TRACE) {
+    allowed_methods.append(allowed_methods.empty() ? "TRACE" : ", TRACE");
+  }
+
+  printf("allowed: %s\n", allowed_methods.c_str());
+  response_.addHeader("Allow", allowed_methods);
 }
 
 /*
