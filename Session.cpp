@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/20 21:25:59 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/21 10:01:48 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -412,7 +412,7 @@ void Session::createErrorResponse(HTTPStatusCode http_status) {
 int Session::sendResponse() {
   ssize_t n;
 
-  n = response_.sendData(sock_fd_);
+  n = response_.sendData(sock_fd_, request_.getMethod() == "HEAD");
   if (n == -1) {
     std::cout << "[error] failed to send response" << std::endl;
     if (retry_count_ == RETRY_TIME_MAX) {
