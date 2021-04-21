@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 20:22:22 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/15 11:00:59 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/21 09:59:27 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ class Response {
   int createDefaultErrorResponse(HTTPStatusCode http_status_);
   int appendToBody(const std::string& data);
   int appendToBody(const char* data, size_t len);
-  ssize_t sendData(int sock_fd);
+  ssize_t sendData(int sock_fd, bool header_only = false);
   const std::string& getRawReponse() const;
 };
 
