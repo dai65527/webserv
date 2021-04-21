@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/21 22:15:01 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/21 23:11:45 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ class Session {
   int file_fd_;
   long time_last_connect_;
   int retry_count_;
+  bool flg_exceed_max_session_;
   SessionStatus status_;
   const MainConfig& main_config_;
   const ServerConfig* server_config_;
@@ -50,7 +51,6 @@ class Session {
   Request request_;
   Response response_;
   CgiHandler cgi_handler_;
-  pid_t cgi_pid_;
   in_addr_t ip_;
   uint16_t port_;
 
@@ -85,6 +85,13 @@ class Session {
   void startReadingFromFile(const std::string& filepath);
   std::string findFileFromDir(const std::string& dirpath) const;
   std::string findFile(const std::string& uri) const;
+  std::string mimeType(const std::string& filepath) const;
+  bool isCharsetAccepted(const std::string& mime_type) const;
+  int addResponseHeaderOfFile(const std::string& filepath,
+                               const std::string& mime_type);
+  void addContentTypeHeader(const std::string& filepath,
+                            const std::string& mime_type);
+  std::string findCharset() const;
   const std::string& findRoot() const;
   bool isIndex(const std::string& filename) const;
   int readFromFile();
@@ -118,7 +125,8 @@ class Session {
 
  public:
   virtual ~Session();
-  Session(int sock_fd_, const MainConfig& main_config);
+  Session(int sock_fd_, const MainConfig& main_config,
+          bool flg_exceed_max_session = false);
 
   // getters
   int getSockFd() const;
@@ -127,7 +135,6 @@ class Session {
   uint16_t getPort() const;
   
   const SessionStatus& getStatus() const;
-  void addResponseHeaderOfFile(const std::string& filepath);
 
   // functions called from Webserv
   int setFdToSelect(fd_set* rfds, fd_set* wfds);

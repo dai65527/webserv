@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/21 11:26:02 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/21 23:37:26 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 #include <sys/socket.h>
 
+#include "webserv_utils.hpp"
 #include "webserv_settings.hpp"
 
 std::map<HTTPStatusCode, std::string> Response::response_code_message_;
@@ -46,7 +47,12 @@ int Response::createStatusLine(HTTPStatusCode http_status_) {
 
   // common header
   addHeader("Server", WEBSERV_NAME);
-  // TODO: time header
+
+  // time header
+  char buf[128];
+  // format: Sat, 17 Apr 2021 13:45:20 GMT
+  getTimeStamp(buf, 128, "%a, %d %b %Y %H:%M:%S %Z");
+  addHeader("Date", buf);
 
   return 0;
 }
@@ -60,7 +66,12 @@ int Response::createStatusLine(const std::string& value) {
 
   // common header
   addHeader("Server", WEBSERV_NAME);
-  // TODO: time header
+  
+  // time header
+  char buf[128];
+  // format: Sat, 17 Apr 2021 13:45:20 GMT
+  getTimeStamp(buf, 128, "%a, %d %b %Y %H:%M:%S %Z");
+  addHeader("Date", buf);
 
   return 0;
 }
@@ -120,7 +131,7 @@ int Response::appendToBody(const std::string& data) {
   return 0;
 }
 
-ssize_t Response::sendData(int sock_fd) {
+ssize_t Response::sendData(int sock_fd, bool header_only) {
   ssize_t n;  // response of send syscall
   switch (send_progress_) {
     case 0:  // first time to send
@@ -147,7 +158,7 @@ ssize_t Response::sendData(int sock_fd) {
       bytes_already_sent_ = 0;
 
       // no body to send
-      if (body_.empty()) {
+      if (body_.empty() || header_only) {
         send_progress_ = 0;  // init for next request
         return 0;            // end
       }

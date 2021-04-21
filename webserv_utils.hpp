@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 09:06:32 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/15 11:33:05 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/21 23:13:39 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,5 +29,6 @@ size_t getTimeStamp(char* buf, size_t bufsize, const char* fmt,
                     time_t unixtime);
 
 std::string basename(const std::string& path);
+std::string extension(const std::string& filename);
 
 #endif /* WEBSERV_UTILS_HPP */

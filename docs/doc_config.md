@@ -289,7 +289,7 @@ main, server, location
 これを指定することによりwebservは以下を行う。
 
 - リクエスト中に含まれる`Accept-Charset`ヘッダーの内容に合致しているか確認し、合致していない場合、`406 Not-Acceptable` を返す。
-- レスポンスの`Content-Type` ヘッダ内の`charset`の内容を設定する。（ただし、CGIについては出力中に`Content-Type`ヘッダの記述が無い場合に限る）
+- レスポンスの`Content-Type` ヘッダ内の`charset`の内容を設定する。
 
 以上は実際のリソースの文字コードに関係なく動作するため、リソースの文字コードと合致していない場合ブラウザ上の表示不具合を引き起こす可能性がある。
 
@@ -383,7 +383,7 @@ main
 
 
 ### retry_afterディレクティブ
-`429 Too Many Requests` のレスポンスを返す際に、`Retry-After` ヘッダで指定する値を入力する。秒数で指定する。
+`503 Service Unavaileble`のレスポンスを返す際に、`Retry-After` ヘッダで指定する値を入力する。秒数で指定する。
 
 (nginxにない)
 
