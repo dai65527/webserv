@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/21 11:41:46 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/21 20:40:31 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1084,15 +1084,14 @@ int Session::readFromCgi() {
   // check if pipe closed
   if (n == 0) {
     // append data to response
-    std::string buf =
-        std::string(cgi_handler_.getBuf().begin(), cgi_handler_.getBuf().end());
-    ssize_t end_header = parseReadBuf(buf.c_str(), buf.size());
+    ssize_t end_header =
+        parseReadBuf(&(cgi_handler_.getBuf())[0], cgi_handler_.getBuf().size());
     if (end_header == -1) {
       createErrorResponse(HTTP_502);  // Bad Gateway but does not close session
       return 0;
     }
-    response_.appendToBody(buf.c_str() + end_header + 1,
-                           buf.size() - (end_header + 1));
+    response_.appendToBody(&cgi_handler_.getBuf()[0] + end_header + 1,
+                           cgi_handler_.getBuf().size() - (end_header + 1));
     close(cgi_handler_.getOutputFd());  // close pipefd
     status_ = SESSION_FOR_CLIENT_SEND;  // set for send response
     return 0;
@@ -1149,7 +1148,7 @@ ssize_t Session::parseReadBuf(const char* read_buf, ssize_t n) {
       header.find("Location") != header.end() || status_itr != header.end()) {
     if (status_itr != header.end()) {  // status code created in cgi script
       response_.createStatusLine(status_itr->second);
-    } else { // No status code created in cgi script
+    } else {  // No status code created in cgi script
       response_.createStatusLine(HTTP_200);
     }
     for (std::map<std::string, std::string>::iterator itr = header.begin();
