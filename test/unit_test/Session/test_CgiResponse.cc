@@ -50,15 +50,20 @@ class test_CgiResponse : public ::testing::Test {
 };
 
 TEST_F(test_CgiResponse, headerOK1) {
-  EXPECT_EQ(24, session->parseReadBuf("Content-Type: text/html\n\n", 26));
-  EXPECT_EQ("Content-Type: text/html\r\n", session->response_.status_header_);
+  ssize_t end_header = session->parseReadBuf("Content-Type: text/html\n\n", 26);
+  EXPECT_EQ(24, end_header);
+  EXPECT_EQ("HTTP/1.1 200 OK\r\nServer: nginDX\r\nContent-Type: text/html\r\n",
+            session->response_.status_header_);
 }
 
 TEST_F(test_CgiResponse, headerOK2) {
+  ssize_t end_header =
+      session->parseReadBuf("Content-Type: text/html\nhoge: foo\n\n", 36);
+  EXPECT_EQ(34, end_header);
   EXPECT_EQ(
-      34, session->parseReadBuf("Content-Type: text/html\nhoge: foo\n\n", 36));
-  EXPECT_EQ("Content-Type: text/html\r\nhoge: foo\r\n",
-            session->response_.status_header_);
+      "HTTP/1.1 200 OK\r\nServer: nginDX\r\nContent-Type: text/html\r\nhoge: "
+      "foo\r\n",
+      session->response_.status_header_);
 }
 
 TEST_F(test_CgiResponse, headerNG1) {
@@ -74,8 +79,24 @@ TEST_F(test_CgiResponse, headerNG2) {
 
 TEST_F(test_CgiResponse, BodyOK1) {
   std::string buf("Content-Type: text/html\n\n<HTML>\n");
-  EXPECT_EQ(24, session->parseReadBuf(buf.c_str(), buf.size()));
-  EXPECT_EQ("Content-Type: text/html\r\n", session->response_.status_header_);
-  session->response_.appendToBody(buf.c_str() + 24 + 1, buf.size() - (24 + 1));
-  EXPECT_EQ("<HTML>\n", vecToString(session->response_.body_, 0, buf.size() - (24 + 1)));
+  ssize_t end_header = session->parseReadBuf("Content-Type: text/html\n\n", 26);
+  EXPECT_EQ(24, end_header);
+  EXPECT_EQ("HTTP/1.1 200 OK\r\nServer: nginDX\r\nContent-Type: text/html\r\n",
+            session->response_.status_header_);
+  session->response_.appendToBody(buf.c_str() + end_header + 1,
+                                  buf.size() - (end_header + 1));
+  EXPECT_EQ("<HTML>\n", vecToString(session->response_.body_, 0,
+                                    buf.size() - (end_header + 1)));
+}
+
+TEST_F(test_CgiResponse, StatusCodeChangeOK1) {
+  std::string buf("Status: 777 Lucky\n\n<HTML>\n");
+  ssize_t end_header = session->parseReadBuf(buf.c_str(), 27);
+  EXPECT_EQ(18, end_header);
+  EXPECT_EQ("HTTP/1.1 777 Lucky\r\nServer: nginDX\r\n",
+            session->response_.status_header_);
+  session->response_.appendToBody(buf.c_str() + end_header + 1,
+                                  buf.size() - (end_header + 1));
+  EXPECT_EQ("<HTML>\n", vecToString(session->response_.body_, 0,
+                                    buf.size() - (end_header + 1)));
 }
