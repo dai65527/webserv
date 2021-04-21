@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/22 08:25:31 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/22 08:27:38 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -423,7 +423,7 @@ void Session::createErrorResponse(HTTPStatusCode http_status) {
 int Session::sendResponse() {
   ssize_t n;
 
-  n = response_.sendData(sock_fd_);
+  n = response_.sendData(sock_fd_, request_.getMethod() == "HEAD");
   if (n == -1) {
     std::cout << "[error] failed to send response" << std::endl;
     if (retry_count_ == RETRY_TIME_MAX) {
@@ -580,6 +580,15 @@ const LocationConfig* Session::findLocation() const {
 
 // find and open file and create response header
 void Session::startReadingFromFile(const std::string& filepath) {
+  // get mime type
+  std::string mime_type = mimeType(filepath);
+
+  // check charset
+  if (!isCharsetAccepted(mime_type)) {
+    createErrorResponse(HTTP_406);
+    return;
+  }
+
   // openfile
   file_fd_ = open(filepath.c_str(), O_RDONLY);  // toriaezu
   if (file_fd_ == -1) {
@@ -596,16 +605,18 @@ void Session::startReadingFromFile(const std::string& filepath) {
   }
 
   // create response header
-  if (addResponseHeaderOfFile(filepath) == -1) {
+  if (addResponseHeaderOfFile(filepath, mime_type) == -1) {
     createErrorResponse(HTTP_500);
     return;
   }  // add response header
   status_ = SESSION_FOR_FILE_READ;
 }
 
-int Session::addResponseHeaderOfFile(const std::string& filepath) {
+int Session::addResponseHeaderOfFile(const std::string& filepath,
+                                     const std::string& mime_type) {
   response_.createStatusLine(HTTP_200);
-  response_.addHeader("Content-Type", "text/html");
+
+  addContentTypeHeader(filepath, mime_type);
 
   // last modified
   struct stat pathstat;
@@ -620,6 +631,112 @@ int Session::addResponseHeaderOfFile(const std::string& filepath) {
   return 0;
 }
 
+bool Session::isCharsetAccepted(const std::string& mime_type) const {
+  std::string charset = findCharset();
+  if (charset.empty()) {
+    return true;
+  }
+  for (std::string::iterator it = charset.begin(); it != charset.end(); ++it) {
+    *it = tolower(*it);
+  }
+
+  if (mime_type.compare(0, 5, "text/") &&
+      mime_type.compare("application/json")) {
+    return true;
+  }
+
+  std::map<std::string, std::string>::const_iterator itr =
+      request_.getHeaders().find("accept-charset");
+  if (itr == request_.getHeaders().end()) {
+    return true;
+  }
+
+  size_t pos = 0;
+  size_t pos_end;
+  std::string accept_charset;
+  while (1) {
+    pos_end = std::min(itr->second.find(';', pos), itr->second.find(',', pos));
+    accept_charset = itr->second.substr(pos, pos_end - pos);
+    for (std::string::iterator it = accept_charset.begin();
+         it != accept_charset.end(); ++it) {
+      *it = tolower(*it);
+    }
+    if (accept_charset == "*" || accept_charset == charset) {
+      return true;
+    }
+
+    if (pos_end == std::string::npos) {
+      return false;
+    }
+
+    if (itr->second[pos_end] == ';') {
+      pos_end = itr->second.find(',', pos_end);
+    }
+
+    if (pos_end == std::string::npos) {
+      return false;
+    }
+
+    pos = pos_end + 1;
+    if (pos == std::string::npos) {
+      return false;
+    }
+
+    while (pos < itr->second.length() && itr->second[pos] == ' ') {
+      pos++;
+    }
+  }
+
+  return false;
+}
+
+std::string Session::mimeType(const std::string& filepath) const {
+  // get extension from filepath
+  std::string fileext = extension(filepath);
+  if (fileext.empty()) {
+    // treat as unknown mime type if no extension
+    return "application/octet-stream";
+  }
+
+  // find mime type by extension
+  std::map<std::string, std::string>::const_iterator itr =
+      map_ext_mime_.find(fileext);
+  if (itr == map_ext_mime_.end()) {
+    // unknow extension
+    return "application/octet-stream";
+  }
+
+  return itr->second;
+}
+
+void Session::addContentTypeHeader(const std::string& filepath,
+                                   const std::string& mime_type) {
+  (void)filepath;
+  std::string content_type = mime_type;
+
+  // find charset
+  if (!content_type.compare(0, 5, "text/") ||
+      !content_type.compare("application/javascript")) {
+    std::string charset = findCharset();
+    if (!charset.empty()) {
+      content_type.append("; charset=");
+      content_type.append(charset);
+    }
+  }
+
+  response_.addHeader("Content-Type", content_type);
+}
+
+std::string Session::findCharset() const {
+  if (location_config_ && !location_config_->getCharset().empty()) {
+    return location_config_->getCharset();
+  }
+  if (server_config_ && !server_config_->getCharset().empty()) {
+    return server_config_->getCharset();
+  }
+  return main_config_.getCharset();
+}
+
 // find requested file
 std::string Session::findFile(const std::string& uri) const {
   struct stat pathstat;
@@ -629,7 +746,6 @@ std::string Session::findFile(const std::string& uri) const {
   if (stat(filepath.c_str(), &pathstat) == -1) {
     return "";  // no file or error
   }
-
   if (S_ISREG(pathstat.st_mode)) {
     return filepath;  // file found
   } else if (S_ISDIR(pathstat.st_mode)) {
@@ -1373,16 +1489,16 @@ void Session::initMapMineExt() {
   map_ext_mime_["jar"] = "application/java-archive";  // Java Archive (JAR)
   map_ext_mime_["jpeg"] = "image/jpeg";               // JPEG 画像
   map_ext_mime_["jpg"] = "image/jpeg";                // JPEG 画像
-  map_ext_mime_["js"] = "text/javascript";            // JavaScript
-  map_ext_mime_["json"] = "application/json";         // JSON 形式
-  map_ext_mime_["jsonld"] = "application/ld+json";    // JSON-LD 形式
-  map_ext_mime_["midi"] = "audio/x-midi";    // Musical Instrument Digital
-                                             // Interface (MIDI)
-  map_ext_mime_["mid"] = "audio/midi";       // Musical Instrument Digital
-                                             // Interface (MIDI)
-  map_ext_mime_["mjs"] = "text/javascript";  // JavaScript モジュール
-  map_ext_mime_["mp3"] = "audio/mpeg";       // MP3 音声
-  map_ext_mime_["mpeg"] = "video/mpeg";      // MPEG 動画
+  map_ext_mime_["mjs"] = "text/javascript";    // JavaScript モジュール
+  map_ext_mime_["js"] = "text/javascript";     // JavaScript
+  map_ext_mime_["json"] = "application/json";  // JSON 形式
+  map_ext_mime_["jsonld"] = "application/ld+json";  // JSON-LD 形式
+  map_ext_mime_["midi"] = "audio/x-midi";  // Musical Instrument Digital
+                                           // Interface (MIDI)
+  map_ext_mime_["mid"] = "audio/midi";     // Musical Instrument Digital
+                                           // Interface (MIDI)
+  map_ext_mime_["mp3"] = "audio/mpeg";     // MP3 音声
+  map_ext_mime_["mpeg"] = "video/mpeg";    // MPEG 動画
   map_ext_mime_["mpkg"] =
       "application/vnd.apple.installer+xml";  // Apple Installer Package
   map_ext_mime_["odp"] =

@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/17 23:15:39 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/21 10:00:41 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,7 +112,7 @@ int Response::appendToBody(const std::string& data) {
   return 0;
 }
 
-ssize_t Response::sendData(int sock_fd) {
+ssize_t Response::sendData(int sock_fd, bool header_only) {
   ssize_t n;  // response of send syscall
   switch (send_progress_) {
     case 0:  // first time to send
@@ -139,7 +139,7 @@ ssize_t Response::sendData(int sock_fd) {
       bytes_already_sent_ = 0;
 
       // no body to send
-      if (body_.empty()) {
+      if (body_.empty() || header_only) {
         send_progress_ = 0;  // init for next request
         return 0;            // end
       }
