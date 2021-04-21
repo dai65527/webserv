@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/19 10:17:33 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/20 21:22:24 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,10 +79,16 @@ class Session {
   void startReadingFromFile(const std::string& filepath);
   std::string findFileFromDir(const std::string& dirpath) const;
   std::string findFile(const std::string& uri) const;
+  std::string mimeType(const std::string& filepath) const;
+  bool isCharsetAccepted(const std::string& mime_type) const;
+  int addResponseHeaderOfFile(const std::string& filepath,
+                               const std::string& mime_type);
+  void addContentTypeHeader(const std::string& filepath,
+                            const std::string& mime_type);
+  std::string findCharset() const;
   const std::string& findRoot() const;
   bool isIndex(const std::string& filename) const;
   int readFromFile();
-  int addResponseHeaderOfFile(const std::string& filepath);
 
   // directrory listing
   void startDirectoryListing(const std::string& filepath);
@@ -110,7 +116,7 @@ class Session {
  public:
   virtual ~Session();
   Session(int sock_fd_, const MainConfig& main_config,
-          bool flg_exceed_max_session);
+          bool flg_exceed_max_session = false);
 
   // getters
   int getSockFd() const;
