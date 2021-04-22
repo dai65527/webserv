@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/22 23:23:48 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/22 23:26:51 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,6 +116,10 @@ class Session {
   std::string createFilename() const;
   std::string getFileExtension() const;
   int writeToFile();
+
+  // respond to options header
+  void startCreateResponseToOptions();
+  void createAllowHeader();
 
  public:
   virtual ~Session();
