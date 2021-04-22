@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/07 23:25:56 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/21 01:34:00 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/22 22:34:31 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,4 +120,8 @@ int CgiHandler::readFromCgi() {
     return 0;
   }
   return ret;
+}
+
+void CgiHandler::resetAll() {
+  buf_.clear();
 }

@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/21 23:11:45 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/22 22:29:09 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,6 @@
 #include "webserv_utils.hpp"
 
 #define SOFTWARE_NAME "nginDX"
-#define SESS_BEFORE_PARSE_CGI_HEADER 0
-#define SESS_FIN_PARSE_CGI_HEADER 1
 
 class Session {
  private:
@@ -88,11 +86,10 @@ class Session {
   std::string mimeType(const std::string& filepath) const;
   bool isCharsetAccepted(const std::string& mime_type) const;
   int addResponseHeaderOfFile(const std::string& filepath,
-                               const std::string& mime_type);
+                              const std::string& mime_type);
   void addContentTypeHeader(const std::string& filepath,
                             const std::string& mime_type);
   std::string findCharset() const;
-  const std::string& findRoot() const;
   bool isIndex(const std::string& filename) const;
   int readFromFile();
 
@@ -111,9 +108,6 @@ class Session {
   bool isCgiFile(const std::string& filepath) const;
   int writeToCgi();
   int readFromCgi();
-  std::string getFromHeaders(const std::map<std::string, std::string>& headers,
-                             const std::string key) const;
-  std::string getPathInfo(const std::string& cgiuri) const;
   ssize_t parseReadBuf(const char* read_buf, ssize_t n);
 
   // write to file
@@ -133,36 +127,18 @@ class Session {
   int getFileFd() const;
   in_addr_t getIp() const;
   uint16_t getPort() const;
-  
   const SessionStatus& getStatus() const;
+  std::string getFromHeaders(const std::map<std::string, std::string>& headers,
+                             const std::string key) const;
+  std::string getPathInfo(const std::string& cgiuri) const;
 
   // functions called from Webserv
   int setFdToSelect(fd_set* rfds, fd_set* wfds);
   int checkSelectedAndExecute(fd_set* rfds, fd_set* wfds);
   int checkReceiveReturn(int ret);
 
-  class CgiParams {
-   private:
-    const Session& session_;
-    char** argv_;
-    char** envp_;
-
-    CgiParams();
-    CgiParams(CgiParams const& other);
-    CgiParams& operator=(CgiParams const& other);
-
-   public:
-    CgiParams(Session const& session);
-    ~CgiParams();
-
-    char** storeArgv(const std::string& filepath, const std::string& cgiuri,
-                     const Request& request);
-    char** storeMetaVariables(const std::string& cgiuri,
-                              const Request& request);
-
-   private:
-    char** vecToChar(std::vector<std::string>& meta_variables);
-  };
+  //read from file
+  const std::string& findRoot() const;
 };
 
 #endif /* SESSION_HPP */

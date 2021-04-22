@@ -16,13 +16,14 @@
 #include "Session.hpp"
 #include "gtest.h"
 #include "webserv_settings.hpp"
+#include "CgiParams.hpp"
 
 class test_CgiResponse : public ::testing::Test {
  protected:
   MainConfig config;
   Session* session;
   bool flg_thrown;
-  Session::CgiParams* cgi_params;
+  CgiParams* cgi_params;
 
   void appendVec(std::vector<char>& vec, const std::string& str) {
     vec.insert(vec.end(), str.begin(), str.end());
@@ -42,7 +43,7 @@ class test_CgiResponse : public ::testing::Test {
     session->ip_ = 16777343;  // 127.0.0.1
     session->port_ = 47138;   // 8888
     config.root_ = "./html";
-    cgi_params = new Session::CgiParams(*session);
+    cgi_params = new CgiParams(*session);
   }
 
   // 各ケース共通の後処理を書く

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
+#    By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/01/05 17:34:06 by dnakano           #+#    #+#              #
-#    Updated: 2021/04/09 10:16:34 by dnakano          ###   ########.fr        #
+#    Updated: 2021/04/22 22:36:20 by dhasegaw         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,7 +28,8 @@ SRCS		:=	main.cpp \
 				MainOnlyConfigStore.cpp \
 				ServerConfig.cpp \
 				ServerLocationConfigStore.cpp \
-				ServerOnlyConfigStore.cpp
+				ServerOnlyConfigStore.cpp \
+				CgiParams.cpp
 OBJS		:=	$(SRCS:%.cpp=%.o)
 LIBFT		:=	libft.a
 LIBFTDIR	:=	./libft

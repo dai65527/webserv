@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 22:01:23 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/21 01:33:19 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/22 21:56:19 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ class CgiHandler {
   int writeToCgi(const char* buf, size_t size);
   int finishWriting();
   int readFromCgi();
+  void resetAll();
 };
 
 #endif /* CGIHANDLER_HPP */

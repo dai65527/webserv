@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/21 23:37:26 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/22 23:11:33 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,9 @@ int Response::createStatusLine(HTTPStatusCode http_status_) {
   char buf[128];
   // format: Sat, 17 Apr 2021 13:45:20 GMT
   getTimeStamp(buf, 128, "%a, %d %b %Y %H:%M:%S %Z");
+  #ifndef UNIT_TEST
   addHeader("Date", buf);
+  #endif
 
   return 0;
 }
@@ -71,7 +73,9 @@ int Response::createStatusLine(const std::string& value) {
   char buf[128];
   // format: Sat, 17 Apr 2021 13:45:20 GMT
   getTimeStamp(buf, 128, "%a, %d %b %Y %H:%M:%S %Z");
+  #ifndef UNIT_TEST
   addHeader("Date", buf);
+  #endif
 
   return 0;
 }
