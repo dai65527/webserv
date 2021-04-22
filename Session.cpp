@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/22 08:27:38 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/22 21:02:24 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -617,6 +617,7 @@ int Session::addResponseHeaderOfFile(const std::string& filepath,
   response_.createStatusLine(HTTP_200);
 
   addContentTypeHeader(filepath, mime_type);
+  addContentLanguageHeader();
 
   // last modified
   struct stat pathstat;
@@ -727,6 +728,24 @@ void Session::addContentTypeHeader(const std::string& filepath,
   response_.addHeader("Content-Type", content_type);
 }
 
+void Session::addContentLanguageHeader() {
+  const std::list<std::string>& languages = findLanguage();
+  if (languages.empty()) {
+    return;
+  }
+
+  std::string content_language;
+  for (std::list<std::string>::const_iterator itr = languages.begin();
+       itr != languages.end(); ++itr) {
+    if (!content_language.empty()) {
+      content_language.append(", ");
+    }
+    content_language.append(*itr);
+  }
+
+  response_.addHeader("Content-Language", content_language);
+}
+
 std::string Session::findCharset() const {
   if (location_config_ && !location_config_->getCharset().empty()) {
     return location_config_->getCharset();
@@ -735,6 +754,16 @@ std::string Session::findCharset() const {
     return server_config_->getCharset();
   }
   return main_config_.getCharset();
+}
+
+const std::list<std::string>& Session::findLanguage() const {
+  if (location_config_ && !location_config_->getLanguage().empty()) {
+    return location_config_->getLanguage();
+  }
+  if (server_config_ && !server_config_->getLanguage().empty()) {
+    return server_config_->getLanguage();
+  }
+  return main_config_.getLanguage();
 }
 
 // find requested file
