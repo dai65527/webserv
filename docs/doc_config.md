@@ -324,16 +324,16 @@ main, server, location
 ### languageディレクティブ
 リソースの言語を1つ指定することができる。
 
-これを指定することによりweb-servは以下を行う。
+これを指定することによりwebservは以下を行う。
 - リクエスト中に含まれる`Accept-Language`ヘッダーの内容に合致しているか確認し、合致していない場合、`406 Not-Acceptable` を返す。
-- レスポンスの`Content-Type` 及び、`Content-Langage`ヘッダ内の`lang` の内容を設定する。（ただし、CGIについては出力中に`Content-Type`ヘッダの記述が無い場合に限る）
+- レスポンスの`Content-Type` 及び、`Content-Langage`ヘッダ内の`lang` の内容を設定する。
 
 重複は不可。子contextで指定された場合は上書きする。
 
 https://www.nginx.com/resources/wiki/modules/accept_language/
 
 #### 指定できるlanguage
-（追記予定）
+形式は問わないが空白文字を含まないこと。複数指定可能。
 
 #### 文法
 
