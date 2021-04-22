@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/16 01:53:56 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/22 23:49:31 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,6 @@ class Request {
 #else
  private:
 #endif
- public:  // just for test!!!!
   std::vector<char> buf_;
   int parse_progress_;
   int flg_chunked_;
