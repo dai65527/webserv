@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/22 22:31:02 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/22 23:28:09 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/23 13:59:32 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,18 +44,6 @@ char** CgiParams::storeArgv(const std::string& filepath,
   else {
     argstr = "dummy" + session_.getPathInfo(cgiuri);
     argv_ = ft_split(argstr.c_str(), '/');
-  }
-  int begin = 0;
-  for (int i = 0; argv_[i] != NULL; ++i) {
-    if (ft_strnstr(argv_[i], ".cgi", ft_strlen(argv_[i])) != NULL) {
-      free(argv_[i]);
-      argv_[i] = ft_strdup(filepath.c_str());
-      if (!argv_[i]) {
-        throw std::bad_alloc();
-      }
-      begin = i;
-      break;
-    }
   }
   if (!argv_) {
     throw std::bad_alloc();
