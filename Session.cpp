@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/23 09:15:53 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/23 09:26:21 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -583,8 +583,8 @@ void Session::startReadingFromFile(const std::string& filepath) {
   // get mime type
   std::string mime_type = mimeType(filepath);
 
-  // check charset
-  if (!isCharsetAccepted(mime_type)) {
+  // check charset and language
+  if (!isCharsetAccepted(mime_type) || !isLanguageAccepted()) {
     createErrorResponse(HTTP_406);
     return;
   }
