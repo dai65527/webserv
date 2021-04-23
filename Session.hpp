@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/22 21:28:31 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/24 08:49:03 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,9 @@
 #include "Request.hpp"
 #include "Response.hpp"
 #include "SessionStatus.hpp"
+#include "webserv_utils.hpp"
+
+#define SOFTWARE_NAME "nginDX"
 
 class Session {
  private:
@@ -46,7 +49,8 @@ class Session {
   Request request_;
   Response response_;
   CgiHandler cgi_handler_;
-  pid_t cgi_pid_;  // is this needed???
+  in_addr_t ip_;
+  uint16_t port_;
 
   Session();
   Session(Session const& other);
@@ -70,7 +74,7 @@ class Session {
 
   // load config
   void setupServerAndLocationConfig();
-  const ServerConfig* findServer() const;
+  const ServerConfig* findServer();
   const LocationConfig* findLocation() const;
   bool isLocationMatch(const std::string& loc_route,
                        const std::string& uri_path) const;
@@ -108,6 +112,7 @@ class Session {
   bool isCgiFile(const std::string& filepath) const;
   int writeToCgi();
   int readFromCgi();
+  ssize_t parseReadBuf(const char* read_buf, ssize_t n);
 
   // write to file
   void startWritingToFile();
@@ -128,12 +133,20 @@ class Session {
   // getters
   int getSockFd() const;
   int getFileFd() const;
+  in_addr_t getIp() const;
+  uint16_t getPort() const;
   const SessionStatus& getStatus() const;
+  std::string getFromHeaders(const std::map<std::string, std::string>& headers,
+                             const std::string key) const;
+  std::string getPathInfo(const std::string& cgiuri) const;
 
   // functions called from Webserv
   int setFdToSelect(fd_set* rfds, fd_set* wfds);
   int checkSelectedAndExecute(fd_set* rfds, fd_set* wfds);
   int checkReceiveReturn(int ret);
+
+  //read from file
+  const std::string& findRoot() const;
 };
 
 #endif /* SESSION_HPP */

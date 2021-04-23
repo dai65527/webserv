@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/04/23 08:42:32 by dnakano          ###   ########.fr        #
+#    Updated: 2021/04/24 08:47:48 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,7 +28,8 @@ SRCNAME		:=	ConfigParser.cpp \
 				Request.cpp \
 				Response.cpp \
 				CgiHandler.cpp \
-				webserv_utils.cpp
+				webserv_utils.cpp \
+				CgiParams.cpp
 SRCDIR		:=	../../..
 INCLUDEDIR	:=	../../..
 TESTSRCNAME	:=	test_main.cc \
@@ -40,8 +41,9 @@ TESTSRCNAME	:=	test_main.cc \
 				test_checkHTTP413.cc \
 				test_mapMime.cc \
 				test_getFileExtension.cc \
-				test_isCharsetAccepted.cc \
-				test_isLanguageAccepted.cc
+				test_CgiArgvEnvp.cc \
+				test_CgiResponse.cc \
+				test_isCharsetAccepted.cc
 TESTSRCDIR	:=	.
 
 ### config ###

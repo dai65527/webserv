@@ -6,11 +6,12 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/23 09:26:21 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/24 08:48:09 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Session.hpp"
+#include "CgiParams.hpp"
 
 #include <dirent.h>
 #include <fcntl.h>
@@ -20,6 +21,7 @@
 #include <unistd.h>
 
 #include <iostream>
+#include <cstring>
 
 #include "webserv_settings.hpp"
 #include "webserv_utils.hpp"
@@ -50,31 +52,14 @@ Session::Session(int sock_fd, const MainConfig& main_config,
 Session::~Session() { close(sock_fd_); };
 
 /*
-** assignation operator overload
-**
-** will be used only in list<Session>
-*/
-
-Session& Session::operator=(const Session& rhs) {
-  if (this == &rhs) {
-    return *this;
-  }
-  sock_fd_ = rhs.sock_fd_;
-  status_ = rhs.status_;
-  // request_ = rhs.request_;
-  // response_ = rhs.response_;
-  // cgi_handler_ = rhs.cgi_handler_;
-  cgi_pid_ = rhs.cgi_pid_;
-  return *this;
-}
-
-/*
 ** getters
 */
 
 int Session::getSockFd() const { return sock_fd_; }
 int Session::getFileFd() const { return file_fd_; }
 const SessionStatus& Session::getStatus() const { return status_; }
+in_addr_t Session::getIp() const { return ip_; };
+uint16_t Session::getPort() const { return port_; };
 
 /*
 ** setFdToSelect
@@ -208,6 +193,7 @@ void Session::resetAll() {
   retry_count_ = 0;
   request_.resetAll();
   response_.resetAll();
+  cgi_handler_.resetAll();
 }
 
 /*
@@ -473,20 +459,20 @@ static bool isServerNameMatch(const std::string& host_header,
 }
 
 // find matching server directive to request
-const ServerConfig* Session::findServer() const {
+const ServerConfig* Session::findServer() {
   // get ip and port
   sockaddr_in addr;
   socklen_t addrlen = sizeof(sockaddr_in);
 #ifndef UNIT_TEST
   getsockname(sock_fd_, reinterpret_cast<struct sockaddr*>(&addr), &addrlen);
-  in_addr_t ip = addr.sin_addr.s_addr;
-  uint16_t port = addr.sin_port;
+  ip_ = addr.sin_addr.s_addr;
+  port_ = addr.sin_port;
 #else
   // just for unit_test
   (void)addr;
   (void)addrlen;
-  in_addr_t ip = 0x12345678;
-  uint16_t port = 0x1234;
+  ip_ = 0x12345678;
+  port_ = 0x1234;
 #endif /* UNIT_TEST */
 
   // iterate for all server directive in main_config
@@ -503,8 +489,8 @@ const ServerConfig* Session::findServer() const {
     bool flg_matched = false;
     for (itr_listen = itr_server->getListen().begin(); itr_listen != end_listen;
          ++itr_listen) {
-      if ((itr_listen->first == INADDR_ANY || itr_listen->first == ip) &&
-          itr_listen->second == port) {
+      if ((itr_listen->first == INADDR_ANY || itr_listen->first == ip_) &&
+          itr_listen->second == port_) {
         flg_matched = true;
         break;
       }
@@ -1231,23 +1217,28 @@ bool Session::isCgiFile(const std::string& filepath) const {
 
 void Session::createCgiProcess(const std::string& filepath,
                                const std::string& cgiuri) {
-  // HTTPStatusCode http_status = cgi_handler_.createCgiProcess();
-  // if (http_status != HTTP_200) {
-  //   std::cout << "[error] failed to create cgi process" << std::endl;
-  //   createErrorResponse(http_status);
-  // }
+  // prepare argvs and env vars here and pass them to cgiHandler
+  CgiParams cgi_params(*this);
+  char** argv = cgi_params.storeArgv(filepath, cgiuri, request_);
+  char** meta_variables = cgi_params.storeMetaVariables(cgiuri, request_);
 
-  // [TEMP] create response header
-  response_.createStatusLine(HTTP_200);
-  response_.addHeader("Content-Type", "text/html");
+  HTTPStatusCode http_status =
+      cgi_handler_.createCgiProcess(filepath, argv, meta_variables);
 
-  // [TEMP] response
-  (void)cgiuri;
-  response_.appendToBody("<h1>cgi not yet implemented: ", 29);
-  response_.appendToBody(filepath.c_str(), filepath.length());
-  response_.appendToBody("</h1>\n", 6);
-  // status_ = SESSION_FOR_CGI_WRITE;
-  status_ = SESSION_FOR_CLIENT_SEND;  // TEMP!!!!
+  if (http_status != HTTP_200) {
+    std::cout << "[error] failed to create cgi process" << std::endl;
+    createErrorResponse(http_status);
+  }
+
+  // response_.createStatusLine(HTTP_200); cgi scripts can produce status by
+  // themselves
+
+  if (request_.getMethod() == "POST" || request_.getMethod() == "PUT") {
+    status_ = SESSION_FOR_CGI_WRITE;
+    return;
+  }
+  close(cgi_handler_.getInputFd());
+  status_ = SESSION_FOR_CGI_READ;
 }
 
 // write to cgi process (TODO!!)
@@ -1299,10 +1290,9 @@ int Session::writeToCgi() {
 // read from to cgi process (TODO!!)
 int Session::readFromCgi() {
   ssize_t n;
-  char read_buf[BUFFER_SIZE];
 
   // read from cgi process
-  n = cgi_handler_.readFromCgi(read_buf, BUFFER_SIZE);
+  n = cgi_handler_.readFromCgi();
   // retry seveal times even if read failed
   if (n == -1) {
     std::cout << "[error] failed to read from cgi process" << std::endl;
@@ -1333,15 +1323,88 @@ int Session::readFromCgi() {
 
   // check if pipe closed
   if (n == 0) {
+    // append data to response
+    ssize_t end_header =
+        parseReadBuf(&(cgi_handler_.getBuf())[0], cgi_handler_.getBuf().size());
+    if (end_header == -1) {
+      createErrorResponse(HTTP_502);  // Bad Gateway but does not close session
+      return 0;
+    }
+    response_.appendToBody(&cgi_handler_.getBuf()[0] + end_header + 1,
+                           cgi_handler_.getBuf().size() - (end_header + 1));
     close(cgi_handler_.getOutputFd());  // close pipefd
     status_ = SESSION_FOR_CLIENT_SEND;  // set for send response
-    return 0;
   }
-
-  // append data to response
-  response_.appendToBody(read_buf, n);
-
   return 0;
+}
+
+/*
+** parse read buf from cgi script
+** if there is content-type header, set header
+*/
+
+ssize_t Session::parseReadBuf(const char* read_buf, ssize_t n) {
+  std::map<std::string, std::string> header;
+  ssize_t i = 0;
+  ssize_t ret = -1;
+  ssize_t begin = 0;
+  while (i < n) {
+    begin = i;
+    while (isprint(read_buf[i]) &&
+           ft_strchr("()<>@,;:\\\"/[]?={} \t", read_buf[i]) == NULL) {
+      ++i;
+    }
+    if (read_buf[i] != ':') {  // no space permitted between header key and :
+      return -1;
+    }
+    std::string key = std::string(&read_buf[begin], &read_buf[i]);
+    ++i;
+    while (read_buf[i] == ' ') {  // TAB等含むかよくわからず(RFCから読み取れず)
+      ++i;
+    }
+    begin = i;
+    while (isprint(read_buf[i])) {
+      ++i;
+    }
+    header[key] = std::string(&read_buf[begin], &read_buf[i]);
+    if (!ft_strncmp(read_buf + i, "\n\n", 2)) {
+      ret = 1;
+    } else if (!ft_strncmp(read_buf + i, "\r\n\r\n", 4)) {
+      ret = 3;
+    }
+    if (ret > 0) {
+      if (i == 0) {  // no header provided
+        return -1;
+      }
+      break;  // go outside of while loop to  check content of header
+    }
+    ++i;
+  }
+  /* header must include at least one of Content-type, Location or Status*/
+  std::map<std::string, std::string>::iterator status_itr =
+      header.find("Status");
+  if (header.find("Content-Type") != header.end() ||
+      header.find("Location") != header.end() || status_itr != header.end()) {
+    /* case status code created in cgi script */
+    if (status_itr != header.end()) {
+      response_.createStatusLine(status_itr->second);
+    } else {
+      response_.createStatusLine(HTTP_200);
+    }
+    for (std::map<std::string, std::string>::iterator itr = header.begin();
+         itr != header.end(); ++itr) {
+      /* skip key of status */
+      if (itr == status_itr) {
+        continue;
+      }
+      /* add header */
+      response_.addHeader(itr->first, itr->second); 
+    }
+    /* Parse OK then return the pos of end of header */
+    return i + ret;
+  }
+  /* case no valid header */
+  return -1;  
 }
 
 /*
@@ -1483,6 +1546,22 @@ int Session::writeToFile() {
   return 0;
 }
 
+std::string Session::getFromHeaders(
+    const std::map<std::string, std::string>& headers,
+    const std::string key) const {
+  std::map<std::string, std::string>::const_iterator itr = headers.find(key);
+  if (itr == headers.end()) {
+    return "";
+  }
+  return (*itr).second;
+}
+
+std::string Session::getPathInfo(const std::string& cgiuri) const {
+  std::string path_info = request_.getUri();
+  path_info.erase(0, cgiuri.length());
+  return path_info;
+}
+
 /*
 **  respond to options header
 */
@@ -1615,8 +1694,8 @@ void Session::initMapMineExt() {
   map_ext_mime_["png"] = "image/png";             // Portable Network Graphics
   map_ext_mime_["pdf"] =
       "application/pdf";  // Adobe Portable Document Format (PDF)
-  map_ext_mime_["php"] =
-      "application/x-httpd-php";  // Hypertext Preprocessor (Personal Home Page)
+  map_ext_mime_["php"] = "application/x-httpd-php";  // Hypertext Preprocessor
+                                                     // (Personal Home Page)
   map_ext_mime_["ppt"] =
       "application/vnd.ms-powerpoint";  // Microsoft PowerPoint
   map_ext_mime_["pptx"] =

@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/07 23:25:56 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/30 19:09:35 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/22 22:34:31 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,15 +19,19 @@
 
 #include "HttpStatusCode.hpp"
 
+
 CgiHandler::CgiHandler() {}
 CgiHandler::~CgiHandler() {}
 
 pid_t CgiHandler::getPid() const { return pid_; }
 int CgiHandler::getInputFd() const { return input_fd_; }
 int CgiHandler::getOutputFd() const { return output_fd_; }
+const std::vector<char>& CgiHandler::getBuf() const { return buf_; }
 
 // HTTPStatusCode CgiHandler::createCgiProcess(const std::string& path) {
-HTTPStatusCode CgiHandler::createCgiProcess() {
+HTTPStatusCode CgiHandler::createCgiProcess(const std::string& filepath,
+                                            char** argv,
+                                            char** meta_variables) {
   // create a pipe connect to stdin of cgi process
   int pipe_stdin[2];
   if (pipe(pipe_stdin) == -1) {
@@ -70,9 +74,8 @@ HTTPStatusCode CgiHandler::createCgiProcess() {
     close(pipe_stdout[0]);
     close(pipe_stdout[1]);
 
-    // excecute cgi process (TODO: implement iroiro)
-    char* argv[] = {(char*)"/bin/cat", (char*)"-e", NULL};
-    execve("/bin/cat", argv, NULL);
+    // excecute cgi process
+    execve(filepath.c_str(), argv, meta_variables);
     exit(1);
   }
 
@@ -88,9 +91,6 @@ HTTPStatusCode CgiHandler::createCgiProcess() {
   close(pipe_stdin[0]);
   close(pipe_stdout[1]);
 
-  // change status to cgi write
-  // status_ = SESSION_FOR_CGI_WRITE;
-
   // return status 200 on success (but not a final status)
   return HTTP_200;
 }
@@ -102,11 +102,13 @@ int CgiHandler::writeToCgi(const char* buf, size_t size) {
 
 // int CgiHandler::finishWriting() {}
 
-int CgiHandler::readFromCgi(char* buf, size_t size) {
+int CgiHandler::readFromCgi() {
   ssize_t ret;
+  char read_buf[BUFFER_SIZE];
 
   // read from cgi process
-  ret = read(output_fd_, buf, size);
+  ret = read(output_fd_, read_buf, BUFFER_SIZE);
+  buf_.insert(buf_.end(), read_buf, read_buf + ret);
 
   // retry seveal times even if read failed
   if (ret == -1) {
@@ -118,4 +120,8 @@ int CgiHandler::readFromCgi(char* buf, size_t size) {
     return 0;
   }
   return ret;
+}
+
+void CgiHandler::resetAll() {
+  buf_.clear();
 }

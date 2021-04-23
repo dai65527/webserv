@@ -220,7 +220,7 @@ TEST_F(test_parseRequest, queryOK1) {
   EXPECT_EQ(request.parseRequest(), 2);
   EXPECT_EQ(request.method_, "HEAD");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "b");
+  EXPECT_EQ(request.query_, "a=b");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
@@ -240,8 +240,7 @@ TEST_F(test_parseRequest, queryOK2) {
   EXPECT_EQ(request.parseRequest(), 2);
   EXPECT_EQ(request.method_, "HEAD");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "b");
-  EXPECT_EQ(request.query_["hoge"], "fuga");
+  EXPECT_EQ(request.query_, "a=b&hoge=fuga");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
@@ -261,8 +260,7 @@ TEST_F(test_parseRequest, queryOK3) {
   EXPECT_EQ(request.parseRequest(), 2);
   EXPECT_EQ(request.method_, "HEAD");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "b");
-  EXPECT_EQ(request.query_["hoge"], "");
+  EXPECT_EQ(request.query_, "a=b&hoge=");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
@@ -282,7 +280,7 @@ TEST_F(test_parseRequest, queryOK4) {
   EXPECT_EQ(request.parseRequest(), 2);
   EXPECT_EQ(request.method_, "HEAD");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.query_, "a");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
@@ -321,7 +319,7 @@ TEST_F(test_parseRequest, postOK) {
   EXPECT_EQ(request.parseRequest(), 2);
   EXPECT_EQ(request.method_, "POST");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.query_, "a");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
@@ -341,7 +339,7 @@ TEST_F(test_parseRequest, postWithoutLength) {
   EXPECT_EQ(request.parseRequest(), -3);
   EXPECT_EQ(request.method_, "POST");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.query_, "a");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
@@ -361,7 +359,7 @@ TEST_F(test_parseRequest, postwithBodyOK1) {
   EXPECT_EQ(request.parseRequest(), 2);
   EXPECT_EQ(request.method_, "POST");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.query_, "a");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
@@ -386,7 +384,7 @@ TEST_F(test_parseRequest, postwithBodyOK2) {
   EXPECT_EQ(request.parseRequest(), 2);
   EXPECT_EQ(request.method_, "POST");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.query_, "a");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
@@ -411,7 +409,7 @@ TEST_F(test_parseRequest, contentLengthZeroOK) {
   EXPECT_EQ(request.parseRequest(), 2);
   EXPECT_EQ(request.method_, "POST");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.query_, "a");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
@@ -432,7 +430,7 @@ TEST_F(test_parseRequest, contentLneghtNegative) {
   EXPECT_EQ(request.parseRequest(), -4);
   EXPECT_EQ(request.method_, "POST");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.query_, "a");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
@@ -452,7 +450,7 @@ TEST_F(test_parseRequest, contentLenghtNonDigit) {
   EXPECT_EQ(request.parseRequest(), -4);
   EXPECT_EQ(request.method_, "POST");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.query_, "a");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
@@ -473,7 +471,7 @@ TEST_F(test_parseRequest, bodyAgain) {
   appendVec(request.buf_, "9abcdefghij");
   EXPECT_EQ(request.method_, "POST");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.query_, "a");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
@@ -498,7 +496,7 @@ TEST_F(test_parseRequest, transferEncodingOK1) {
   appendVec(request.buf_, "9abcdefghij");
   EXPECT_EQ(request.method_, "POST");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.query_, "a");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
@@ -519,7 +517,7 @@ TEST_F(test_parseRequest, transferEncodingNG1) {
   appendVec(request.buf_, "9abcdefghij");
   EXPECT_EQ(request.method_, "POST");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.query_, "a");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
@@ -539,7 +537,7 @@ TEST_F(test_parseRequest, transferEncodingNG2) {
   EXPECT_EQ(request.parseRequest(), REQ_FIN_PARSE_HEADER);
   EXPECT_EQ(request.method_, "POST");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.query_, "a");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
@@ -560,7 +558,7 @@ TEST_F(test_parseRequest, transferEncodingOK2) {
   EXPECT_EQ(request.parseRequest(), REQ_FIN_PARSE_HEADER);
   EXPECT_EQ(request.method_, "POST");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.query_, "a");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
@@ -586,7 +584,7 @@ TEST_F(test_parseRequest, transferEncodingOK3) {
   EXPECT_EQ(request.parseRequest(), REQ_FIN_PARSE_HEADER);
   EXPECT_EQ(request.method_, "POST");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.query_, "a");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
@@ -616,7 +614,8 @@ TEST_F(test_parseRequest, transferEncodingNG3) {
   EXPECT_EQ(request.parseRequest(), REQ_FIN_PARSE_HEADER);
   EXPECT_EQ(request.method_, "POST");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "");
+  // EXPECT_EQ(request.query_, "a");
+  EXPECT_EQ(request.query_, "a");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");
@@ -644,7 +643,7 @@ TEST_F(test_parseRequest, transferEncodingOK4) {
   EXPECT_EQ(request.parseRequest(), REQ_FIN_PARSE_HEADER);
   EXPECT_EQ(request.method_, "POST");
   EXPECT_EQ(request.uri_, "/index.html");
-  EXPECT_EQ(request.query_["a"], "");
+  EXPECT_EQ(request.query_, "a");
   EXPECT_EQ(request.headers_["host"], "localhost");
   EXPECT_EQ(request.headers_["location"], "Yokohama");
   EXPECT_EQ(request.headers_["language"], "en-US");

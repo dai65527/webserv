@@ -3,22 +3,28 @@
 /*                                                        :::      ::::::::   */
 /*   webserv_utils.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 08:14:01 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/20 21:22:53 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/21 23:13:18 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#include "webserv_utils.hpp"
 
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <time.h>
 
 #include <ctime>
 #include <string>
 
 #include "HttpStatusCode.hpp"
+
+extern "C" {
 #include "libft.h"
+}
 
 /*
 ** isHttpStatusCode
@@ -234,4 +240,57 @@ std::string basename(const std::string& path) {
     return path.substr(0, end + 1);
   }
   return path.substr(begin + 1, end - begin);
+}
+
+/*
+** isLitteleEndian
+** find Little or Big endian of the environment
+*/
+
+int isLitteleEndian() {
+  uint16_t n;
+  uint8_t* uc;
+
+  n = 1;
+  uc = (uint8_t*)&n;
+  return (*uc);
+}
+
+/*
+** getIpAddress
+** convert uint32_t to 192.168.0.1 style string
+*/
+
+std::string getIpAddress(uint32_t ip) {
+  uint8_t* ip_array;
+  std::string ret;
+  char* tmp;
+
+  ip_array = reinterpret_cast<uint8_t*>(&ip);
+  if (isLitteleEndian()) {
+    for (int i = 3; i > -1; --i) {
+      if (i != 3) {
+        ret.insert(0, ".");
+      }
+      tmp = ft_itoa(ip_array[i]);
+      if (!tmp) {
+        throw std::bad_alloc();
+      }
+      ret.insert(0, tmp);
+      free(tmp);
+    }
+  } else {
+    for (int i = 0; i < 4; ++i) {
+      if (i != 0) {
+        ret.insert(0, ".");
+      }
+      tmp = ft_itoa(ip_array[i]);
+      if (!tmp) {
+        throw std::bad_alloc();
+      }
+      ret.insert(0, tmp);
+      free(tmp);
+    }
+  }
+  return ret;
 }
