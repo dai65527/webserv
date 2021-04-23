@@ -6,13 +6,14 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/22 23:23:51 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/22 23:50:57 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 
 #include <sys/socket.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <iostream>
@@ -32,12 +33,7 @@ const std::string& Request::getUri() const { return uri_; }
 const std::map<std::string, std::string>& Request::getHeaders() const {
   return headers_;
 }
-// const std::map<std::string, std::string>& Request::getQuery() const {
-//   return query_;
-// }
-const std::string& Request::getQuery() const {
-  return query_;
-}
+const std::string& Request::getQuery() const { return query_; }
 size_t Request::getContentLength() const { return content_length_; }
 const std::vector<char>& Request::getBody() const { return body_; }
 int Request::getFlgChunked() const { return flg_chunked_; };
@@ -95,8 +91,6 @@ int Request::compareBuf(size_t begin, const char* str) {
 ** REQ_ERR_LEN_REQUIRED -3 //HTTP411
 ** REQ_ERR_BAD_REQUEST -4 //HTTP400
 */
-
-#include <unistd.h>
 
 int Request::receive(int sock_fd) {
 #ifndef UNIT_TEST
@@ -247,11 +241,11 @@ size_t Request::parseUri(size_t pos) {
   }
   uri_ = bufToString(copy_begin, pos);
   if (buf_[pos] == '?') { /* parse query */
-      copy_begin = ++pos;
-       while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r') {
-         ++pos;
-       }
-       query_ = bufToString(copy_begin, pos);
+    copy_begin = ++pos;
+    while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r') {
+      ++pos;
+    }
+    query_ = bufToString(copy_begin, pos);
   }
   return pos;
 }
