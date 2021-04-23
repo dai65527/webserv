@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/15 12:07:15 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/23 22:36:25 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ TEST_F(test_checkHTTP413, mainConfigOK) {
   config.client_max_body_size_ = 42;
   appendVec(session->request_.buf_, "POST /index.html?a HTTP/1.1\r\nHost: ");
   EXPECT_EQ(session->receiveRequest(), 0);
+  EXPECT_EQ(42, session->request.client_max)
   appendVec(session->request_.buf_, "localhost\r\nLocation:\t  \tYokoh");
   EXPECT_EQ(session->receiveRequest(), 0);
   appendVec(session->request_.buf_, "ama\r\nlanguage: \t\t");
@@ -187,7 +188,7 @@ TEST_F(test_checkHTTP413, locationConfigNG) {
   EXPECT_EQ(session->receiveRequest(), 0);
   appendVec(session->request_.buf_, "30\r\n\r\n012345678");
   EXPECT_EQ(session->receiveRequest(),
-            4131);  // max body size defined in location config
+            413);  // max body size defined in location config
   EXPECT_EQ(session->request_.method_, "POST");
   EXPECT_EQ(session->request_.uri_, "/index.html");
   EXPECT_EQ(session->request_.query_, "a");

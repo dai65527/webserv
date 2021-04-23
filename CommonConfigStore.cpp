@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CommonConfigStore.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/20 22:56:58 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/23 20:49:43 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,10 @@ const unsigned long& CommonConfigStore::getClientMaxBodySize() const {
 
 const unsigned long& CommonConfigStore::getLimitExcept() const {
   return limit_except_;
+}
+
+const bool& CommonConfigStore::getFlgClientMaxBodySizeSet() const {
+  return flg_client_max_body_size_set_;
 }
 
 /*** parsers ***/

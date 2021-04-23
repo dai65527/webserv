@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/22 23:26:51 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/23 23:59:08 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,6 @@ class Session {
   int sendResponse();
 
   // load config
-  void setupServerAndLocationConfig();
   const ServerConfig* findServer();
   const LocationConfig* findLocation() const;
   bool isLocationMatch(const std::string& loc_route,
@@ -141,8 +140,12 @@ class Session {
   int checkSelectedAndExecute(fd_set* rfds, fd_set* wfds);
   int checkReceiveReturn(int ret);
 
-  //read from file
+  // read from file
   const std::string& findRoot() const;
+
+  // load config
+  void setupServerAndLocationConfig();
+  unsigned long getClientMaxBodySize() const;
 };
 
 #endif /* SESSION_HPP */

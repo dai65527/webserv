@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/22 23:49:31 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/23 23:58:22 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,12 +33,15 @@ extern "C" {
 #define REQ_ERR_HTTP_VERSION -2  // HTTP505
 #define REQ_ERR_LEN_REQUIRED -3  // HTTP411
 #define REQ_ERR_BAD_REQUEST -4   // HTTP400
+#define REQ_ERR_TOO_LARGE -6   // HTTP413
 
 /* value of parse_progress_*/
 #define REQ_BEFORE_PARSE 0
 #define REQ_FIN_REQUEST_LINE 1
 #define REQ_FIN_HEADER_FIELD 2
 #define REQ_GOT_CHUNK_SIZE 3
+
+class Session;
 
 class Request {
 #ifdef UNIT_TEST
@@ -76,11 +79,12 @@ class Request {
   size_t getContentLength() const;
   const std::vector<char>& getBody() const;
   int getFlgChunked() const;
+  int getParseProgress() const;
 
-  int receive(int sock_fd);
+  int receive(int sock_fd, Session& session);
   int appendRawData(char* raw_data);
   void eraseBody(ssize_t n);
-  int parseRequest();
+  int parseRequest(Session& session);
 
 #ifdef UNIT_TEST
  public:
@@ -101,6 +105,7 @@ class Request {
 
   std::string bufToString(size_t begin, size_t end);
   int compareBuf(size_t begin, const char* str);
+  int checkBodySize(Session& session);
 };
 
 #endif /* REQUEST_HPP */

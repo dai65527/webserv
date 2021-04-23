@@ -6,11 +6,12 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/23 14:06:19 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/23 23:59:28 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
+#include "Session.hpp"
 
 #include <sys/socket.h>
 #include <unistd.h>
@@ -36,7 +37,8 @@ const std::map<std::string, std::string>& Request::getHeaders() const {
 const std::string& Request::getQuery() const { return query_; }
 size_t Request::getContentLength() const { return content_length_; }
 const std::vector<char>& Request::getBody() const { return body_; }
-int Request::getFlgChunked() const { return flg_chunked_; };
+int Request::getFlgChunked() const { return flg_chunked_; }
+int Request::getParseProgress() const {return parse_progress_;}
 
 // reset all for next request
 void Request::resetAll() {
@@ -92,7 +94,7 @@ int Request::compareBuf(size_t begin, const char* str) {
 ** REQ_ERR_BAD_REQUEST -4 //HTTP400
 */
 
-int Request::receive(int sock_fd) {
+int Request::receive(int sock_fd, Session& session) {
 #ifndef UNIT_TEST
   int ret;
   char read_buf[BUFFER_SIZE];
@@ -106,7 +108,7 @@ int Request::receive(int sock_fd) {
 #else
   (void)sock_fd;
 #endif
-  return parseRequest();
+  return parseRequest(session);
 }
 
 /* parseRequest
@@ -118,7 +120,7 @@ int Request::receive(int sock_fd) {
 ** REQ_ERR_LEN_REQUIRED -3 //HTTP411
 ** REQ_ERR_BAD_REQUEST -4 //HTTP400
 */
-int Request::parseRequest() {
+int Request::parseRequest(Session& session) {
   ssize_t pos_buf;
   int ret;
   if (parse_progress_ == REQ_BEFORE_PARSE) {  // 0: parse not started yet
@@ -149,7 +151,11 @@ int Request::parseRequest() {
     }
     pos_begin_body_ = pos_buf;
     pos_prev_ = pos_begin_body_;
-    return REQ_FIN_PARSE_HEADER;
+    session.setupServerAndLocationConfig();
+    ret = checkBodySize(session);
+    if (ret < 0) {
+      return REQ_ERR_TOO_LARGE; 
+    }
   }
   /* parse chunked body (Chunked has the priority over Content-length*/
   if (flg_chunked_) {
@@ -415,4 +421,17 @@ int Request::checkResponseType() const {
     return 2;
   }
   return 42;
+}
+
+int Request::checkBodySize(Session& session) {
+  /* case transfer-encoding is set */
+  if (flg_chunked_) {
+    return 0;
+  }
+  /* case content-length is greater than client_max_body_size*/
+  if (content_length_ > session.getClientMaxBodySize()) {
+    std::cout << session.getClientMaxBodySize() << std::endl;
+    return -1;
+  }
+  return 0;
 }
