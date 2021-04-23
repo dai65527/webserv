@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/22 19:56:59 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/22 21:28:31 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,7 @@ class Session {
   std::string findFile(const std::string& uri) const;
   std::string mimeType(const std::string& filepath) const;
   bool isCharsetAccepted(const std::string& mime_type) const;
+  bool isLanguageAccepted() const;
   int addResponseHeaderOfFile(const std::string& filepath,
                               const std::string& mime_type);
   void addContentTypeHeader(const std::string& filepath,
