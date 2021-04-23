@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/22 23:23:51 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/23 13:53:13 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,9 +32,7 @@ const std::string& Request::getUri() const { return uri_; }
 const std::map<std::string, std::string>& Request::getHeaders() const {
   return headers_;
 }
-// const std::map<std::string, std::string>& Request::getQuery() const {
-//   return query_;
-// }
+
 const std::string& Request::getQuery() const {
   return query_;
 }
