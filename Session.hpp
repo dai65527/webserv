@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/24 08:49:03 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/24 08:58:08 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,6 @@ class Session {
   void addContentLanguageHeader();
   std::string findCharset() const;
   const std::list<std::string>& findLanguage() const;
-  const std::string& findRoot() const;
   bool isIndex(const std::string& filename) const;
   int readFromFile();
 
@@ -145,7 +144,6 @@ class Session {
   int checkSelectedAndExecute(fd_set* rfds, fd_set* wfds);
   int checkReceiveReturn(int ret);
 
-  //read from file
   const std::string& findRoot() const;
 };
 
