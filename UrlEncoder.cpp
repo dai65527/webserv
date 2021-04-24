@@ -6,11 +6,20 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/23 11:12:53 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/24 10:59:20 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/24 12:25:27 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "UrlEncoder.hpp"
+
+/*
+**  Subfunction: asciiCharToNum
+**
+**  char型の文字コード、 '0', '1', '2', ..., '9', 'A', 'B', 'C', ..., 'F'
+**  つまり、           0x30,0x31,0x32, .., 0x39,0x41,0x42,0x42,..., 0x46 を
+**  対応する数字として、 0x00,0x01,0x02, ...,0x09,0x0A,0x0B,0x0C,..., 0x0F に
+**  変換して返すだけの関数です。
+*/
 
 static char asciiCharToNum(const char c) {
   if (c >= '0' && c <= '9') {
@@ -25,6 +34,13 @@ static char asciiCharToNum(const char c) {
   return 0;
 }
 
+/*
+**  Encode
+**  一文字もらってパーセントエンコーディングして返すだけの関数です。
+**  ex).
+**  '@' (= 0x40) => "%40"
+*/
+
 std::string UrlEncoder::encode(const int c) {
   std::string res = "%";
   const char hexbase[] = "0123456789ABCDEF";
@@ -32,6 +48,14 @@ std::string UrlEncoder::encode(const int c) {
   res.append(hexbase + static_cast<unsigned char>(c) % 0x10, 1);
   return res;
 }
+
+/*
+**  Encode
+**  受け取った文字列をパーセントエンコードして返す関数です
+**  URLに使用できない文字のみエンコードします。
+**  ex)
+**  "dnakano@student.42tokyo.jp" => "dnakano%40student.42tokyo.jp"
+*/
 
 std::string UrlEncoder::encode(const std::string& str) {
   std::string encoded;
@@ -57,6 +81,14 @@ std::string UrlEncoder::encode(const std::string& str) {
   }
   return encoded;
 }
+
+/*
+**  Decode
+**  受け取った文字列のパーセントエンコードをデコードして返す関数です
+**  %[0-F][0-F]の値をデコードします
+**  ex)
+**  "dnakano%40student.42tokyo.jp" => "dnakano@student.42tokyo.jp"
+*/
 
 std::string UrlEncoder::decode(const std::string& str) {
   std::string decoded;
