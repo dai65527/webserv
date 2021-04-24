@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/22 23:26:51 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/24 08:58:08 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,11 +85,14 @@ class Session {
   std::string findFile(const std::string& uri) const;
   std::string mimeType(const std::string& filepath) const;
   bool isCharsetAccepted(const std::string& mime_type) const;
+  bool isLanguageAccepted() const;
   int addResponseHeaderOfFile(const std::string& filepath,
                               const std::string& mime_type);
   void addContentTypeHeader(const std::string& filepath,
                             const std::string& mime_type);
+  void addContentLanguageHeader();
   std::string findCharset() const;
+  const std::list<std::string>& findLanguage() const;
   bool isIndex(const std::string& filename) const;
   int readFromFile();
 
@@ -141,7 +144,6 @@ class Session {
   int checkSelectedAndExecute(fd_set* rfds, fd_set* wfds);
   int checkReceiveReturn(int ret);
 
-  //read from file
   const std::string& findRoot() const;
 };
 

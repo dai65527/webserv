@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/22 23:26:40 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/24 08:48:09 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -569,8 +569,8 @@ void Session::startReadingFromFile(const std::string& filepath) {
   // get mime type
   std::string mime_type = mimeType(filepath);
 
-  // check charset
-  if (!isCharsetAccepted(mime_type)) {
+  // check charset and language
+  if (!isCharsetAccepted(mime_type) || !isLanguageAccepted()) {
     createErrorResponse(HTTP_406);
     return;
   }
@@ -603,6 +603,7 @@ int Session::addResponseHeaderOfFile(const std::string& filepath,
   response_.createStatusLine(HTTP_200);
 
   addContentTypeHeader(filepath, mime_type);
+  addContentLanguageHeader();
 
   // last modified
   struct stat pathstat;
@@ -664,12 +665,81 @@ bool Session::isCharsetAccepted(const std::string& mime_type) const {
     }
 
     pos = pos_end + 1;
-    if (pos == std::string::npos) {
+    while (pos < itr->second.length() && itr->second[pos] == ' ') {
+      pos++;
+    }
+  }
+
+  return false;
+}
+
+static bool isLanguageMatch(const std::string& lang,
+                            const std::string& accept) {
+  size_t pos_lang = lang.find('-');
+  size_t pos_accept = accept.find('-');
+
+  if (accept == "*") {
+    return true;
+  }
+
+  if (pos_lang != std::string::npos) {
+    if (pos_accept != std::string::npos) {
+      return lang == accept;  // "en-US" vs "en-GB"
+    } else {
+      return lang.substr(0, pos_lang) == accept;  // "en-US" vs "en"
+    }
+  } else {
+    return lang ==
+           accept.substr(0, pos_accept);  // "en" vs "en" or "en" vs "en-US"
+  }
+}
+
+bool Session::isLanguageAccepted() const {
+  std::list<std::string> languages = findLanguage();
+
+  // case no language directive
+  if (languages.empty()) {
+    return true;
+  }
+
+  std::map<std::string, std::string>::const_iterator itr_header =
+      request_.getHeaders().find("accept-language");
+  if (itr_header == request_.getHeaders().end()) {
+    return true;
+  }
+
+  std::list<std::string>::const_iterator itr;
+  size_t pos = 0;
+  size_t pos_end;
+  std::string accept_language;
+  while (1) {
+    pos_end = std::min(itr_header->second.find(';', pos),
+                       itr_header->second.find(',', pos));
+    pos_end = std::min(pos_end, itr_header->second.find(' ', pos));
+    accept_language = itr_header->second.substr(pos, pos_end - pos);
+    for (itr = languages.begin(); itr != languages.end(); ++itr) {
+      // printf("\"%s\" == \"%s\"", itr->c_str(), itr_header->second.c_str());
+      if (isLanguageMatch(*itr, accept_language)) {
+        return true;
+      }
+    }
+
+    while (itr_header->second[pos_end] == ' ' &&
+           pos < itr_header->second.length()) {
+      ++pos;
+    }
+
+    if (itr_header->second[pos_end] == ';') {
+      pos_end = itr_header->second.find(',', pos_end);
+    }
+    if (pos_end == std::string::npos) {
       return false;
     }
 
-    while (pos < itr->second.length() && itr->second[pos] == ' ') {
-      pos++;
+    pos = pos_end + 1;
+    while (pos < itr_header->second.length() &&
+           itr_header->second[pos] == ' ') {
+      ++pos;
     }
   }
 
@@ -713,6 +783,24 @@ void Session::addContentTypeHeader(const std::string& filepath,
   response_.addHeader("Content-Type", content_type);
 }
 
+void Session::addContentLanguageHeader() {
+  const std::list<std::string>& languages = findLanguage();
+  if (languages.empty()) {
+    return;
+  }
+
+  std::string content_language;
+  for (std::list<std::string>::const_iterator itr = languages.begin();
+       itr != languages.end(); ++itr) {
+    if (!content_language.empty()) {
+      content_language.append(", ");
+    }
+    content_language.append(*itr);
+  }
+
+  response_.addHeader("Content-Language", content_language);
+}
+
 std::string Session::findCharset() const {
   if (location_config_ && !location_config_->getCharset().empty()) {
     return location_config_->getCharset();
@@ -721,6 +809,16 @@ std::string Session::findCharset() const {
     return server_config_->getCharset();
   }
   return main_config_.getCharset();
+}
+
+const std::list<std::string>& Session::findLanguage() const {
+  if (location_config_ && !location_config_->getLanguage().empty()) {
+    return location_config_->getLanguage();
+  }
+  if (server_config_ && !server_config_->getLanguage().empty()) {
+    return server_config_->getLanguage();
+  }
+  return main_config_.getLanguage();
 }
 
 // find requested file
