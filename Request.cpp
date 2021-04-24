@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/23 23:59:28 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/25 06:22:34 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -425,12 +425,12 @@ int Request::checkResponseType() const {
 
 int Request::checkBodySize(Session& session) {
   /* case transfer-encoding is set */
+  std::cout << session.getClientMaxBodySize() << std::endl;
   if (flg_chunked_) {
     return 0;
   }
   /* case content-length is greater than client_max_body_size*/
   if (content_length_ > session.getClientMaxBodySize()) {
-    std::cout << session.getClientMaxBodySize() << std::endl;
     return -1;
   }
   return 0;
