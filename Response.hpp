@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 20:22:22 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/21 23:09:27 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/24 23:32:08 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ class Response {
   int addHeader(const std::string& key, const std::string& value);
   int createStatusLine(HTTPStatusCode http_status_);
   int createStatusLine(const std::string& value);
+  void createErrorStatusLine(HTTPStatusCode http_status);
   int createDefaultErrorResponse(HTTPStatusCode http_status_);
   int appendToBody(const std::string& data);
   int appendToBody(const char* data, size_t len);
