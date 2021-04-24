@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/22 08:27:47 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/24 21:16:26 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,10 @@ class Session {
   CgiHandler cgi_handler_;
   pid_t cgi_pid_;  // is this needed???
 
+  // this is set in createErrorResponse function
+  // to save 
+  HTTPStatusCode original_error_response_;
+
   Session();
   Session(Session const& other);
   Session& operator=(Session const& other);
@@ -66,6 +70,8 @@ class Session {
   void startCreateResponseToGet();
   void startCreateResponseToPost();
   void createErrorResponse(HTTPStatusCode http_status);
+  int createErrorResponseFromFile(HTTPStatusCode http_status);
+  std::string findErrorPage(HTTPStatusCode http_status) const;
   int sendResponse();
 
   // load config

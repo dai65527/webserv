@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/22 08:27:38 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/24 23:18:58 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,8 @@ Session::Session(int sock_fd, const MainConfig& main_config,
       status_(SESSION_FOR_CLIENT_RECV),
       main_config_(main_config),
       server_config_(NULL),
-      location_config_(NULL) {
+      location_config_(NULL),
+      original_error_response_(HTTP_NOMATCH) {
   initMapMineExt();
   updateConnectionTime();
 }
@@ -206,6 +207,7 @@ bool Session::checkConnectionTimeOut() const {
 // connect to list
 void Session::resetAll() {
   retry_count_ = 0;
+  original_error_response_ = HTTP_NOMATCH;
   request_.resetAll();
   response_.resetAll();
 }
@@ -399,24 +401,82 @@ bool Session::isMethodAllowed(HTTPMethodFlag method) const {
 // create error response message
 // yet not enough
 void Session::createErrorResponse(HTTPStatusCode http_status) {
-  // find file
-  // todo
-  // response_.createStatusLine(http_status);
-  // startReadingFromFile
+  // check original error response
+  // if it's not HTTP_NOMATCH (initial value) this is second time called
+  if (original_error_response_ != HTTP_NOMATCH) {
+    http_status = original_error_response_;
+  }
 
-  // createDefaultErrorResponse
-  response_.createDefaultErrorResponse(http_status);
-
+  // create header and status line
+  response_.createErrorStatusLine(http_status);
   if (flg_exceed_max_session_) {
     response_.addHeader("Retry-After",
                         std::to_string(main_config_.getRetryAfter()));
   }
-
   if (http_status == HTTP_405 && isMethodAllowed(HTTP_OPTIONS)) {
     createAllowHeader();
   }
 
-  status_ = SESSION_FOR_CLIENT_SEND;
+  if (original_error_response_ == HTTP_NOMATCH &&
+      createErrorResponseFromFile(http_status) == 0) {
+    original_error_response_ = http_status;
+    status_ = SESSION_FOR_FILE_READ;
+  } else {
+    response_.createDefaultErrorResponse(http_status);
+    status_ = SESSION_FOR_CLIENT_SEND;
+  }
+}
+
+int Session::createErrorResponseFromFile(HTTPStatusCode http_status) {
+  std::string error_page = findErrorPage(http_status);
+  if (error_page.empty()) {
+    return -1;
+  }
+
+  // create filepath
+  std::string filepath = findRoot();
+  if (*(filepath.end() - 1) != '/' && error_page[0] != '/') {
+    filepath.append("/");  // append "/" if missing
+  }
+  filepath.append(error_page);
+
+  // openfile
+  file_fd_ = open(filepath.c_str(), O_RDONLY);  // toriaezu
+  if (file_fd_ == -1) {
+    return -1;
+  }
+
+  // set to non block
+  fcntl(file_fd_, F_SETFL, O_NONBLOCK);
+  if (file_fd_ == -1) {
+    close(file_fd_);
+    return -1;
+  }
+
+  // create response header
+  response_.addHeader("content-type", mimeType(filepath));
+  return 0;
+}
+
+std::string Session::findErrorPage(HTTPStatusCode http_status) const {
+  std::map<HTTPStatusCode, std::string>::const_iterator itr;
+  if (location_config_) {
+    itr = location_config_->getErrorPage().find(http_status);
+    if (itr != location_config_->getErrorPage().end()) {
+      return itr->second;
+    }
+  }
+  if (server_config_) {
+    itr = server_config_->getErrorPage().find(http_status);
+    if (itr != server_config_->getErrorPage().end()) {
+      return itr->second;
+    }
+  }
+  itr = main_config_.getErrorPage().find(http_status);
+  if (itr != main_config_.getErrorPage().end()) {
+    return itr->second;
+  }
+  return "";
 }
 
 // send response

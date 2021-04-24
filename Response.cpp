@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/21 10:00:41 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/24 20:13:59 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ int Response::addHeader(const std::string& key, const std::string& value) {
   return 0;
 }
 
-int Response::createDefaultErrorResponse(HTTPStatusCode http_status) {
+void Response::createErrorStatusLine(HTTPStatusCode http_status) {
   // connection to close on these errors
   // https://software.fujitsu.com/jp/manual/manualfiles/m140003/b1ws1026/04z200/b1026-00-03-02-21.html
   switch (http_status) {
@@ -84,7 +84,9 @@ int Response::createDefaultErrorResponse(HTTPStatusCode http_status) {
 
   // create status line and common header
   createStatusLine(http_status);
+}
 
+int Response::createDefaultErrorResponse(HTTPStatusCode http_status) {
   // add Headers
   addHeader("Content-Type", "text/html");
 
