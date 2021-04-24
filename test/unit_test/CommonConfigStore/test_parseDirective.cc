@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/21 09:16:34 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/22 19:11:26 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ TEST_F(test_parseDirective, language) {
   EXPECT_THROW(store.parseDirective("language", settings), std::runtime_error);
   settings.push_back("ja-JP");
   EXPECT_TRUE(store.parseDirective("language", settings));
-  EXPECT_EQ(store.getLanguage(), "ja-JP");
+  EXPECT_EQ(store.getLanguage().front(), "ja-JP");
 }
 
 TEST_F(test_parseDirective, base_auth) {

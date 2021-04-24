@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/02 14:21:46 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/15 12:07:15 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ TEST_F(test_checkHTTP413, mainConfigOK) {
   appendVec(session->request_.buf_, "9abcdefghij");
   EXPECT_EQ(session->request_.method_, "POST");
   EXPECT_EQ(session->request_.uri_, "/index.html");
-  EXPECT_EQ(session->request_.query_["a"], "");
+  EXPECT_EQ(session->request_.query_, "a");
   EXPECT_EQ(session->request_.headers_["host"], "localhost");
   EXPECT_EQ(session->request_.headers_["location"], "Yokohama");
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
@@ -76,7 +76,7 @@ TEST_F(test_checkHTTP413, mainConfigNG) {
             4133);  // max body size defined in main config
   EXPECT_EQ(session->request_.method_, "POST");
   EXPECT_EQ(session->request_.uri_, "/index.html");
-  EXPECT_EQ(session->request_.query_["a"], "");
+  EXPECT_EQ(session->request_.query_, "a");
   EXPECT_EQ(session->request_.headers_["host"], "localhost");
   EXPECT_EQ(session->request_.headers_["location"], "Yokohama");
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
@@ -101,7 +101,7 @@ TEST_F(test_checkHTTP413, serverConfigOK) {
   appendVec(session->request_.buf_, "9abcdefghij");
   EXPECT_EQ(session->request_.method_, "POST");
   EXPECT_EQ(session->request_.uri_, "/index.html");
-  EXPECT_EQ(session->request_.query_["a"], "");
+  EXPECT_EQ(session->request_.query_, "a");
   EXPECT_EQ(session->request_.headers_["host"], "localhost");
   EXPECT_EQ(session->request_.headers_["location"], "Yokohama");
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
@@ -130,7 +130,7 @@ TEST_F(test_checkHTTP413, serverConfigNG) {
             4132);  // max body size defined in server config
   EXPECT_EQ(session->request_.method_, "POST");
   EXPECT_EQ(session->request_.uri_, "/index.html");
-  EXPECT_EQ(session->request_.query_["a"], "");
+  EXPECT_EQ(session->request_.query_, "a");
   EXPECT_EQ(session->request_.headers_["host"], "localhost");
   EXPECT_EQ(session->request_.headers_["location"], "Yokohama");
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
@@ -158,7 +158,7 @@ TEST_F(test_checkHTTP413, locationConfigOK) {
   appendVec(session->request_.buf_, "9abcdefghij");
   EXPECT_EQ(session->request_.method_, "POST");
   EXPECT_EQ(session->request_.uri_, "/index.html");
-  EXPECT_EQ(session->request_.query_["a"], "");
+  EXPECT_EQ(session->request_.query_, "a");
   EXPECT_EQ(session->request_.headers_["host"], "localhost");
   EXPECT_EQ(session->request_.headers_["location"], "Yokohama");
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
@@ -190,7 +190,7 @@ TEST_F(test_checkHTTP413, locationConfigNG) {
             4131);  // max body size defined in location config
   EXPECT_EQ(session->request_.method_, "POST");
   EXPECT_EQ(session->request_.uri_, "/index.html");
-  EXPECT_EQ(session->request_.query_["a"], "");
+  EXPECT_EQ(session->request_.query_, "a");
   EXPECT_EQ(session->request_.headers_["host"], "localhost");
   EXPECT_EQ(session->request_.headers_["location"], "Yokohama");
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
@@ -212,7 +212,7 @@ TEST_F(test_checkHTTP413, transferEncodingOK1) {
   appendVec(session->request_.buf_, "9abcdefghij");
   EXPECT_EQ(session->request_.method_, "POST");
   EXPECT_EQ(session->request_.uri_, "/index.html");
-  EXPECT_EQ(session->request_.query_["a"], "");
+  EXPECT_EQ(session->request_.query_, "a");
   EXPECT_EQ(session->request_.headers_["host"], "localhost");
   EXPECT_EQ(session->request_.headers_["location"], "Yokohama");
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
@@ -234,7 +234,7 @@ TEST_F(test_checkHTTP413, transferEncodingNG1) {
   appendVec(session->request_.buf_, "9abcdefghij");
   EXPECT_EQ(session->request_.method_, "POST");
   EXPECT_EQ(session->request_.uri_, "/index.html");
-  EXPECT_EQ(session->request_.query_["a"], "");
+  EXPECT_EQ(session->request_.query_, "a");
   EXPECT_EQ(session->request_.headers_["host"], "localhost");
   EXPECT_EQ(session->request_.headers_["location"], "Yokohama");
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
@@ -255,7 +255,7 @@ TEST_F(test_checkHTTP413, transferEncodingNG2) {
   EXPECT_EQ(session->receiveRequest(), 0);
   EXPECT_EQ(session->request_.method_, "POST");
   EXPECT_EQ(session->request_.uri_, "/index.html");
-  EXPECT_EQ(session->request_.query_["a"], "");
+  EXPECT_EQ(session->request_.query_, "a");
   EXPECT_EQ(session->request_.headers_["host"], "localhost");
   EXPECT_EQ(session->request_.headers_["location"], "Yokohama");
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
@@ -277,7 +277,7 @@ TEST_F(test_checkHTTP413, transferEncodingOK2) {
   EXPECT_EQ(session->receiveRequest(), 0);
   EXPECT_EQ(session->request_.method_, "POST");
   EXPECT_EQ(session->request_.uri_, "/index.html");
-  EXPECT_EQ(session->request_.query_["a"], "");
+  EXPECT_EQ(session->request_.query_, "a");
   EXPECT_EQ(session->request_.headers_["host"], "localhost");
   EXPECT_EQ(session->request_.headers_["location"], "Yokohama");
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
@@ -304,7 +304,7 @@ TEST_F(test_checkHTTP413, transferEncodingOK3) {
   EXPECT_EQ(session->receiveRequest(), 0);
   EXPECT_EQ(session->request_.method_, "POST");
   EXPECT_EQ(session->request_.uri_, "/index.html");
-  EXPECT_EQ(session->request_.query_["a"], "");
+  EXPECT_EQ(session->request_.query_, "a");
   EXPECT_EQ(session->request_.headers_["host"], "localhost");
   EXPECT_EQ(session->request_.headers_["location"], "Yokohama");
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
@@ -335,7 +335,7 @@ TEST_F(test_checkHTTP413, transferEncodingNG3) {
   EXPECT_EQ(session->receiveRequest(), 0);
   EXPECT_EQ(session->request_.method_, "POST");
   EXPECT_EQ(session->request_.uri_, "/index.html");
-  EXPECT_EQ(session->request_.query_["a"], "");
+  EXPECT_EQ(session->request_.query_, "a");
   EXPECT_EQ(session->request_.headers_["host"], "localhost");
   EXPECT_EQ(session->request_.headers_["location"], "Yokohama");
   EXPECT_EQ(session->request_.headers_["language"], "en-US");
@@ -364,7 +364,7 @@ TEST_F(test_checkHTTP413, transferEncodingOK4) {
   EXPECT_EQ(session->receiveRequest(), 0);
   EXPECT_EQ(session->request_.method_, "POST");
   EXPECT_EQ(session->request_.uri_, "/index.html");
-  EXPECT_EQ(session->request_.query_["a"], "");
+  EXPECT_EQ(session->request_.query_, "a");
   EXPECT_EQ(session->request_.headers_["host"], "localhost");
   EXPECT_EQ(session->request_.headers_["location"], "Yokohama");
   EXPECT_EQ(session->request_.headers_["language"], "en-US");

@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/24 21:16:26 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/24 23:32:44 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,9 @@
 #include "Request.hpp"
 #include "Response.hpp"
 #include "SessionStatus.hpp"
+#include "webserv_utils.hpp"
+
+#define SOFTWARE_NAME "nginDX"
 
 class Session {
  private:
@@ -46,7 +49,8 @@ class Session {
   Request request_;
   Response response_;
   CgiHandler cgi_handler_;
-  pid_t cgi_pid_;  // is this needed???
+  in_addr_t ip_;
+  uint16_t port_;
 
   // this is set in createErrorResponse function
   // to save 
@@ -76,7 +80,7 @@ class Session {
 
   // load config
   void setupServerAndLocationConfig();
-  const ServerConfig* findServer() const;
+  const ServerConfig* findServer();
   const LocationConfig* findLocation() const;
   bool isLocationMatch(const std::string& loc_route,
                        const std::string& uri_path) const;
@@ -87,12 +91,14 @@ class Session {
   std::string findFile(const std::string& uri) const;
   std::string mimeType(const std::string& filepath) const;
   bool isCharsetAccepted(const std::string& mime_type) const;
+  bool isLanguageAccepted() const;
   int addResponseHeaderOfFile(const std::string& filepath,
-                               const std::string& mime_type);
+                              const std::string& mime_type);
   void addContentTypeHeader(const std::string& filepath,
                             const std::string& mime_type);
+  void addContentLanguageHeader();
   std::string findCharset() const;
-  const std::string& findRoot() const;
+  const std::list<std::string>& findLanguage() const;
   bool isIndex(const std::string& filename) const;
   int readFromFile();
 
@@ -111,6 +117,7 @@ class Session {
   bool isCgiFile(const std::string& filepath) const;
   int writeToCgi();
   int readFromCgi();
+  ssize_t parseReadBuf(const char* read_buf, ssize_t n);
 
   // write to file
   void startWritingToFile();
@@ -131,12 +138,19 @@ class Session {
   // getters
   int getSockFd() const;
   int getFileFd() const;
+  in_addr_t getIp() const;
+  uint16_t getPort() const;
   const SessionStatus& getStatus() const;
+  std::string getFromHeaders(const std::map<std::string, std::string>& headers,
+                             const std::string key) const;
+  std::string getPathInfo(const std::string& cgiuri) const;
 
   // functions called from Webserv
   int setFdToSelect(fd_set* rfds, fd_set* wfds);
   int checkSelectedAndExecute(fd_set* rfds, fd_set* wfds);
   int checkReceiveReturn(int ret);
+
+  const std::string& findRoot() const;
 };
 
 #endif /* SESSION_HPP */

@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/24 20:13:59 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/24 23:31:11 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,30 @@ int Response::createStatusLine(HTTPStatusCode http_status_) {
   char buf[128];
   // format: Sat, 17 Apr 2021 13:45:20 GMT
   getTimeStamp(buf, 128, "%a, %d %b %Y %H:%M:%S %Z");
+  #ifndef UNIT_TEST
   addHeader("Date", buf);
+  #endif
+
+  return 0;
+}
+
+/* For the case of cgi script create Status code*/
+int Response::createStatusLine(const std::string& value) {
+  // status line
+  status_header_ = "HTTP/1.1 ";
+  status_header_.append(value);
+  status_header_.append("\r\n");
+
+  // common header
+  addHeader("Server", WEBSERV_NAME);
+  
+  // time header
+  char buf[128];
+  // format: Sat, 17 Apr 2021 13:45:20 GMT
+  getTimeStamp(buf, 128, "%a, %d %b %Y %H:%M:%S %Z");
+  #ifndef UNIT_TEST
+  addHeader("Date", buf);
+  #endif
 
   return 0;
 }
