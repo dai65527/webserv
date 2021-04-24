@@ -363,6 +363,9 @@ void Session::startCreateResponseToGet() {
     if (res.empty()) {
       startDirectoryListing(filepath);
     } else {
+      if (*(filepath.end() - 1) != '/' && res[0] != '/') {
+        filepath.append("/");  // append "/" if missing
+      }
       startReadingFromFile(filepath + res);
     }
     return;
@@ -1327,7 +1330,7 @@ void Session::startWritingToFile() {
 
   // create filepath
   std::string filepath = findRoot();
-  if (*(filepath.end() - 1) != '/' || upload_store[0] != '/') {
+  if (*(filepath.end() - 1) != '/' && upload_store[0] != '/') {
     filepath.append("/");  // append "/" if missing
   }
   filepath.append(upload_store);
