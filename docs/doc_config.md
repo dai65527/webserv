@@ -16,11 +16,10 @@ config ファイルは、
 server {
     # server context
     
-    location {
+    location /route/ {
         # location context
     }
 }
-
 ```
 
 #### main context
