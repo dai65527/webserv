@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/24 01:03:56 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/25 22:32:23 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -219,18 +219,13 @@ int Session::receiveRequest() {
 }
 
 unsigned long Session::getClientMaxBodySize() const {
-  unsigned long ret;
-  // std::cout << location_config_->getFlgClientMaxBodySizeSet() << std::endl;
-  std::cout << server_config_->getFlgClientMaxBodySizeSet() << std::endl;
-  std::cout << main_config_.getFlgClientMaxBodySizeSet() << std::endl;
   if (location_config_ && location_config_->getFlgClientMaxBodySizeSet()) {
-    ret = location_config_->getClientMaxBodySize();
+    return location_config_->getClientMaxBodySize();
   } else if (server_config_ && server_config_->getFlgClientMaxBodySizeSet()) {
-    ret = server_config_->getClientMaxBodySize();
+    return server_config_->getClientMaxBodySize();
   } else {
-    ret = main_config_.getClientMaxBodySize();
+    return main_config_.getClientMaxBodySize();
   }
-  return ret;
 }
 
 // check return value of request_.receive(sock_fd_);

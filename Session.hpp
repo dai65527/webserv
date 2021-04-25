@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/23 23:59:08 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/25 07:07:10 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@
 #include "webserv_utils.hpp"
 
 #define SOFTWARE_NAME "nginDX"
+
+class Request;
 
 class Session {
  private:

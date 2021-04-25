@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 17:40:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/23 20:34:23 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/25 20:49:12 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ class CommonConfigStore {
   const std::list<std::string>& getAuthBasicUserFile() const;
   const unsigned long& getClientMaxBodySize() const;
   const unsigned long& getLimitExcept() const;
-  const bool& getFlgClientMaxBodySizeSet() const;
+  bool getFlgClientMaxBodySizeSet() const;
 
   /*
   ** store_config

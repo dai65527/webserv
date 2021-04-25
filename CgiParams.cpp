@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/22 22:31:02 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/23 13:59:32 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/25 21:59:00 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ char** CgiParams::storeMetaVariables(const std::string& cgiuri,
   std::string tmp;
   const std::map<std::string, std::string>& headers = request.getHeaders();
   tmp = "AUTH_TYPE=";
-  tmp += session_.getFromHeaders(headers, "authorization");  // TBC!
+  tmp += session_.getFromHeaders(headers, "authorization");
   meta_variables.push_back(tmp);
   tmp = "CONTENT_LENGTH=";
   tmp += session_.getFromHeaders(headers, "content-length");
@@ -70,8 +70,7 @@ char** CgiParams::storeMetaVariables(const std::string& cgiuri,
   tmp = "CONTENT_TYPE=";
   tmp += session_.getFromHeaders(headers, "content-type");
   meta_variables.push_back(tmp);
-  tmp = "GATEWAY_INTERFACE=";  //プロトコル名称入れてもらう？
-  tmp += session_.getFromHeaders(headers, "gateway-interface");  //?
+  tmp = "GATEWAY_INTERFACE=CGI/1.1";
   meta_variables.push_back(tmp);
   tmp = "PATH_INFO=";  // testerで求める挙動は違うようだ（discord #webserv)
   tmp += session_.getPathInfo(cgiuri);
@@ -89,10 +88,10 @@ char** CgiParams::storeMetaVariables(const std::string& cgiuri,
   tmp += getIpAddress(session_.getIp());
   meta_variables.push_back(tmp);
   tmp = "REMOTE_IDENT=";
-  tmp += "TEST";  // TBC!
+  tmp += session_.getFromHeaders(headers, "authorization"); //tbc
   meta_variables.push_back(tmp);
   tmp = "REMOTE_USER=";
-  tmp += "TEST";  // TBC!
+  tmp += session_.getFromHeaders(headers, "authorization"); //tbc
   meta_variables.push_back(tmp);
   tmp = "REQUEST_METHOD=";
   tmp += request.getMethod();
