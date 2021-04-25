@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/25 06:22:34 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/25 22:52:14 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -362,9 +362,12 @@ int Request::checkHeaderField() {
 }
 
 ssize_t Request::parseChunkedBody(size_t pos) {
-  size_t begin = pos;
   while (pos != buf_.size()) {
-    if (buf_[pos] == '\r' && buf_[pos + 1] == '\n') {
+    size_t begin = pos;
+    while (buf_[pos] != '\r') {
+      ++pos;
+    }
+    if (buf_[pos + 1] == '\n') {
       /* get chunk data size*/
       if (parse_progress_ == REQ_FIN_HEADER_FIELD) {
         std::string chunk_size = bufToString(begin, pos);
@@ -379,8 +382,7 @@ ssize_t Request::parseChunkedBody(size_t pos) {
         parse_progress_ =
             REQ_GOT_CHUNK_SIZE;  // Then next should be getting chunked data in
                                  // else part of this function
-        pos_prev_ = pos + 2;
-        return REQ_CONTINUE_RECV;
+        pos += 2;
         /* get chunked data body*/
       } else {
         if (pos - begin > chunk_size_) {
@@ -393,13 +395,12 @@ ssize_t Request::parseChunkedBody(size_t pos) {
           }
           body_.insert(body_.end(), buf_.begin() + begin, buf_.begin() + pos);
           parse_progress_ = REQ_FIN_HEADER_FIELD;
-          pos_prev_ = pos + 2;
-          return REQ_CONTINUE_RECV;
+          pos += 2;
         }
       }
     }
-    ++pos;
   }
+  pos_prev_ = pos;
   return REQ_CONTINUE_RECV;
 }
 
