@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/04/24 08:47:48 by dnakano          ###   ########.fr        #
+#    Updated: 2021/04/27 08:16:41 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -43,7 +43,8 @@ TESTSRCNAME	:=	test_main.cc \
 				test_getFileExtension.cc \
 				test_CgiArgvEnvp.cc \
 				test_CgiResponse.cc \
-				test_isCharsetAccepted.cc
+				test_isCharsetAccepted.cc \
+				test_getUriFromLocation.cc
 TESTSRCDIR	:=	.
 
 ### config ###

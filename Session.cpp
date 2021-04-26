@@ -6,12 +6,11 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/24 23:32:29 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/27 08:16:59 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Session.hpp"
-#include "CgiParams.hpp"
 
 #include <dirent.h>
 #include <fcntl.h>
@@ -20,9 +19,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <iostream>
 #include <cstring>
+#include <iostream>
 
+#include "CgiParams.hpp"
 #include "webserv_settings.hpp"
 #include "webserv_utils.hpp"
 
@@ -357,6 +357,19 @@ void Session::startCreateResponseToGet() {
     return;
   }
   createErrorResponse(HTTP_404);
+}
+
+std::string Session::getUriFromLocation() const {
+  if (!location_config_) {
+    return request_.getUri();
+  }
+  std::string res;
+  if (*location_config_->getRoute().rbegin() == '/') {
+    res = request_.getUri().substr(location_config_->getRoute().length() - 1);
+  } else {
+    res = request_.getUri().substr(location_config_->getRoute().length());
+  }
+  return res;
 }
 
 void Session::startCreateResponseToPost() {
@@ -1461,13 +1474,13 @@ ssize_t Session::parseReadBuf(const char* read_buf, ssize_t n) {
         continue;
       }
       /* add header */
-      response_.addHeader(itr->first, itr->second); 
+      response_.addHeader(itr->first, itr->second);
     }
     /* Parse OK then return the pos of end of header */
     return i + ret;
   }
   /* case no valid header */
-  return -1;  
+  return -1;
 }
 
 /*
