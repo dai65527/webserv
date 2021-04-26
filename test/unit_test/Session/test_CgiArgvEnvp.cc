@@ -105,20 +105,20 @@ TEST_F(test_CgiArgvEnvp, NoargvDueToEqual) {
 TEST_F(test_CgiArgvEnvp, MetaEnvOK1) {
   appendVec(session->request_.buf_,
             "GET /sample.cgi?argv1+argv2=argv3+argv4 HTTP/1.1\r\nHost: "
-            "localhost\r\n\r\n");
+            "localhost\r\nAuthorization: Basic abcd1234\r\n\r\n");
   EXPECT_EQ(session->receiveRequest(), 0);
   char** envp =
       cgi_params->storeMetaVariables("/sample.cgi", session->request_);
-  EXPECT_EQ("AUTH_TYPE=", std::string(envp[0]));
+  EXPECT_EQ("AUTH_TYPE=Basic abcd1234", std::string(envp[0]));
   EXPECT_EQ("CONTENT_LENGTH=", std::string(envp[1]));
   EXPECT_EQ("CONTENT_TYPE=", std::string(envp[2]));
-  EXPECT_EQ("GATEWAY_INTERFACE=", std::string(envp[3]));
+  EXPECT_EQ("GATEWAY_INTERFACE=CGI/1.1", std::string(envp[3]));
   EXPECT_EQ("PATH_INFO=", std::string(envp[4]));
   EXPECT_EQ("PATH_TRANSLATED=", std::string(envp[5]));
   EXPECT_EQ("QUERY_STRING=argv1+argv2=argv3+argv4", std::string(envp[6]));
   EXPECT_EQ("REMOTE_ADDR=127.0.0.1", std::string(envp[7]));
-  EXPECT_EQ("REMOTE_IDENT=TEST", std::string(envp[8]));
-  EXPECT_EQ("REMOTE_USER=TEST", std::string(envp[9]));
+  EXPECT_EQ("REMOTE_IDENT=Basic abcd1234", std::string(envp[8]));
+  EXPECT_EQ("REMOTE_USER=Basic abcd1234", std::string(envp[9]));
   EXPECT_EQ("REQUEST_METHOD=GET", std::string(envp[10]));
   EXPECT_EQ("REQUEST_URI=/sample.cgi", std::string(envp[11]));
   EXPECT_EQ("SCRIPT_NAME=/sample.cgi", std::string(envp[12]));
@@ -133,20 +133,20 @@ TEST_F(test_CgiArgvEnvp, MetaEnvOK1) {
 TEST_F(test_CgiArgvEnvp, MetaEnvOK2) {
   appendVec(session->request_.buf_,
             "POST /sample.cgi/argv1/argv2 HTTP/1.1\r\nHost: "
-            "localhost\r\ncontent-length:10\r\n\r\n0123456789\r\n\r\n");
+            "localhost\r\nAuthorization: zzz\r\ncontent-length:10\r\n\r\n0123456789\r\n\r\n");
   EXPECT_EQ(session->receiveRequest(), 0);
   char** envp =
       cgi_params->storeMetaVariables("/sample.cgi", session->request_);
-  EXPECT_EQ("AUTH_TYPE=", std::string(envp[0]));
+  EXPECT_EQ("AUTH_TYPE=zzz", std::string(envp[0]));
   EXPECT_EQ("CONTENT_LENGTH=10", std::string(envp[1]));
   EXPECT_EQ("CONTENT_TYPE=", std::string(envp[2]));
-  EXPECT_EQ("GATEWAY_INTERFACE=", std::string(envp[3]));
+  EXPECT_EQ("GATEWAY_INTERFACE=CGI/1.1", std::string(envp[3]));
   EXPECT_EQ("PATH_INFO=/argv1/argv2", std::string(envp[4]));
   EXPECT_EQ("PATH_TRANSLATED=./html/argv1/argv2", std::string(envp[5]));
   EXPECT_EQ("QUERY_STRING=", std::string(envp[6]));
   EXPECT_EQ("REMOTE_ADDR=127.0.0.1", std::string(envp[7]));
-  EXPECT_EQ("REMOTE_IDENT=TEST", std::string(envp[8]));
-  EXPECT_EQ("REMOTE_USER=TEST", std::string(envp[9]));
+  EXPECT_EQ("REMOTE_IDENT=zzz", std::string(envp[8]));
+  EXPECT_EQ("REMOTE_USER=zzz", std::string(envp[9]));
   EXPECT_EQ("REQUEST_METHOD=POST", std::string(envp[10]));
   EXPECT_EQ("REQUEST_URI=/sample.cgi/argv1/argv2", std::string(envp[11]));
   EXPECT_EQ("SCRIPT_NAME=/sample.cgi", std::string(envp[12]));

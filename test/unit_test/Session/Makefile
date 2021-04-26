@@ -6,7 +6,7 @@
 #    By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/04/22 22:41:49 by dhasegaw         ###   ########.fr        #
+#    Updated: 2021/04/26 09:39:11 by dhasegaw         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -38,7 +38,6 @@ TESTSRCNAME	:=	test_main.cc \
 				test_findServer.cc \
 				test_isMethodAllowed.cc \
 				test_findCgiPathFromUri.cc \
-				test_checkHTTP413.cc \
 				test_mapMime.cc \
 				test_getFileExtension.cc \
 				test_CgiArgvEnvp.cc \
