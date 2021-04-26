@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/25 22:47:05 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/26 00:03:30 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -243,42 +243,7 @@ int Session::checkReceiveReturn(int ret) {
     return 413;
 #endif
   }
-  /*
-  ** Then check the content-length,
-  ** if it's 0 (no body), return 0
-  ** else if it'is larger than client max body size return HTTP413(Payload Too
-  *Large)
-  */
-  //   else if (ret == REQ_FIN_PARSE_HEADER) {
-  // #ifndef UNIT_TEST
-  //     setupServerAndLocationConfig();  // To get server and location config
-  // #endif
-  //     if (!request_.getFlgChunked() && (request_.getContentLength() == 0)) {
-  //       startCreateResponse();
-  //     } else if (location_config_ &&
-  //                request_.getContentLength() >
-  //                    location_config_->getClientMaxBodySize()) {
-  //       createErrorResponse(HTTP_413);
-  // #ifdef UNIT_TEST
-  //       return 4131;  // just for unit test
-  // #endif
-  //     } else if (server_config_ && request_.getContentLength() >
-  //                                      server_config_->getClientMaxBodySize())
-  //                                      {
-  //       createErrorResponse(HTTP_413);
-  // #ifdef UNIT_TEST
-  //       return 4132;  // just for unit test
-  // #endif
-  //     } else if (request_.getContentLength() >
-  //                main_config_.getClientMaxBodySize()) {
-  //       createErrorResponse(HTTP_413);
-  // #ifdef UNIT_TEST
-  //       return 4133;  // just for unit test
-  // #endif
-  //       /* Finished receiving then start create response*/
-  //     }
-  // }
-  else if (ret == REQ_FIN_RECV) {
+    else if (ret == REQ_FIN_RECV) {
     startCreateResponse();
   }
   return 0;

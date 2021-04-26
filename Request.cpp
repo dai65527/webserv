@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/25 22:52:14 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/26 02:32:52 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,7 +151,9 @@ int Request::parseRequest(Session& session) {
     }
     pos_begin_body_ = pos_buf;
     pos_prev_ = pos_begin_body_;
+    #ifndef UNIT_TEST
     session.setupServerAndLocationConfig();
+    #endif
     ret = checkBodySize(session);
     if (ret < 0) {
       return REQ_ERR_TOO_LARGE; 
@@ -362,10 +364,14 @@ int Request::checkHeaderField() {
 }
 
 ssize_t Request::parseChunkedBody(size_t pos) {
-  while (pos != buf_.size()) {
-    size_t begin = pos;
-    while (buf_[pos] != '\r') {
+  size_t begin;
+  while (pos < buf_.size()) {
+    begin = pos;
+    while (pos < buf_.size() && buf_[pos] != '\r') {
       ++pos;
+    }
+    if (pos == buf_.size()) {
+      break;
     }
     if (buf_[pos + 1] == '\n') {
       /* get chunk data size*/
@@ -400,7 +406,7 @@ ssize_t Request::parseChunkedBody(size_t pos) {
       }
     }
   }
-  pos_prev_ = pos;
+  pos_prev_ = begin;
   return REQ_CONTINUE_RECV;
 }
 
@@ -426,7 +432,6 @@ int Request::checkResponseType() const {
 
 int Request::checkBodySize(Session& session) {
   /* case transfer-encoding is set */
-  std::cout << session.getClientMaxBodySize() << std::endl;
   if (flg_chunked_) {
     return 0;
   }
