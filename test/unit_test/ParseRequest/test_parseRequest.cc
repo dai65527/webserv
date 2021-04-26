@@ -701,3 +701,20 @@ TEST_F(test_parseRequest, RequestNGtooLarge3) {
       "1.1\r\nHost:localhost\r\nContent-length: 43\r\n\r\n0123456789\r\n");
   EXPECT_EQ(REQ_ERR_TOO_LARGE, request.parseRequest(*session));
 }
+TEST_F(test_parseRequest, RequestTesterPost) {
+  const_cast<MainConfig &>(session->main_config_).client_max_body_size_ = 100;
+  appendVec(request.buf_,
+            "POST / HTTP/1.1\r\nHost: localhost:8888\r\nUser-Agent: "
+            "Go-http-client/1.1\r\nTransfer-Encoding: chunked\r\n"
+            "Content-Type: test/file\r\nAccept-Encoding: gzip\r\n");
+  EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
+  appendVec(request.buf_, "\r\n");
+  EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
+  appendVec(request.buf_, "0");
+  EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
+  appendVec(request.buf_, "\r\n");
+  EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
+  EXPECT_EQ(request.chunk_size_, 0);
+  appendVec(request.buf_, "\r\n");
+  EXPECT_EQ(REQ_FIN_RECV, request.parseRequest(*session));
+}
