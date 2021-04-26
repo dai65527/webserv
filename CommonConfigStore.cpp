@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/25 22:52:35 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/26 22:49:52 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -245,7 +245,7 @@ void CommonConfigStore::parseLimitExcept(
   for (std::list<std::string>::const_iterator itr = settings.begin();
        itr != settings.end(); ++itr) {
     if (*itr == "GET") {
-      limit_except_ |= (HTTP_GET | HTTP_HEAD);
+      limit_except_ |= HTTP_GET;
     } else if (*itr == "HEAD") {
       limit_except_ |= HTTP_HEAD;
     } else if (*itr == "PUT") {
