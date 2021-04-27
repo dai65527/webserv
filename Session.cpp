@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/27 09:29:31 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/27 09:56:55 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1381,8 +1381,6 @@ int Session::readFromCgi() {
       // close connection and make error responce
       std::cout << "[error] close connection to CGI process" << std::endl;
       close(cgi_handler_.getOutputFd());
-      // response_buf_ = "500 internal server error";  // TODO: make response
-      // func
 
       // kill the process on error (if failed kill, we can do nothing...)
       if (kill(cgi_handler_.getPid(), SIGKILL) == -1) {
@@ -1390,7 +1388,7 @@ int Session::readFromCgi() {
       }
 
       // to send error response to client
-      status_ = SESSION_FOR_CLIENT_SEND;
+      createErrorResponse(HTTP_500);
       return 0;
     }
     retry_count_++;
