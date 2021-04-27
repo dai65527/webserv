@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/27 00:56:08 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/27 10:09:47 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -393,13 +393,15 @@ ssize_t Request::parseChunkedBody(size_t pos) {
         pos += 2;
         /* get chunked data body*/
       } else {
+        std::cout << "pos: " << pos << std::endl;
+        std::cout << "begin: " << begin << std::endl;
+        if (pos - begin > chunk_size_) {
+          return REQ_ERR_BAD_REQUEST;
+        }
         if (chunk_size_ == 0) {  // finish chunked data transfer
           std::vector<char>().swap(
               buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
           return REQ_FIN_RECV;
-        }
-        if (pos - begin > chunk_size_) {
-          return REQ_ERR_BAD_REQUEST;
         } else {
           body_.insert(body_.end(), buf_.begin() + begin, buf_.begin() + pos);
           parse_progress_ = REQ_FIN_HEADER_FIELD;
