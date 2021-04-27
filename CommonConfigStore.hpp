@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 17:40:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/25 22:52:38 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/27 01:04:15 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ class CommonConfigStore {
   bool flg_autoindex_set_;                // true if autoindex already set
   std::list<std::string> cgi_extension_;  // cgi_extension directive
   std::string charset_;                   // charset directive
-  std::string language_;                  // launuage directive
+  std::list<std::string> language_;       // launuage directive
   std::string base_auth_;                 // base_auth directive
   std::list<std::string>
       auth_basic_user_file_;            // auth_basic_userfile directive
@@ -85,7 +85,7 @@ class CommonConfigStore {
   bool getAutoIndex() const;
   const std::list<std::string>& getCgiExtension() const;
   const std::string& getCharset() const;
-  const std::string& getLanguage() const;
+  const std::list<std::string>& getLanguage() const;
   const std::string& getBaseAuth() const;
   const std::list<std::string>& getAuthBasicUserFile() const;
   const unsigned long& getClientMaxBodySize() const;

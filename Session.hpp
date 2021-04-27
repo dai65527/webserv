@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/25 07:07:10 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/27 01:05:50 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,10 @@ class Session {
   in_addr_t ip_;
   uint16_t port_;
 
+  // this is set in createErrorResponse function
+  // to save 
+  HTTPStatusCode original_error_response_;
+
   Session();
   Session(Session const& other);
   Session& operator=(Session const& other);
@@ -72,6 +76,8 @@ class Session {
   void startCreateResponseToGet();
   void startCreateResponseToPost();
   void createErrorResponse(HTTPStatusCode http_status);
+  int createErrorResponseFromFile(HTTPStatusCode http_status);
+  std::string findErrorPage(HTTPStatusCode http_status) const;
   int sendResponse();
 
   // load config
@@ -86,11 +92,14 @@ class Session {
   std::string findFile(const std::string& uri) const;
   std::string mimeType(const std::string& filepath) const;
   bool isCharsetAccepted(const std::string& mime_type) const;
+  bool isLanguageAccepted() const;
   int addResponseHeaderOfFile(const std::string& filepath,
                               const std::string& mime_type);
   void addContentTypeHeader(const std::string& filepath,
                             const std::string& mime_type);
+  void addContentLanguageHeader();
   std::string findCharset() const;
+  const std::list<std::string>& findLanguage() const;
   bool isIndex(const std::string& filename) const;
   int readFromFile();
 
@@ -142,10 +151,8 @@ class Session {
   int checkSelectedAndExecute(fd_set* rfds, fd_set* wfds);
   int checkReceiveReturn(int ret);
 
-  // read from file
-  const std::string& findRoot() const;
-
   // load config
+  const std::string& findRoot() const;
   void setupServerAndLocationConfig();
   unsigned long getClientMaxBodySize() const;
 };

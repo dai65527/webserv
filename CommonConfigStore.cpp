@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/26 22:49:52 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/27 01:03:56 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,9 @@ const std::list<std::string>& CommonConfigStore::getCgiExtension() const {
 
 const std::string& CommonConfigStore::getCharset() const { return charset_; }
 
-const std::string& CommonConfigStore::getLanguage() const { return language_; }
+const std::list<std::string>& CommonConfigStore::getLanguage() const {
+  return language_;
+}
 
 const std::string& CommonConfigStore::getBaseAuth() const { return base_auth_; }
 
@@ -164,18 +166,20 @@ void CommonConfigStore::parseCharset(const std::list<std::string>& settings) {
   } else if (settings.size() != 1) {
     throw std::runtime_error("charset: invalid number of setting");
   }
-  // need to check charset name???
   charset_ = settings.front();
 }
 
 void CommonConfigStore::parseLanguage(const std::list<std::string>& settings) {
   if (!language_.empty()) {
     throw std::runtime_error("language: directive duplicated");
-  } else if (settings.size() != 1) {
+  } else if (settings.empty()) {
     throw std::runtime_error("language: invalid number of setting");
   }
-  // need to check language name???
-  language_ = settings.front();
+  // check and store language name
+  for (std::list<std::string>::const_iterator itr = settings.begin();
+       itr != settings.end(); ++itr) {
+    language_.push_back(*itr);
+  }
 }
 
 void CommonConfigStore::parseBaseAuth(const std::list<std::string>& settings) {
