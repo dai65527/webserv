@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/27 08:15:51 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/27 09:29:19 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,7 +130,7 @@ class Session {
   void startCreateResponseToOptions();
   void createAllowHeader();
 
-  std::string getUriFromLocation() const;
+  std::string getUriFromLocation(std::string uri = "") const;
 
  public:
   virtual ~Session();

@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/27 09:09:13 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/27 09:29:31 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -320,7 +320,7 @@ void Session::startCreateResponseToGet() {
   // check path includes cgi extension
   const std::string cgiuri = findCgiPathFromUri();
   if (!cgiuri.empty()) {
-    filepath = findRoot() + cgiuri;
+    filepath = findRoot() + getUriFromLocation(cgiuri);
     if (filepath.empty()) {
       createErrorResponse(HTTP_404);
     } else {
@@ -359,15 +359,18 @@ void Session::startCreateResponseToGet() {
   createErrorResponse(HTTP_404);
 }
 
-std::string Session::getUriFromLocation() const {
+std::string Session::getUriFromLocation(std::string uri) const {
+  if (uri.empty()) {
+    uri = request_.getUri();
+  }
   if (!location_config_) {
-    return request_.getUri();
+    return uri;
   }
   std::string res;
   if (*location_config_->getRoute().rbegin() == '/') {
-    res = request_.getUri().substr(location_config_->getRoute().length() - 1);
+    res = uri.substr(location_config_->getRoute().length() - 1);
   } else {
-    res = request_.getUri().substr(location_config_->getRoute().length());
+    res = uri.substr(location_config_->getRoute().length());
   }
   return res;
 }
