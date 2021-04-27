@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/27 08:16:59 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/27 09:09:13 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -330,7 +330,7 @@ void Session::startCreateResponseToGet() {
   }
 
   // find file
-  filepath = findRoot() + request_.getUri();
+  filepath = findRoot() + getUriFromLocation();
   if (stat(filepath.c_str(), &pathstat) == -1) {
     createErrorResponse(HTTP_404);
     return;
@@ -349,7 +349,7 @@ void Session::startCreateResponseToGet() {
     if (res.empty()) {
       startDirectoryListing(filepath);
     } else {
-      if (*(filepath.end() - 1) != '/' && res[0] != '/') {
+      if (*(filepath.rbegin()) != '/' && res[0] != '/') {
         filepath.append("/");  // append "/" if missing
       }
       startReadingFromFile(filepath + res);
