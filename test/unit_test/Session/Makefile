@@ -6,7 +6,7 @@
 #    By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/04/27 01:06:36 by dhasegaw         ###   ########.fr        #
+#    Updated: 2021/04/27 10:25:31 by dhasegaw         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -42,7 +42,8 @@ TESTSRCNAME	:=	test_main.cc \
 				test_getFileExtension.cc \
 				test_CgiArgvEnvp.cc \
 				test_CgiResponse.cc \
-				test_isCharsetAccepted.cc
+				test_isCharsetAccepted.cc \
+				test_getUriFromLocation.cc
 TESTSRCDIR	:=	.
 
 ### config ###

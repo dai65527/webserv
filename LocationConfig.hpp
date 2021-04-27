@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/01 23:59:30 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/06 14:47:03 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/27 08:12:50 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,11 @@
 
 class LocationConfig : public CommonConfigStore,
                        public ServerLocationConfigStore {
+#ifdef UNIT_TEST
+ public:
+#else
  private:
+#endif
   std::string route_;  // location path
 
  public:

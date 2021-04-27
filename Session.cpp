@@ -6,7 +6,11 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2021/04/27 01:04:40 by dhasegaw         ###   ########.fr       */
+=======
+/*   Updated: 2021/04/27 09:56:55 by dnakano          ###   ########.fr       */
+>>>>>>> 768605f1bcbc1fac1f4b93bf35402ca85a7815f9
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -301,7 +305,7 @@ void Session::startCreateResponseToGet() {
   // check path includes cgi extension
   const std::string cgiuri = findCgiPathFromUri();
   if (!cgiuri.empty()) {
-    filepath = findRoot() + cgiuri;
+    filepath = findRoot() + getUriFromLocation(cgiuri);
     if (filepath.empty()) {
       createErrorResponse(HTTP_404);
     } else {
@@ -311,7 +315,7 @@ void Session::startCreateResponseToGet() {
   }
 
   // find file
-  filepath = findRoot() + request_.getUri();
+  filepath = findRoot() + getUriFromLocation();
   if (stat(filepath.c_str(), &pathstat) == -1) {
     createErrorResponse(HTTP_404);
     return;
@@ -330,7 +334,7 @@ void Session::startCreateResponseToGet() {
     if (res.empty()) {
       startDirectoryListing(filepath);
     } else {
-      if (*(filepath.end() - 1) != '/' && res[0] != '/') {
+      if (*(filepath.rbegin()) != '/' && res[0] != '/') {
         filepath.append("/");  // append "/" if missing
       }
       startReadingFromFile(filepath + res);
@@ -338,6 +342,22 @@ void Session::startCreateResponseToGet() {
     return;
   }
   createErrorResponse(HTTP_404);
+}
+
+std::string Session::getUriFromLocation(std::string uri) const {
+  if (uri.empty()) {
+    uri = request_.getUri();
+  }
+  if (!location_config_) {
+    return uri;
+  }
+  std::string res;
+  if (*location_config_->getRoute().rbegin() == '/') {
+    res = uri.substr(location_config_->getRoute().length() - 1);
+  } else {
+    res = uri.substr(location_config_->getRoute().length());
+  }
+  return res;
 }
 
 void Session::startCreateResponseToPost() {
@@ -1346,8 +1366,6 @@ int Session::readFromCgi() {
       // close connection and make error responce
       std::cout << "[error] close connection to CGI process" << std::endl;
       close(cgi_handler_.getOutputFd());
-      // response_buf_ = "500 internal server error";  // TODO: make response
-      // func
 
       // kill the process on error (if failed kill, we can do nothing...)
       if (kill(cgi_handler_.getPid(), SIGKILL) == -1) {
@@ -1355,7 +1373,7 @@ int Session::readFromCgi() {
       }
 
       // to send error response to client
-      status_ = SESSION_FOR_CLIENT_SEND;
+      createErrorResponse(HTTP_500);
       return 0;
     }
     retry_count_++;
