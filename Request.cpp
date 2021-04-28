@@ -6,16 +6,19 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/23 13:59:10 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/28 09:12:27 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 
 #include <sys/socket.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <iostream>
+
+#include "Session.hpp"
 
 Request::Request()
     : parse_progress_(REQ_BEFORE_PARSE),
@@ -32,13 +35,11 @@ const std::string& Request::getUri() const { return uri_; }
 const std::map<std::string, std::string>& Request::getHeaders() const {
   return headers_;
 }
-
-const std::string& Request::getQuery() const {
-  return query_;
-}
+const std::string& Request::getQuery() const { return query_; }
 size_t Request::getContentLength() const { return content_length_; }
 const std::vector<char>& Request::getBody() const { return body_; }
-int Request::getFlgChunked() const { return flg_chunked_; };
+int Request::getFlgChunked() const { return flg_chunked_; }
+int Request::getParseProgress() const { return parse_progress_; }
 
 // reset all for next request
 void Request::resetAll() {
@@ -94,9 +95,7 @@ int Request::compareBuf(size_t begin, const char* str) {
 ** REQ_ERR_BAD_REQUEST -4 //HTTP400
 */
 
-#include <unistd.h>
-
-int Request::receive(int sock_fd) {
+int Request::receive(int sock_fd, Session& session) {
 #ifndef UNIT_TEST
   int ret;
   char read_buf[BUFFER_SIZE];
@@ -110,7 +109,7 @@ int Request::receive(int sock_fd) {
 #else
   (void)sock_fd;
 #endif
-  return parseRequest();
+  return parseRequest(session);
 }
 
 /* parseRequest
@@ -122,7 +121,7 @@ int Request::receive(int sock_fd) {
 ** REQ_ERR_LEN_REQUIRED -3 //HTTP411
 ** REQ_ERR_BAD_REQUEST -4 //HTTP400
 */
-int Request::parseRequest() {
+int Request::parseRequest(Session& session) {
   ssize_t pos_buf;
   int ret;
   if (parse_progress_ == REQ_BEFORE_PARSE) {  // 0: parse not started yet
@@ -151,9 +150,15 @@ int Request::parseRequest() {
     if (ret < 0) {
       return ret;
     }
-    pos_begin_body_ = pos_buf;
+    pos_begin_body_ = ++pos_buf;
     pos_prev_ = pos_begin_body_;
-    return REQ_FIN_PARSE_HEADER;
+#ifndef UNIT_TEST
+    session.setupServerAndLocationConfig();
+#endif
+    ret = checkBodySize(session);
+    if (ret < 0) {
+      return REQ_ERR_TOO_LARGE;
+    }
   }
   /* parse chunked body (Chunked has the priority over Content-length*/
   if (flg_chunked_) {
@@ -190,11 +195,11 @@ ssize_t Request::findRequestLineEnd() {
 }
 
 ssize_t Request::findHeaderFieldEnd(size_t pos) {
-  while (pos != buf_.size()) {
+  while (pos < buf_.size()) {
     if (buf_[pos] == '\r') {
       if (!compareBuf(pos, "\r\n\r\n")) {
         parse_progress_ = REQ_FIN_HEADER_FIELD;
-        return pos + 4;
+        return pos + 3;
       }
     }
     ++pos;
@@ -245,11 +250,11 @@ size_t Request::parseUri(size_t pos) {
   }
   uri_ = bufToString(copy_begin, pos);
   if (buf_[pos] == '?') { /* parse query */
-      copy_begin = ++pos;
-       while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r') {
-         ++pos;
-       }
-       query_ = bufToString(copy_begin, pos);
+    copy_begin = ++pos;
+    while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r') {
+      ++pos;
+    }
+    query_ = bufToString(copy_begin, pos);
   }
   return pos;
 }
@@ -290,13 +295,13 @@ int Request::checkRequestLine(size_t pos) {
 }
 
 int Request::parseHeaderField(size_t pos) {
-  while (pos != buf_.size()) {
+  while (pos < buf_.size()) {
     size_t begin = pos;
-    while (pos != buf_.size() && buf_[pos] != '\r') {
+    while (pos < buf_.size() && buf_[pos] != '\r') {
       ++pos;
     }
     size_t pos_colon = begin;
-    while (pos_colon != buf_.size()) {
+    while (pos_colon < buf_.size()) {
       if (buf_[pos_colon] == ':') {
         break;
       }
@@ -361,8 +366,14 @@ int Request::checkHeaderField() {
 
 ssize_t Request::parseChunkedBody(size_t pos) {
   size_t begin = pos;
-  while (pos != buf_.size()) {
-    if (buf_[pos] == '\r' && buf_[pos + 1] == '\n') {
+  while (pos < buf_.size()) {
+    while (pos < buf_.size() && buf_[pos] != '\r') {
+      ++pos;
+    }
+    if (pos == buf_.size()) {
+      break;
+    }
+    if (buf_[pos + 1] == '\n') {
       /* get chunk data size*/
       if (parse_progress_ == REQ_FIN_HEADER_FIELD) {
         std::string chunk_size = bufToString(begin, pos);
@@ -377,27 +388,25 @@ ssize_t Request::parseChunkedBody(size_t pos) {
         parse_progress_ =
             REQ_GOT_CHUNK_SIZE;  // Then next should be getting chunked data in
                                  // else part of this function
-        pos_prev_ = pos + 2;
-        return REQ_CONTINUE_RECV;
         /* get chunked data body*/
       } else {
         if (pos - begin > chunk_size_) {
           return REQ_ERR_BAD_REQUEST;
+        }
+        if (chunk_size_ == 0) {  // finish chunked data transfer
+          std::vector<char>().swap(
+              buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
+          return REQ_FIN_RECV;
         } else {
-          if (chunk_size_ == 0) {  // finish chunked data transfer
-            std::vector<char>().swap(
-                buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
-            return REQ_FIN_RECV;
-          }
           body_.insert(body_.end(), buf_.begin() + begin, buf_.begin() + pos);
           parse_progress_ = REQ_FIN_HEADER_FIELD;
-          pos_prev_ = pos + 2;
-          return REQ_CONTINUE_RECV;
         }
       }
+      pos += 2;
+      begin = pos;
     }
-    ++pos;
   }
+  pos_prev_ = begin;
   return REQ_CONTINUE_RECV;
 }
 
@@ -419,4 +428,16 @@ int Request::checkResponseType() const {
     return 2;
   }
   return 42;
+}
+
+int Request::checkBodySize(Session& session) {
+  /* case transfer-encoding is set */
+  if (flg_chunked_) {
+    return 0;
+  }
+  /* case content-length is greater than client_max_body_size*/
+  if (content_length_ > session.getClientMaxBodySize()) {
+    return -1;
+  }
+  return 0;
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/24 23:32:44 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/27 10:25:23 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@
 #include "webserv_utils.hpp"
 
 #define SOFTWARE_NAME "nginDX"
+
+class Request;
 
 class Session {
  private:
@@ -79,7 +81,6 @@ class Session {
   int sendResponse();
 
   // load config
-  void setupServerAndLocationConfig();
   const ServerConfig* findServer();
   const LocationConfig* findLocation() const;
   bool isLocationMatch(const std::string& loc_route,
@@ -130,6 +131,8 @@ class Session {
   void startCreateResponseToOptions();
   void createAllowHeader();
 
+  std::string getUriFromLocation(std::string uri = "") const;
+
  public:
   virtual ~Session();
   Session(int sock_fd_, const MainConfig& main_config,
@@ -150,7 +153,10 @@ class Session {
   int checkSelectedAndExecute(fd_set* rfds, fd_set* wfds);
   int checkReceiveReturn(int ret);
 
+  // load config
   const std::string& findRoot() const;
+  void setupServerAndLocationConfig();
+  unsigned long getClientMaxBodySize() const;
 };
 
 #endif /* SESSION_HPP */
