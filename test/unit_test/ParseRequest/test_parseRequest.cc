@@ -702,6 +702,30 @@ TEST_F(test_parseRequest, RequestNGtooLarge3) {
   EXPECT_EQ(REQ_ERR_TOO_LARGE, request.parseRequest(*session));
 }
 
+TEST_F(test_parseRequest, RequestOnceOKChunked) {
+  const_cast<MainConfig &>(session->main_config_).client_max_body_size_ = 100;
+  appendVec(request.buf_,
+            "POST /index.html?a "
+            "HTTP/"
+            "1.1\r\nHost:localhost\r\nTransfer-encoding: "
+            "chunked\r\n\r\n5\r\n01234\r\n3\r\n567\r\n2\r\n89\r\n0\r\n\r\n");
+  EXPECT_EQ(0, request.parseRequest(*session));
+  std::string str(request.body_.begin(), request.body_.end());
+  EXPECT_EQ("0123456789", str);
+}
+
+TEST_F(test_parseRequest, RequestOnceNGChunked) {
+  const_cast<MainConfig &>(session->main_config_).client_max_body_size_ = 100;
+  appendVec(request.buf_,
+            "POST /index.html?a "
+            "HTTP/"
+            "1.1\r\nHost:localhost\r\nTransfer-encoding: "
+            "chunked\r\n\r\n5\r\n01234\r\n3\r\n567\r\n1\r\n89\r\n0\r\n\r\n");
+  EXPECT_EQ(REQ_ERR_BAD_REQUEST, request.parseRequest(*session));
+  std::string str(request.body_.begin(), request.body_.end());
+  EXPECT_EQ("01234567", str);
+}
+
 TEST_F(test_parseRequest, RequestTesterPost1) {
   const_cast<MainConfig &>(session->main_config_).client_max_body_size_ = 100;
   appendVec(request.buf_,

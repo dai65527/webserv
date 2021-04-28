@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/27 12:07:18 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/28 09:12:27 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,6 @@ int Request::receive(int sock_fd, Session& session) {
   int ret;
   char read_buf[BUFFER_SIZE];
   ret = recv(sock_fd, read_buf, BUFFER_SIZE, 0);
-  write(1, read_buf, ret);
   if (ret < 0) {
     return REQ_ERR_RECV;
   } else if (ret == 0) {  // if ret == 0, the socket_is closed
