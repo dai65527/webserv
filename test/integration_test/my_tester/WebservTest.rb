@@ -46,18 +46,11 @@ class WebservTestCase
   end
 
   def self.execAll
-    ret = 0
     @@cases.each_with_index do |testcase, index|
       puts "case #{index + 1}: #{testcase.casename}"
-      begin
-        testcase.exec
-        puts "    OK :)"
-      rescue => e
-        puts e
-        ret = 1
-      end
+      testcase.exec
+      puts "    OK :)"
     end
-    ret
   end
 
   def exec
