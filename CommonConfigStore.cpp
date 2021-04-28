@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CommonConfigStore.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/27 07:44:42 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/27 10:25:02 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ CommonConfigStore& CommonConfigStore::operator=(const CommonConfigStore& rhs) {
     base_auth_ = rhs.base_auth_;
     auth_basic_user_file_ = rhs.auth_basic_user_file_;
     client_max_body_size_ = rhs.client_max_body_size_;
+    flg_client_max_body_size_set_ = rhs.flg_client_max_body_size_set_;
     limit_except_ = rhs.limit_except_;
   }
   return *this;
@@ -87,6 +88,10 @@ const unsigned long& CommonConfigStore::getClientMaxBodySize() const {
 
 const unsigned long& CommonConfigStore::getLimitExcept() const {
   return limit_except_;
+}
+
+bool CommonConfigStore::getFlgClientMaxBodySizeSet() const {
+  return flg_client_max_body_size_set_;
 }
 
 /*** parsers ***/

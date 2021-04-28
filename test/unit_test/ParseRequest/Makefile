@@ -6,7 +6,7 @@
 #    By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/24 01:04:13 by dhasegaw         ###   ########.fr        #
+#    Updated: 2021/04/26 00:47:36 by dhasegaw         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,21 @@ CXX			:=	clang++
 CPPFLAGS	:=	-Wall -Wextra -Werror -D UNIT_TEST
 
 ### config ###
-SRCNAME		:=	Request.cpp
+SRCNAME		:=	webserv_utils.cpp \
+				Session.cpp \
+				Socket.cpp \
+				Request.cpp \
+				Response.cpp \
+				CgiHandler.cpp \
+				CommonConfigStore.cpp \
+				ConfigParser.cpp \
+				LocationConfig.cpp \
+				MainConfig.cpp \
+				MainOnlyConfigStore.cpp \
+				ServerConfig.cpp \
+				ServerLocationConfigStore.cpp \
+				ServerOnlyConfigStore.cpp \
+				CgiParams.cpp
 SRCDIR		:=	../../..
 INCLUDEDIR	:=	../../..
 TESTSRCNAME	:=	test_main.cc \

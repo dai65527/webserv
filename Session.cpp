@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/27 09:56:55 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/27 20:37:21 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,8 +204,7 @@ void Session::resetAll() {
 
 // call receive and parse request and client
 int Session::receiveRequest() {
-  int ret;
-  ret = request_.receive(sock_fd_);
+  int ret = request_.receive(sock_fd_, *this);
   if (ret == REQ_ERR_RECV) {
     if (retry_count_ == RETRY_TIME_MAX) {
       // then try to send return internal server error
@@ -221,6 +220,16 @@ int Session::receiveRequest() {
   return checkReceiveReturn(ret);
 }
 
+unsigned long Session::getClientMaxBodySize() const {
+  if (location_config_ && location_config_->getFlgClientMaxBodySizeSet()) {
+    return location_config_->getClientMaxBodySize();
+  } else if (server_config_ && server_config_->getFlgClientMaxBodySizeSet()) {
+    return server_config_->getClientMaxBodySize();
+  } else {
+    return main_config_.getClientMaxBodySize();
+  }
+}
+
 // check return value of request_.receive(sock_fd_);
 int Session::checkReceiveReturn(int ret) {
   /* firstly check the return value is ERROR or NOT*/
@@ -230,41 +239,13 @@ int Session::checkReceiveReturn(int ret) {
     createErrorResponse(HTTP_505);
   } else if (ret == REQ_ERR_LEN_REQUIRED) {
     createErrorResponse(HTTP_411);
+  } else if (ret == REQ_ERR_TOO_LARGE) {
+    createErrorResponse(HTTP_413);
+#ifdef UNIT_TEST
+    return 413;
+#endif
   }
-  /*
-  ** Then check the content-length,
-  ** if it's 0 (no body), return 0
-  ** else if it'is larger than client max body size return HTTP413(Payload Too
-  *Large)
-  */
-  else if (ret == REQ_FIN_PARSE_HEADER) {
-#ifndef UNIT_TEST
-    setupServerAndLocationConfig();  // To get server and location config
-#endif
-    if (!request_.getFlgChunked() && (request_.getContentLength() == 0)) {
-      startCreateResponse();
-    } else if (location_config_ &&
-               request_.getContentLength() >
-                   location_config_->getClientMaxBodySize()) {
-      createErrorResponse(HTTP_413);
-#ifdef UNIT_TEST
-      return 4131;  // just for unit test
-#endif
-    } else if (server_config_ && request_.getContentLength() >
-                                     server_config_->getClientMaxBodySize()) {
-      createErrorResponse(HTTP_413);
-#ifdef UNIT_TEST
-      return 4132;  // just for unit test
-#endif
-    } else if (request_.getContentLength() >
-               main_config_.getClientMaxBodySize()) {
-      createErrorResponse(HTTP_413);
-#ifdef UNIT_TEST
-      return 4133;  // just for unit test
-#endif
-      /* Finished receiving then start create response*/
-    }
-  } else if (ret == REQ_FIN_RECV) {
+    else if (ret == REQ_FIN_RECV) {
     startCreateResponse();
   }
   return 0;
