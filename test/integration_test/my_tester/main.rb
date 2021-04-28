@@ -19,8 +19,8 @@ testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/html"
 
 ## 期待されるレスポンスヘッダの指定（存在のみ確認）
-testcase.expectedResponseHeaderExitance.push "Date"
-testcase.expectedResponseHeaderExitance.push "Last-Modified"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Last-Modified"
 
 testcase.add
 
@@ -34,8 +34,8 @@ testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/html"
-testcase.expectedResponseHeaderExitance.push "Date"
-testcase.expectedResponseHeaderExitance.push "Last-Modified"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Last-Modified"
 testcase.add
 
 #####
@@ -45,8 +45,8 @@ testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/nonexitsfile", "GE
 testcase.expectedCode = "404"
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/html"
-testcase.expectedResponseHeaderExitance.push "Date"
-testcase.expectedResponseHeaderExitance.push "Content-Length"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Content-Length"
 testcase.add
 
 #####
@@ -59,8 +59,8 @@ testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/html"
-testcase.expectedResponseHeaderExitance.push "Date"
-testcase.expectedResponseHeaderExitance.push "Last-Modified"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Last-Modified"
 testcase.add
 
 #####
@@ -70,8 +70,8 @@ testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/dir_no_index", "GE
 testcase.expectedCode = "403"
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/html"
-testcase.expectedResponseHeaderExitance.push "Date"
-testcase.expectedResponseHeaderExitance.push "Content-Length"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Content-Length"
 testcase.add
 
 #####
@@ -84,8 +84,8 @@ testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/plain"
-testcase.expectedResponseHeaderExitance.push "Date"
-testcase.expectedResponseHeaderExitance.push "Last-Modified"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Last-Modified"
 testcase.add
 
 #####
@@ -99,8 +99,8 @@ testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/html"
-testcase.expectedResponseHeaderExitance.push "Date"
-testcase.expectedResponseHeaderExitance.push "Last-Modified"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Last-Modified"
 testcase.add
 
 #####
@@ -111,8 +111,8 @@ testcase.expectedCode = "200"
 testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/html"
-testcase.expectedResponseHeaderExitance.push "Date"
-testcase.expectedResponseHeaderExitance.push "Content-Length"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Content-Length"
 testcase.add
 
 #####
@@ -125,8 +125,8 @@ testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/plain"
-testcase.expectedResponseHeaderExitance.push "Date"
-testcase.expectedResponseHeaderExitance.push "Last-Modified"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Last-Modified"
 testcase.add
 
 #####

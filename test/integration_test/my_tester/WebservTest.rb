@@ -1,7 +1,7 @@
 require 'net/http'
 
 class WebservTestCase
-  attr_accessor :casename, :request, :expectedBody, :expectedResponseHeader, :expectedResponseHeaderExitance, :expectedCode
+  attr_accessor :casename, :request, :expectedBody, :expectedResponseHeader, :expectedResponseHeaderExistance, :expectedCode
 
   @@cases = []
 
@@ -37,7 +37,7 @@ class WebservTestCase
     # expected results
     @expectedCode = "200"
     @expectedResponseHeader = {"dummy" => "dummy"}
-    @expectedResponseHeaderExitance = ["dummy"]
+    @expectedResponseHeaderExistance = ["dummy"]
     @expectedBody = "dummy"
   end
 
@@ -66,7 +66,7 @@ class WebservTestCase
         assert_eq(value, response[key])
       end
     }
-    @expectedResponseHeaderExitance.each{ |key|
+    @expectedResponseHeaderExistance.each{ |key|
       if key != "dummy"
         assert_true(response[key])
       end
