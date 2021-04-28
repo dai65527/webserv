@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/22 19:11:26 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/28 15:54:02 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,5 +108,5 @@ TEST_F(test_parseDirective, limit_except) {
                std::runtime_error);
   settings.push_back("GET");
   EXPECT_TRUE(store.parseDirective("limit_except", settings));
-  EXPECT_EQ(store.getLimitExcept(), HTTP_GET | HTTP_HEAD);
+  EXPECT_EQ(store.getLimitExcept(), HTTP_GET);
 }
