@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+         #
+#    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/01/05 17:34:06 by dnakano           #+#    #+#              #
-#    Updated: 2021/04/22 22:36:20 by dhasegaw         ###   ########.fr        #
+#    Updated: 2021/04/28 17:40:45 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,9 +39,9 @@ OUTDIR		:=	.
 .PHONY:		all
 all:		$(NAME)
 
-$(NAME):	$(LIBFT) $(OBJS)
+$(NAME):	$(OBJS) $(LIBFT)
 			$(CXX) $(CPPFLAGS) -L$(LIBFTDIR) $(patsubst lib%,-l%,$(basename $(LIBFT))) \
-			$(SRCS) -o $(NAME) -I$(LIBFTDIR)
+			 -I$(LIBFTDIR) $(OBJS) -o $(NAME)
 
 $(LIBFT):
 			make -C $(LIBFTDIR)
@@ -51,8 +51,8 @@ $(LIBFT):
 			-c $< -o $(patsubst %.cpp,%.o,$<)
 
 .PHONY:		test
-test:		$(NAME)
-			$(OUTDIR)/$(NAME)
+test:
+			cd ./test && ./run_test.sh
 
 .PHONY:		clean
 clean:
