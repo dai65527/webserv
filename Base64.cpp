@@ -6,14 +6,14 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/29 14:38:10 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/29 16:52:57 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/29 17:37:27 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Base64.hpp"
-#include <iostream>
 
 std::map<char, char> Base64::encodemap;
+std::map<char, char> Base64::decodemap;
 
 std::string Base64::encode(const std::string& data) {
   return encode(reinterpret_cast<const unsigned char*>(&data[0]), data.size());
@@ -53,6 +53,45 @@ std::string Base64::encode(const unsigned char* data, size_t length) {
   for (size_t i = 0; i < res_len; ++i) {
     res[i] = encodemap[res[i]];
   }
+  return res;
+}
+
+std::string Base64::decode(const std::string& data) {
+  std::string res;
+  size_t len = data.length();
+
+  initDecodemap();
+
+  char c;
+  size_t i_org = 0;
+  while (i_org < len && data[i_org] != '=') {
+    c = decodemap[data[i_org]] << 2;
+    if (i_org + 1 >= len || data[i_org + 1] == '=') {
+      if (c) res.append(&c, 1);
+      break;
+    }
+    c |= (decodemap[data[i_org + 1]] & 0b00111111) >> 4;
+    if (c) res.append(&c, 1);
+
+    c = decodemap[data[i_org + 1]] << 4;
+    if (i_org + 2 >= len || data[i_org + 2] == '=') {
+      if (c) res.append(&c, 1);
+      break;
+    }
+    c |= (decodemap[data[i_org + 2]] & 0b00111111) >> 2;
+    if (c) res.append(&c, 1);
+
+    c = decodemap[data[i_org + 2]] << 6;
+    if (i_org + 3 >= len || data[i_org + 3] == '=') {
+      if (c) res.append(&c, 1);
+      break;
+    }
+    c |= (decodemap[data[i_org + 3]] & 0b00111111);
+    if (c) res.append(&c, 1);
+
+    i_org += 4;
+  }
+
   return res;
 }
 
@@ -125,4 +164,74 @@ void Base64::initEncodemap() {
   encodemap[61] = '9';
   encodemap[62] = '+';
   encodemap[63] = '/';
+}
+
+void Base64::initDecodemap() {
+  if (!decodemap.empty()) {
+    return;
+  }
+  decodemap['A'] = 0;
+  decodemap['B'] = 1;
+  decodemap['C'] = 2;
+  decodemap['D'] = 3;
+  decodemap['E'] = 4;
+  decodemap['F'] = 5;
+  decodemap['G'] = 6;
+  decodemap['H'] = 7;
+  decodemap['I'] = 8;
+  decodemap['J'] = 9;
+  decodemap['K'] = 10;
+  decodemap['L'] = 11;
+  decodemap['M'] = 12;
+  decodemap['N'] = 13;
+  decodemap['O'] = 14;
+  decodemap['P'] = 15;
+  decodemap['Q'] = 16;
+  decodemap['R'] = 17;
+  decodemap['S'] = 18;
+  decodemap['T'] = 19;
+  decodemap['U'] = 20;
+  decodemap['V'] = 21;
+  decodemap['W'] = 22;
+  decodemap['X'] = 23;
+  decodemap['Y'] = 24;
+  decodemap['Z'] = 25;
+  decodemap['a'] = 26;
+  decodemap['b'] = 27;
+  decodemap['c'] = 28;
+  decodemap['d'] = 29;
+  decodemap['e'] = 30;
+  decodemap['f'] = 31;
+  decodemap['g'] = 32;
+  decodemap['h'] = 33;
+  decodemap['i'] = 34;
+  decodemap['j'] = 35;
+  decodemap['k'] = 36;
+  decodemap['l'] = 37;
+  decodemap['m'] = 38;
+  decodemap['n'] = 39;
+  decodemap['o'] = 40;
+  decodemap['p'] = 41;
+  decodemap['q'] = 42;
+  decodemap['r'] = 43;
+  decodemap['s'] = 44;
+  decodemap['t'] = 45;
+  decodemap['u'] = 46;
+  decodemap['v'] = 47;
+  decodemap['w'] = 48;
+  decodemap['x'] = 49;
+  decodemap['y'] = 50;
+  decodemap['z'] = 51;
+  decodemap['0'] = 52;
+  decodemap['1'] = 53;
+  decodemap['2'] = 54;
+  decodemap['3'] = 55;
+  decodemap['4'] = 56;
+  decodemap['5'] = 57;
+  decodemap['6'] = 58;
+  decodemap['7'] = 59;
+  decodemap['8'] = 60;
+  decodemap['9'] = 61;
+  decodemap['+'] = 62;
+  decodemap['/'] = 63;
 }
