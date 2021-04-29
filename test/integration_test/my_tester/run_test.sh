@@ -8,7 +8,7 @@ ruby main.rb
 
 if [ $? -ne 0 ]; then
     kill $!
-    return 1
+    exit 1
 else
     kill $!
 fi
