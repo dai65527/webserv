@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/29 22:29:07 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/29 23:25:56 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include <iostream>
 
 #include "Session.hpp"
+#include "UrlEncoder.hpp"
 
 Request::Request()
     : parse_progress_(REQ_BEFORE_PARSE),
@@ -249,13 +250,13 @@ size_t Request::parseUri(size_t pos) {
          buf_[pos] != '?') {
     ++pos;
   }
-  uri_ = bufToString(copy_begin, pos);
+  uri_ = UrlEncoder::decode(bufToString(copy_begin, pos));
   if (buf_[pos] == '?') { /* parse query */
     copy_begin = ++pos;
     while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r') {
       ++pos;
     }
-    query_ = bufToString(copy_begin, pos);
+    query_ = UrlEncoder::decode(bufToString(copy_begin, pos));
   }
   return pos;
 }

@@ -794,3 +794,20 @@ TEST_F(test_parseRequest, RequestTesterPost2) {
 //   EXPECT_EQ(REQ_ERR_BAD_REQUEST, request.parseRequest(*session));
 //   EXPECT_EQ(request.chunk_size_, 0);
 // }
+
+TEST_F(test_parseRequest, DecodeOK1) {
+  appendVec(request.buf_, "HEAD /index.html?MAIL=dnakano%40student.42tokyo.jp HTTP/1.1\r\nHost:localhost\r\n\r\n");
+  EXPECT_EQ(REQ_FIN_RECV, request.parseRequest(*session));
+  EXPECT_EQ(request.method_, "HEAD");
+  EXPECT_EQ(request.uri_, "/index.html");
+  EXPECT_EQ(request.query_, "MAIL=dnakano@student.42tokyo.jp");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+}
+
+TEST_F(test_parseRequest, DecodeOK2) {
+  appendVec(request.buf_, "HEAD /index.html/%E3%83%89%E3%82%AB%E3%83%99%E3%83%B3 HTTP/1.1\r\nHost:localhost\r\n\r\n");
+  EXPECT_EQ(REQ_FIN_RECV, request.parseRequest(*session));
+  EXPECT_EQ(request.method_, "HEAD");
+  EXPECT_EQ(request.uri_, "/index.html/ドカベン");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+}
