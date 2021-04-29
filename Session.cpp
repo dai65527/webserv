@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/29 13:37:29 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/29 14:13:40 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -244,8 +244,7 @@ int Session::checkReceiveReturn(int ret) {
 #ifdef UNIT_TEST
     return 413;
 #endif
-  }
-    else if (ret == REQ_FIN_RECV) {
+  } else if (ret == REQ_FIN_RECV) {
     startCreateResponse();
   }
   return 0;
@@ -284,7 +283,7 @@ void Session::startCreateResponse() {
 
   // case PUT
   if (request_.getMethod() == "PUT" && isMethodAllowed(HTTP_PUT)) {
-    startCreateResponseToPut(); // write to file or cgi
+    startCreateResponseToPut();  // write to file or cgi
     return;
   }
 
@@ -384,9 +383,7 @@ void Session::startCreateResponseToPost() {
   startWritingToFile(filepath);
 }
 
-void Session::startCreateResponseToPut() {
-  startCreateResponseToPost();
-}
+void Session::startCreateResponseToPut() { startCreateResponseToPost(); }
 
 // check HTTP Request method are avairable
 bool Session::isMethodAllowed(HTTPMethodFlag method) const {
@@ -1506,7 +1503,6 @@ std::string Session::getUploadFilePath() {
     }
   } else {
     filename = createFilename();
-    upload_store.append(createFilename());  // append filename
   }
   upload_store.append(filename);
 
@@ -1524,9 +1520,15 @@ std::string Session::getUploadFilePath() {
 }
 
 void Session::startWritingToFile(const std::string& filepath) {
+  if (unlink(filepath.c_str())) {
+    createErrorResponse(HTTP_500);
+    status_ = SESSION_FOR_CLIENT_SEND;
+    return;
+  }
+
   // open file
-  file_fd_ = open(filepath.c_str(), O_RDWR | O_CREAT, 0644);  // toriaezu
-  if (file_fd_ == -1) {
+  if (unlink(filepath.c_str()) == -1 ||
+      (file_fd_ = open(filepath.c_str(), O_RDWR | O_CREAT, 0644)) == -1) {
     createErrorResponse(HTTP_500);
     status_ = SESSION_FOR_CLIENT_SEND;
     return;
