@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/29 22:18:07 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/29 22:29:07 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -389,13 +389,13 @@ ssize_t Request::parseChunkedBody(size_t pos) {
         parse_progress_ =
             REQ_GOT_CHUNK_SIZE;  // Then next should be getting chunked data in
                                  // else part of this function
-        /* get chunked data body*/
-      } else {
         if (chunk_size_ == 0) {  // finish chunked data transfer
           std::vector<char>().swap(
               buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
           return REQ_FIN_RECV;
         }
+        /* get chunked data body*/
+      } else {
         if (pos - begin > chunk_size_) {
           return REQ_ERR_BAD_REQUEST;
         } else {

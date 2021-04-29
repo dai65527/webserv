@@ -738,10 +738,8 @@ TEST_F(test_parseRequest, RequestTesterPost1) {
   appendVec(request.buf_, "0");
   EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
   appendVec(request.buf_, "\r\n");
-  EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
-  EXPECT_EQ(request.chunk_size_, 0);
-  appendVec(request.buf_, "\r\n");
   EXPECT_EQ(REQ_FIN_RECV, request.parseRequest(*session));
+  EXPECT_EQ(request.chunk_size_, 0);
 }
 
 TEST_F(test_parseRequest, RequestTesterPost2) {
