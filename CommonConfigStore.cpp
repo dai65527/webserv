@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CommonConfigStore.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/27 10:25:02 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/30 06:38:37 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,8 +41,7 @@ CommonConfigStore& CommonConfigStore::operator=(const CommonConfigStore& rhs) {
     cgi_extension_ = rhs.cgi_extension_;
     charset_ = rhs.charset_;
     language_ = rhs.language_;
-    base_auth_ = rhs.base_auth_;
-    auth_basic_user_file_ = rhs.auth_basic_user_file_;
+    auth_basic_user_pass_ = rhs.auth_basic_user_pass_;
     client_max_body_size_ = rhs.client_max_body_size_;
     flg_client_max_body_size_set_ = rhs.flg_client_max_body_size_set_;
     limit_except_ = rhs.limit_except_;
@@ -76,10 +75,8 @@ const std::list<std::string>& CommonConfigStore::getLanguage() const {
   return language_;
 }
 
-const std::string& CommonConfigStore::getBaseAuth() const { return base_auth_; }
-
-const std::list<std::string>& CommonConfigStore::getAuthBasicUserFile() const {
-  return auth_basic_user_file_;
+const std::list<std::string>& CommonConfigStore::getAuthBasicUserPass() const {
+  return auth_basic_user_pass_;
 }
 
 const unsigned long& CommonConfigStore::getClientMaxBodySize() const {
@@ -182,22 +179,32 @@ void CommonConfigStore::parseLanguage(const std::list<std::string>& settings) {
   }
 }
 
-void CommonConfigStore::parseBaseAuth(const std::list<std::string>& settings) {
-  if (!base_auth_.empty()) {
-    throw std::runtime_error("base_auth: directive duplicated");
-  } else if (settings.size() != 1) {
-    throw std::runtime_error("base_auth: invalid number of setting");
+// check userpass is like `username:password`
+static bool isValidUserPass(const std::string& userpass) {
+  size_t pos_first = userpass.find(':');
+  size_t pos_last = userpass.find_last_of(':');
+
+  if (pos_first != pos_last) {
+    return false;  // dup ':' (ex: `user:pass:hoge`)
+  } else if (pos_first == 0) {
+    return false;  // no user name (ex: `:pass`) (allow no pass)
   }
-  // need to check language name???
-  base_auth_ = settings.front();
+  return true;
 }
 
-void CommonConfigStore::parseAuthBasicUserFile(
+void CommonConfigStore::parseAuthBasicUserPass(
     const std::list<std::string>& settings) {
   if (settings.empty()) {
-    throw std::runtime_error("auth_basic_user_file: invalid number of setting");
+    throw std::runtime_error("auth_basic_user_pass: invalid number of setting");
   }
-  auth_basic_user_file_.insert(auth_basic_user_file_.end(), settings.begin(),
+  for (std::list<std::string>::const_iterator itr = settings.begin();
+       itr != settings.end(); ++itr) {
+    if (!isValidUserPass(*itr)) {
+      throw std::runtime_error("auth_basic_user_pass: invalid value \"" + *itr +
+                               "\"");
+    }
+  }
+  auth_basic_user_pass_.insert(auth_basic_user_pass_.end(), settings.begin(),
                                settings.end());
 }
 
@@ -295,10 +302,8 @@ bool CommonConfigStore::parseDirective(const std::string& name,
     parseCharset(settings);
   } else if (name == "language") {
     parseLanguage(settings);
-  } else if (name == "base_auth") {
-    parseBaseAuth(settings);
-  } else if (name == "auth_basic_user_file") {
-    parseAuthBasicUserFile(settings);
+  } else if (name == "auth_basic_user_pass") {
+    parseAuthBasicUserPass(settings);
   } else if (name == "client_max_body_size") {
     parseClientMaxBodySize(settings);
   } else if (name == "limit_except") {

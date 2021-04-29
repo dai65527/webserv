@@ -405,51 +405,22 @@ retry_after 42;
 main
 
 
-### base_authディレクティブ
-basic認証をonにする。onにするには`"`で囲まれた文字列を指定する。文字列はclientに表示される。
-auth_basic_user_fileディレクティブと使用する。
-
-http://nginx.org/en/docs/http/ngx_http_auth_basic_module.html
+### auth_basic_user_passディレクティブ
+basic認証時に使用するユーザ、パスワードを指定する。複数指定できる。
+一つでも指定されている場合、basic認証がONになる。
 
 #### 文法
 
 ```
-base_auth <string> | off;
+base_auth_user_pass <user>:<pass2>;
+base_auth_user_pass <user>:<pass2> <user2>:<pass2>;
 ```
 
 #### 例
 
 ```
-base_auth "Locked website";
-base_auth off;
-```
-
-#### default value
-off
-
-#### context
-main, server, location
-
-
-### auth_basic_user_fileディレクティブ
-basic認証時に使用する`.htpasswd` ファイルのパスを指定する。（ファイルの内容については追記する）
-複数指定できる。
-base_authディレクティブに指定する。
-
-http://nginx.org/en/docs/http/ngx_http_auth_basic_module.html
-
-#### 文法
-
-```
-base_auth_user_file <path>;
-base_auth_user_file <path> <path2>;
-```
-
-#### 例
-
-```
-base_auth_user_file: /usr/.htpasswd;
-base_auth_user_file: /usr/.htpasswd /usr/share/.htpasswd;
+base_auth_user_pass: root:password hasegawa:passhasegawa;
+base_auth_user_pass: nakano:passnakano;
 ```
 
 #### defauilt value
