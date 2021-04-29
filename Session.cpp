@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/27 20:37:21 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/30 07:12:27 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 #include <cstring>
 #include <iostream>
 
+#include "Base64.hpp"
 #include "CgiParams.hpp"
 #include "webserv_settings.hpp"
 #include "webserv_utils.hpp"
@@ -244,8 +245,7 @@ int Session::checkReceiveReturn(int ret) {
 #ifdef UNIT_TEST
     return 413;
 #endif
-  }
-    else if (ret == REQ_FIN_RECV) {
+  } else if (ret == REQ_FIN_RECV) {
     startCreateResponse();
   }
   return 0;
@@ -259,6 +259,11 @@ int Session::checkReceiveReturn(int ret) {
 void Session::startCreateResponse() {
   if (flg_exceed_max_session_) {
     createErrorResponse(HTTP_503);
+    return;
+  }
+
+  if (checkAuth()) {
+    createErrorResponse(HTTP_401);
     return;
   }
 
@@ -401,6 +406,10 @@ void Session::createErrorResponse(HTTPStatusCode http_status) {
   }
   if (http_status == HTTP_405 && isMethodAllowed(HTTP_OPTIONS)) {
     createAllowHeader();
+  }
+  if (http_status == HTTP_401) {
+    response_.addHeader("WWW-Authenticate",
+                        "Basic realm=\"Need Authenticateion\"");
   }
 
   if (original_error_response_ == HTTP_NOMATCH &&
@@ -778,7 +787,6 @@ bool Session::isLanguageAccepted() const {
     pos_end = std::min(pos_end, itr_header->second.find(' ', pos));
     accept_language = itr_header->second.substr(pos, pos_end - pos);
     for (itr = languages.begin(); itr != languages.end(); ++itr) {
-      // printf("\"%s\" == \"%s\"", itr->c_str(), itr_header->second.c_str());
       if (isLanguageMatch(*itr, accept_language)) {
         return true;
       }
@@ -1667,8 +1675,60 @@ void Session::createAllowHeader() {
     allowed_methods.append(allowed_methods.empty() ? "TRACE" : ", TRACE");
   }
 
-  printf("allowed: %s\n", allowed_methods.c_str());
   response_.addHeader("Allow", allowed_methods);
+}
+
+// basic auth
+// return true if not authorized
+bool Session::checkAuth() const {
+  std::list<std::string> authusers;
+
+  // find auth files
+  findAuthUsers(&authusers);
+  if (authusers.empty()) {
+    return false;
+  }
+
+  // find Authenticate request header
+  std::map<std::string, std::string>::const_iterator header_itr =
+      request_.getHeaders().find("authorization");
+  if (header_itr == request_.getHeaders().end()) {
+    return true;
+  }
+
+  size_t pos_space = header_itr->second.find(' ');
+  std::string authtype = header_itr->second.substr(0, pos_space);
+  if (authtype != "Basic" || pos_space == std::string::npos) {
+    return true;
+  }
+
+  std::string userpass = Base64::decode(header_itr->second.substr(pos_space + 1));
+
+  for (std::list<std::string>::const_iterator itr = authusers.begin();
+       itr != authusers.end(); ++itr) {
+    if (*itr == userpass) {
+      return false;  // Authorized
+    }
+  }
+  return true;
+}
+
+void Session::findAuthUsers(std::list<std::string>* authusers) const {
+  if (location_config_ && !location_config_->getAuthBasicUserPass().empty()) {
+    authusers->insert(authusers->begin(),
+                      location_config_->getAuthBasicUserPass().begin(),
+                      location_config_->getAuthBasicUserPass().end());
+  }
+  if (server_config_ && !server_config_->getAuthBasicUserPass().empty()) {
+    authusers->insert(authusers->begin(),
+                      server_config_->getAuthBasicUserPass().begin(),
+                      server_config_->getAuthBasicUserPass().end());
+  }
+  if (!main_config_.getAuthBasicUserPass().empty()) {
+    authusers->insert(authusers->begin(),
+                      main_config_.getAuthBasicUserPass().begin(),
+                      main_config_.getAuthBasicUserPass().end());
+  }
 }
 
 /*

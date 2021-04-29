@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/27 10:25:23 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/30 06:47:27 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,6 +130,11 @@ class Session {
   // respond to options header
   void startCreateResponseToOptions();
   void createAllowHeader();
+
+  // basic auth
+  bool checkAuth() const;
+  void findAuthUsers(std::list<std::string>* authfiles) const;
+  bool checkAuthFiles(const std::string& filepath, const std::string& authfile);
 
   std::string getUriFromLocation(std::string uri = "") const;
 
