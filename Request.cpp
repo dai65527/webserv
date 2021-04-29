@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/28 13:29:57 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/29 22:18:07 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -391,13 +391,13 @@ ssize_t Request::parseChunkedBody(size_t pos) {
                                  // else part of this function
         /* get chunked data body*/
       } else {
-        if (pos - begin > chunk_size_) {
-          return REQ_ERR_BAD_REQUEST;
-        }
         if (chunk_size_ == 0) {  // finish chunked data transfer
           std::vector<char>().swap(
               buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
           return REQ_FIN_RECV;
+        }
+        if (pos - begin > chunk_size_) {
+          return REQ_ERR_BAD_REQUEST;
         } else {
           body_.insert(body_.end(), buf_.begin() + begin, buf_.begin() + pos);
           parse_progress_ = REQ_FIN_HEADER_FIELD;
