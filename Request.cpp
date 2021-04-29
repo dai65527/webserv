@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/29 23:25:56 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/30 01:40:29 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,7 +122,9 @@ int Request::receive(int sock_fd, Session& session) {
 ** REQ_ERR_HTTP_VERSION -2 //HTTP505
 ** REQ_ERR_LEN_REQUIRED -3 //HTTP411
 ** REQ_ERR_BAD_REQUEST -4 //HTTP400
+** REQ_ERR_TOO_LARGE -6 //HTTP_413
 */
+
 int Request::parseRequest(Session& session) {
   ssize_t pos_buf;
   int ret;
@@ -212,11 +214,13 @@ ssize_t Request::findHeaderFieldEnd(size_t pos) {
 ssize_t Request::findBodyEndAndStore() {
   ssize_t excess = buf_.size() - (pos_begin_body_ + content_length_);
   if (excess >= 0) {
-    buf_.erase(buf_.end() - excess, buf_.end());
-    buf_.erase(buf_.begin(), buf_.begin() + pos_begin_body_);
-    body_ = buf_;
-    std::vector<char>().swap(
-        buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
+    if (method_ != "TRACE") {
+      buf_.erase(buf_.end() - excess, buf_.end());
+      buf_.erase(buf_.begin(), buf_.begin() + pos_begin_body_);
+      body_ = buf_;
+      std::vector<char>().swap(
+          buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
+    }
     return REQ_FIN_RECV;
   }
   return REQ_CONTINUE_RECV;
@@ -363,6 +367,9 @@ int Request::checkHeaderField() {
     }
     content_length_ = ft_atoul(itr_content_length->second.c_str());
   }
+  if (method_ == "TRACE") {
+    body_ = buf_;
+  }
   return 0;
 }
 
@@ -391,8 +398,10 @@ ssize_t Request::parseChunkedBody(size_t pos) {
             REQ_GOT_CHUNK_SIZE;  // Then next should be getting chunked data in
                                  // else part of this function
         if (chunk_size_ == 0) {  // finish chunked data transfer
-          std::vector<char>().swap(
-              buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
+          if (method_ != "TRACE") {
+            std::vector<char>().swap(
+                buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
+          }
           return REQ_FIN_RECV;
         }
         /* get chunked data body*/
@@ -400,7 +409,9 @@ ssize_t Request::parseChunkedBody(size_t pos) {
         if (pos - begin > chunk_size_) {
           return REQ_ERR_BAD_REQUEST;
         } else {
-          body_.insert(body_.end(), buf_.begin() + begin, buf_.begin() + pos);
+          if (method_ != "TRACE") {
+            body_.insert(body_.end(), buf_.begin() + begin, buf_.begin() + pos);
+          }
           parse_progress_ = REQ_FIN_HEADER_FIELD;
         }
       }

@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/27 20:37:21 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/30 01:39:53 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -244,8 +244,7 @@ int Session::checkReceiveReturn(int ret) {
 #ifdef UNIT_TEST
     return 413;
 #endif
-  }
-    else if (ret == REQ_FIN_RECV) {
+  } else if (ret == REQ_FIN_RECV) {
     startCreateResponse();
   }
   return 0;
@@ -285,6 +284,11 @@ void Session::startCreateResponse() {
   // case OPTIONS
   if (request_.getMethod() == "OPTIONS" && isMethodAllowed(HTTP_OPTIONS)) {
     startCreateResponseToOptions();
+    return;
+  }
+    // case OPTIONS
+  if (request_.getMethod() == "TRACE" && isMethodAllowed(HTTP_TRACE)) {
+    startCreateResponseToTrace();
     return;
   }
 
@@ -1628,6 +1632,12 @@ void Session::startCreateResponseToOptions() {
   response_.createStatusLine(HTTP_200);
   createAllowHeader();
 
+  status_ = SESSION_FOR_CLIENT_SEND;
+}
+
+void Session::startCreateResponseToTrace() {
+  response_.createStatusLine(HTTP_200);
+  response_.appendToBody(&request_.getBody()[0], request_.getBody().size());
   status_ = SESSION_FOR_CLIENT_SEND;
 }
 

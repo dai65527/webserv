@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/27 10:25:23 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/30 01:07:05 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,7 @@ class Session {
   void startCreateResponse();
   void startCreateResponseToGet();
   void startCreateResponseToPost();
+  void startCreateResponseToTrace();
   void createErrorResponse(HTTPStatusCode http_status);
   int createErrorResponseFromFile(HTTPStatusCode http_status);
   std::string findErrorPage(HTTPStatusCode http_status) const;
