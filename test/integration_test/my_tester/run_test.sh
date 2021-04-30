@@ -1,4 +1,5 @@
 #!/bin/bash
+rm -f ./html/default_server/uploadstore/*.html
 make re -C ../../../
 ../../../nginDX configfiles/test.conf&
 
