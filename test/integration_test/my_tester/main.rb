@@ -131,4 +131,69 @@ testcase.add
 
 #####
 
+casename = "get /uploadstore/upload.html (file created in next case)"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/uploadstore/upload.html", "GET"
+testcase.expectedCode = "404"
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Content-Length"
+testcase.add
+
+#####
+
+casename = "put /upload/upload.html with body"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/upload/upload.html", "PUT"
+testcase.request.body = "<h1>upload from test</h1>\n"
+testcase.expectedCode = "201"
+testcase.expectedBody = ""
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Location"] = "/uploadstore/upload.html"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Location"
+testcase.add
+
+#####
+
+casename = "get /uploadstore/upload.html (file created in last case)"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/uploadstore/upload.html", "GET"
+testcase.expectedCode = "200"
+testcase.expectedBody = "<h1>upload from test</h1>\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Last-Modified"
+testcase.add
+
+#####
+
+casename = "put /upload/upload.html with body (rewrite)"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/upload/upload.html", "PUT"
+testcase.request.body = "<h1>2nd upload</h1>\n"
+testcase.expectedCode = "201"
+testcase.expectedBody = ""
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Location"] = "/uploadstore/upload.html"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Location"
+testcase.add
+
+#####
+
+casename = "get /uploadstore/upload.html (file updated in last case)"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/uploadstore/upload.html", "GET"
+testcase.expectedCode = "200"
+testcase.expectedBody = "<h1>2nd upload</h1>\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Last-Modified"
+testcase.add
+
 WebservTestCase::execAll
