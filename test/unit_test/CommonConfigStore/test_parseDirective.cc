@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/28 15:54:02 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/29 22:28:19 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,19 +80,12 @@ TEST_F(test_parseDirective, language) {
   EXPECT_EQ(store.getLanguage().front(), "ja-JP");
 }
 
-TEST_F(test_parseDirective, base_auth) {
-  EXPECT_THROW(store.parseDirective("base_auth", settings), std::runtime_error);
-  settings.push_back("message");
-  EXPECT_TRUE(store.parseDirective("base_auth", settings));
-  EXPECT_EQ(store.getBaseAuth(), "message");
-}
-
-TEST_F(test_parseDirective, auth_basic_user_file) {
-  EXPECT_THROW(store.parseDirective("auth_basic_user_file", settings),
+TEST_F(test_parseDirective, auth_basic_user_pass) {
+  EXPECT_THROW(store.parseDirective("auth_basic_user_pass", settings),
                std::runtime_error);
-  settings.push_back("auth_basic_user_file.html");
-  EXPECT_TRUE(store.parseDirective("auth_basic_user_file", settings));
-  EXPECT_EQ(store.getAuthBasicUserFile().front(), "auth_basic_user_file.html");
+  settings.push_back("user:password");
+  EXPECT_TRUE(store.parseDirective("auth_basic_user_pass", settings));
+  EXPECT_EQ(store.getAuthBasicUserPass().front(), "user:password");
 }
 
 TEST_F(test_parseDirective, client_max_body_size) {

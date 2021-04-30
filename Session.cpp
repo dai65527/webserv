@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/30 16:09:18 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/01 00:11:23 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 #include <cstring>
 #include <iostream>
 
+#include "Base64.hpp"
 #include "CgiParams.hpp"
 #include "webserv_settings.hpp"
 #include "webserv_utils.hpp"
@@ -261,6 +262,11 @@ void Session::startCreateResponse() {
     return;
   }
 
+  if (!isAuthorized()) {
+    createErrorResponse(HTTP_401);
+    return;
+  }
+
   // check connection header
   std::map<std::string, std::string>::const_iterator itr;
   itr = request_.getHeaders().find("connection");
@@ -413,6 +419,10 @@ void Session::createErrorResponse(HTTPStatusCode http_status) {
   }
   if (http_status == HTTP_405 && isMethodAllowed(HTTP_OPTIONS)) {
     createAllowHeader();
+  }
+  if (http_status == HTTP_401) {
+    response_.addHeader("WWW-Authenticate",
+                        "Basic realm=\"Need Authentication\"");
   }
 
   if (original_error_response_ == HTTP_NOMATCH &&
@@ -1716,6 +1726,59 @@ void Session::createAllowHeader() {
   }
 
   response_.addHeader("Allow", allowed_methods);
+}
+
+// basic auth
+// return true if not authorized
+bool Session::isAuthorized() const {
+  std::list<std::string> authusers;
+
+  // find auth files
+  findAuthUsers(&authusers);
+  if (authusers.empty()) {
+    return true;
+  }
+
+  // find Authenticate request header
+  std::map<std::string, std::string>::const_iterator header_itr =
+      request_.getHeaders().find("authorization");
+  if (header_itr == request_.getHeaders().end()) {
+    return false;
+  }
+
+  size_t pos_space = header_itr->second.find(' ');
+  std::string authtype = header_itr->second.substr(0, pos_space);
+  if (authtype != "Basic" || pos_space == std::string::npos) {
+    return false;
+  }
+
+  std::string userpass = Base64::decode(header_itr->second.substr(pos_space + 1));
+
+  for (std::list<std::string>::const_iterator itr = authusers.begin();
+       itr != authusers.end(); ++itr) {
+    if (*itr == userpass) {
+      return true;  // Authorized
+    }
+  }
+  return false;
+}
+
+void Session::findAuthUsers(std::list<std::string>* authusers) const {
+  if (location_config_ && !location_config_->getAuthBasicUserPass().empty()) {
+    authusers->insert(authusers->begin(),
+                      location_config_->getAuthBasicUserPass().begin(),
+                      location_config_->getAuthBasicUserPass().end());
+  }
+  if (server_config_ && !server_config_->getAuthBasicUserPass().empty()) {
+    authusers->insert(authusers->begin(),
+                      server_config_->getAuthBasicUserPass().begin(),
+                      server_config_->getAuthBasicUserPass().end());
+  }
+  if (!main_config_.getAuthBasicUserPass().empty()) {
+    authusers->insert(authusers->begin(),
+                      main_config_.getAuthBasicUserPass().begin(),
+                      main_config_.getAuthBasicUserPass().end());
+  }
 }
 
 /*
