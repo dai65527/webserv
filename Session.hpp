@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/01 00:08:43 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/01 00:11:35 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,7 @@ class Session {
   void startCreateResponse();
   void startCreateResponseToGet();
   void startCreateResponseToPost();
+  void startCreateResponseToPut();
   void createErrorResponse(HTTPStatusCode http_status);
   int createErrorResponseFromFile(HTTPStatusCode http_status);
   std::string findErrorPage(HTTPStatusCode http_status) const;
@@ -121,9 +122,12 @@ class Session {
   ssize_t parseReadBuf(const char* read_buf, ssize_t n);
 
   // write to file
-  void startWritingToFile();
+  void startWritingToFile(const std::string& filepath);
+  std::string getUploadFilePath();
   std::string findUploadStore(const std::string& uri) const;
+  std::string findUploadPass(const std::string& uri) const;
   std::string createFilename() const;
+  std::string findFileNameFromUri() const;
   std::string getFileExtension() const;
   int writeToFile();
 
