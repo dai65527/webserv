@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/30 06:47:27 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/01 00:08:43 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,9 +132,8 @@ class Session {
   void createAllowHeader();
 
   // basic auth
-  bool checkAuth() const;
+  bool isAuthorized() const;
   void findAuthUsers(std::list<std::string>* authfiles) const;
-  bool checkAuthFiles(const std::string& filepath, const std::string& authfile);
 
   std::string getUriFromLocation(std::string uri = "") const;
 

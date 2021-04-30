@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/30 16:28:04 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/01 00:09:11 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -262,7 +262,7 @@ void Session::startCreateResponse() {
     return;
   }
 
-  if (checkAuth()) {
+  if (!isAuthorized()) {
     createErrorResponse(HTTP_401);
     return;
   }
@@ -1680,26 +1680,26 @@ void Session::createAllowHeader() {
 
 // basic auth
 // return true if not authorized
-bool Session::checkAuth() const {
+bool Session::isAuthorized() const {
   std::list<std::string> authusers;
 
   // find auth files
   findAuthUsers(&authusers);
   if (authusers.empty()) {
-    return false;
+    return true;
   }
 
   // find Authenticate request header
   std::map<std::string, std::string>::const_iterator header_itr =
       request_.getHeaders().find("authorization");
   if (header_itr == request_.getHeaders().end()) {
-    return true;
+    return false;
   }
 
   size_t pos_space = header_itr->second.find(' ');
   std::string authtype = header_itr->second.substr(0, pos_space);
   if (authtype != "Basic" || pos_space == std::string::npos) {
-    return true;
+    return false;
   }
 
   std::string userpass = Base64::decode(header_itr->second.substr(pos_space + 1));
@@ -1707,10 +1707,10 @@ bool Session::checkAuth() const {
   for (std::list<std::string>::const_iterator itr = authusers.begin();
        itr != authusers.end(); ++itr) {
     if (*itr == userpass) {
-      return false;  // Authorized
+      return true;  // Authorized
     }
   }
-  return true;
+  return false;
 }
 
 void Session::findAuthUsers(std::list<std::string>* authusers) const {
