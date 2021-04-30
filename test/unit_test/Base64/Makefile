@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/04/29 22:18:26 by dnakano          ###   ########.fr        #
+#    Updated: 2021/04/29 15:56:50 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,21 +14,11 @@ CXX			:=	clang++
 CPPFLAGS	:=	-Wall -Wextra -Werror -D UNIT_TEST
 
 ### config ###
-SRCNAME		:=	CommonConfigStore.cpp webserv_utils.cpp
+SRCNAME		:=	Base64.cpp
 SRCDIR		:=	../../..
 INCLUDEDIR	:=	../../..
 TESTSRCNAME	:=	test_main.cc \
-				test_parseRoot.cc \
-				test_parseIndex.cc \
-				test_parseErrorPage.cc \
-				test_parseAutoIndex.cc \
-				test_parseCgiExtension.cc \
-				test_parseCharset.cc \
-				test_parseLanguage.cc \
-				test_parseAuthBasicUserPass.cc \
-				test_parseClientMaxBodySize.cc \
-				test_parseLimitExcept.cc \
-				test_parseDirective.cc
+				test_encode_decode.cc
 TESTSRCDIR	:=	.
 ### config ###
 
@@ -52,7 +42,7 @@ all:		test
 $(NAME):	$(LIBFT) $(OBJS)
 			$(CXX) $(CPPFLAGS) $(OBJS) \
 			-L$(LIBFTDIR) $(patsubst lib%,-l%,$(basename $(LIBFT))) \
-			-o $(NAME)
+		 	-o $(NAME)
 
 .PHONY:		test
 test:		$(NAME)

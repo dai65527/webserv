@@ -6,7 +6,7 @@
 #    By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/04/29 23:26:55 by dhasegaw         ###   ########.fr        #
+#    Updated: 2021/05/01 00:35:00 by dhasegaw         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,7 +29,8 @@ SRCNAME		:=	webserv_utils.cpp \
 				ServerLocationConfigStore.cpp \
 				ServerOnlyConfigStore.cpp \
 				CgiParams.cpp \
-				UrlEncoder.cpp
+				UrlEncoder.cpp \
+				Base64.cpp
 SRCDIR		:=	../../..
 INCLUDEDIR	:=	../../..
 TESTSRCNAME	:=	test_main.cc \
