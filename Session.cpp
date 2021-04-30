@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/30 07:12:27 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/30 16:28:04 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -409,7 +409,7 @@ void Session::createErrorResponse(HTTPStatusCode http_status) {
   }
   if (http_status == HTTP_401) {
     response_.addHeader("WWW-Authenticate",
-                        "Basic realm=\"Need Authenticateion\"");
+                        "Basic realm=\"Need Authentication\"");
   }
 
   if (original_error_response_ == HTTP_NOMATCH &&
