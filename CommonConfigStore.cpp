@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/30 21:10:14 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/30 22:55:07 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -304,6 +304,8 @@ bool CommonConfigStore::parseDirective(const std::string& name,
     parseAutoIndex(settings);
   } else if (name == "cgi_extension") {
     parseCgiExtension(settings);
+  } else if (name == "cgi_pass") {
+    parseCgiPass(settings);
   } else if (name == "charset") {
     parseCharset(settings);
   } else if (name == "language") {
