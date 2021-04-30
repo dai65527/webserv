@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/29 14:13:40 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/30 16:09:18 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -790,7 +790,6 @@ bool Session::isLanguageAccepted() const {
     pos_end = std::min(pos_end, itr_header->second.find(' ', pos));
     accept_language = itr_header->second.substr(pos, pos_end - pos);
     for (itr = languages.begin(); itr != languages.end(); ++itr) {
-      // printf("\"%s\" == \"%s\"", itr->c_str(), itr_header->second.c_str());
       if (isLanguageMatch(*itr, accept_language)) {
         return true;
       }
@@ -1520,15 +1519,9 @@ std::string Session::getUploadFilePath() {
 }
 
 void Session::startWritingToFile(const std::string& filepath) {
-  if (unlink(filepath.c_str())) {
-    createErrorResponse(HTTP_500);
-    status_ = SESSION_FOR_CLIENT_SEND;
-    return;
-  }
-
   // open file
-  if (unlink(filepath.c_str()) == -1 ||
-      (file_fd_ = open(filepath.c_str(), O_RDWR | O_CREAT, 0644)) == -1) {
+  unlink(filepath.c_str());
+  if ((file_fd_ = open(filepath.c_str(), O_RDWR | O_CREAT, 0644)) == -1) {
     createErrorResponse(HTTP_500);
     status_ = SESSION_FOR_CLIENT_SEND;
     return;
@@ -1722,7 +1715,6 @@ void Session::createAllowHeader() {
     allowed_methods.append(allowed_methods.empty() ? "TRACE" : ", TRACE");
   }
 
-  printf("allowed: %s\n", allowed_methods.c_str());
   response_.addHeader("Allow", allowed_methods);
 }
 
