@@ -131,4 +131,70 @@ testcase.add
 
 #####
 
+casename = "get /needauth/index.html with correct user pass"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/needauth/index.html", "GET"
+testcase.request.basic_auth("user", "password")
+testcase.expectedCode = "200"
+testcase.expectedBody = "<h1>Authorized!!</h1>\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Last-Modified"
+testcase.add
+
+#####
+
+casename = "get /needauth/index.html without user pass"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/needauth/index.html", "GET"
+testcase.expectedCode = "401"
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.expectedResponseHeader["WWW-Authenticate"] = "Basic realm=\"Need Authentication\""
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Content-Length"
+testcase.add
+
+#####
+
+casename = "get /needauth/index.html with invalid user"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/needauth/index.html", "GET"
+testcase.request.basic_auth("hoge", "password")
+testcase.expectedCode = "401"
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.expectedResponseHeader["WWW-Authenticate"] = "Basic realm=\"Need Authentication\""
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Content-Length"
+testcase.add
+
+#####
+
+casename = "get /needauth/index.html with invalid pass"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/needauth/index.html", "GET"
+testcase.request.basic_auth("user", "hogehoge")
+testcase.expectedCode = "401"
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.expectedResponseHeader["WWW-Authenticate"] = "Basic realm=\"Need Authentication\""
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Content-Length"
+testcase.add
+
+#####
+
+casename = "get /needauth/index.html with invalid user pass"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/needauth/index.html", "GET"
+testcase.request.basic_auth("hoge", "hogehoge")
+testcase.expectedCode = "401"
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.expectedResponseHeader["WWW-Authenticate"] = "Basic realm=\"Need Authentication\""
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Content-Length"
+testcase.add
+
+#####
+
 WebservTestCase::execAll
