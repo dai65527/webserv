@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/30 01:21:55 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/30 12:09:35 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,11 +137,11 @@ int Response::appendToBody(const std::string& data) {
   return 0;
 }
 
-ssize_t Response::sendData(int sock_fd, bool header_only) {
+ssize_t Response::sendData(int sock_fd, bool header_only, bool is_trace) {
   ssize_t n;  // response of send syscall
   switch (send_progress_) {
     case 0:  // first time to send
-      createCompleteHeader();
+      createCompleteHeader(is_trace);
       send_progress_ = 1;
       bytes_already_sent_ = 0;
       // no break, to next progress
@@ -200,12 +200,15 @@ ssize_t Response::sendData(int sock_fd, bool header_only) {
 }
 
 // create headers which cannot be defined before create body
-int Response::createCompleteHeader() {
+int Response::createCompleteHeader(bool is_trace) {
   addHeader("Content-Length", std::to_string(body_.size()));
   if (connection_to_close_) {
     addHeader("Connection", "close");
   } else {
     addHeader("Connection", "keep-alive");
+  }
+  if (is_trace) {
+    addHeader("Content-Type", "message/http");
   }
   status_header_.append("\r\n");
   return 0;

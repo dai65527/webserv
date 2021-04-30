@@ -131,4 +131,16 @@ testcase.add
 
 #####
 
+casename = "trace /index.html"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/index.html", "TRACE"
+testcase.expectedCode = "200"
+testcase.expectedBody = "TRACE /index.html HTTP/1.1\r\nAccept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3\r\nAccept: */*\r\nUser-Agent: Ruby\r\nHost: 127.0.0.1:8000\r\n\r\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "message/http"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.add
+
+#####
 WebservTestCase::execAll

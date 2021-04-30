@@ -6,7 +6,7 @@
 #    By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/04/27 10:25:31 by dhasegaw         ###   ########.fr        #
+#    Updated: 2021/04/30 12:29:08 by dhasegaw         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,7 +29,8 @@ SRCNAME		:=	ConfigParser.cpp \
 				Response.cpp \
 				CgiHandler.cpp \
 				webserv_utils.cpp \
-				CgiParams.cpp
+				CgiParams.cpp \
+				UrlEncoder.cpp
 SRCDIR		:=	../../..
 INCLUDEDIR	:=	../../..
 TESTSRCNAME	:=	test_main.cc \

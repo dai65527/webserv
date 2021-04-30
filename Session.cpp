@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/30 01:39:53 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/30 12:07:38 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -286,7 +286,7 @@ void Session::startCreateResponse() {
     startCreateResponseToOptions();
     return;
   }
-    // case OPTIONS
+  // case OPTIONS
   if (request_.getMethod() == "TRACE" && isMethodAllowed(HTTP_TRACE)) {
     startCreateResponseToTrace();
     return;
@@ -473,7 +473,8 @@ std::string Session::findErrorPage(HTTPStatusCode http_status) const {
 int Session::sendResponse() {
   ssize_t n;
 
-  n = response_.sendData(sock_fd_, request_.getMethod() == "HEAD");
+  n = response_.sendData(sock_fd_, request_.getMethod() == "HEAD",
+                         request_.getMethod() == "TRACE");
   if (n == -1) {
     std::cout << "[error] failed to send response" << std::endl;
     if (retry_count_ == RETRY_TIME_MAX) {

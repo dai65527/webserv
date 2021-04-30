@@ -811,3 +811,13 @@ TEST_F(test_parseRequest, DecodeOK2) {
   EXPECT_EQ(request.uri_, "/index.html/ドカベン");
   EXPECT_EQ(request.headers_["host"], "localhost");
 }
+
+TEST_F(test_parseRequest, TraceOK) {
+  appendVec(request.buf_, "TRACE /index.html/%E3%83%89%E3%82%AB%E3%83%99%E3%83%B3 HTTP/1.1\r\nHost:localhost\r\n\r\n");
+  EXPECT_EQ(REQ_FIN_RECV, request.parseRequest(*session));
+  EXPECT_EQ(request.method_, "TRACE");
+  EXPECT_EQ(request.uri_, "/index.html/ドカベン");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+  std::string str(request.body_.begin(), request.body_.end());
+  EXPECT_EQ("TRACE /index.html/%E3%83%89%E3%82%AB%E3%83%99%E3%83%B3 HTTP/1.1\r\nHost:localhost\r\n\r\n", str);
+}
