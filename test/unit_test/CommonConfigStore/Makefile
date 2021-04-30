@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/20 23:00:41 by dnakano          ###   ########.fr        #
+#    Updated: 2021/04/30 21:14:58 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,7 +29,8 @@ TESTSRCNAME	:=	test_main.cc \
 				test_parseAuthBasicUserFile.cc \
 				test_parseClientMaxBodySize.cc \
 				test_parseLimitExcept.cc \
-				test_parseDirective.cc
+				test_parseDirective.cc \
+				test_parseCgiPass.cc
 TESTSRCDIR	:=	.
 ### config ###
 

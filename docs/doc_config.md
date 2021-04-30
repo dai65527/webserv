@@ -283,6 +283,29 @@ none
 main, server, location
 
 
+### cgi_passディレクティブ
+このディレクティブが指定されていて、cgi_extensionディレクティブのパスが指定された場合、パス中のファイルではなく、cgi_passディレクティブに指定されたパスのファイルを実行する。
+
+#### 文法
+コンテクスト内で重複不可。
+
+```
+cgi_pass <path to cgifile>;
+```
+
+#### 例
+
+```
+cgi_pass ./html/cgi/cgifilename;
+```
+
+#### default value
+none
+
+#### context
+main, server, location
+
+
 ### charsetディレクティブ
 リソースのcharsetを1つ指定することができる。
 これを指定することによりwebservは以下を行う。
@@ -567,7 +590,7 @@ limit_except GET POST HEAD;
 ```
 
 #### default value
-GET, HEAD (暫定)
+GET, HEAD
 
 #### context
 main, location, server
