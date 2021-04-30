@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/27 20:37:21 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/30 22:33:47 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1282,16 +1282,18 @@ void Session::createCgiProcess(const std::string& filepath,
   char** argv = cgi_params.storeArgv(filepath, cgiuri, request_);
   char** meta_variables = cgi_params.storeMetaVariables(cgiuri, request_);
 
-  HTTPStatusCode http_status =
-      cgi_handler_.createCgiProcess(filepath, argv, meta_variables);
+  HTTPStatusCode http_status;
+  std::string cgi_pass = findCgiPass();
+  if (cgi_pass.empty()) {
+    http_status = cgi_handler_.createCgiProcess(filepath, argv, meta_variables);
+  } else {
+    http_status = cgi_handler_.createCgiProcess(cgi_pass, argv, meta_variables);
+  }
 
   if (http_status != HTTP_200) {
     std::cout << "[error] failed to create cgi process" << std::endl;
     createErrorResponse(http_status);
   }
-
-  // response_.createStatusLine(HTTP_200); cgi scripts can produce status by
-  // themselves
 
   if (request_.getMethod() == "POST" || request_.getMethod() == "PUT") {
     status_ = SESSION_FOR_CGI_WRITE;
@@ -1299,6 +1301,16 @@ void Session::createCgiProcess(const std::string& filepath,
   }
   close(cgi_handler_.getInputFd());
   status_ = SESSION_FOR_CGI_READ;
+}
+
+const std::string& Session::findCgiPass() const {
+  if (location_config_ && !location_config_->getCgiPass().empty()) {
+    return location_config_->getCgiPass();
+  }
+  if (server_config_ && !server_config_->getCgiPass().empty()) {
+    return server_config_->getCgiPass();
+  }
+  return main_config_.getCgiPass();
 }
 
 // write to cgi process (TODO!!)

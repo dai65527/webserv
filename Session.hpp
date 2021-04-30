@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/27 10:25:23 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/30 21:57:15 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,6 +118,7 @@ class Session {
   bool isCgiFile(const std::string& filepath) const;
   int writeToCgi();
   int readFromCgi();
+  const std::string& findCgiPass() const;
   ssize_t parseReadBuf(const char* read_buf, ssize_t n);
 
   // write to file
