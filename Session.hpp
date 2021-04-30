@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/30 12:07:44 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/04/30 23:04:13 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ class Session {
   uint16_t port_;
 
   // this is set in createErrorResponse function
-  // to save 
+  // to save
   HTTPStatusCode original_error_response_;
 
   Session();
@@ -75,6 +75,7 @@ class Session {
   void startCreateResponse();
   void startCreateResponseToGet();
   void startCreateResponseToPost();
+  void startCreateResponseToPut();
   void startCreateResponseToTrace();
   void createErrorResponse(HTTPStatusCode http_status);
   int createErrorResponseFromFile(HTTPStatusCode http_status);
@@ -122,9 +123,12 @@ class Session {
   ssize_t parseReadBuf(const char* read_buf, ssize_t n);
 
   // write to file
-  void startWritingToFile();
+  void startWritingToFile(const std::string& filepath);
+  std::string getUploadFilePath();
   std::string findUploadStore(const std::string& uri) const;
+  std::string findUploadPass(const std::string& uri) const;
   std::string createFilename() const;
+  std::string findFileNameFromUri() const;
   std::string getFileExtension() const;
   int writeToFile();
 
