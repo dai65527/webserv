@@ -812,7 +812,7 @@ TEST_F(test_parseRequest, DecodeOK2) {
   EXPECT_EQ(request.headers_["host"], "localhost");
 }
 
-TEST_F(test_parseRequest, TraceOK) {
+TEST_F(test_parseRequest, TraceOKnormal) {
   appendVec(request.buf_, "TRACE /index.html/%E3%83%89%E3%82%AB%E3%83%99%E3%83%B3 HTTP/1.1\r\nHost:localhost\r\n\r\n");
   EXPECT_EQ(REQ_FIN_RECV, request.parseRequest(*session));
   EXPECT_EQ(request.method_, "TRACE");
@@ -820,4 +820,26 @@ TEST_F(test_parseRequest, TraceOK) {
   EXPECT_EQ(request.headers_["host"], "localhost");
   std::string str(request.body_.begin(), request.body_.end());
   EXPECT_EQ("TRACE /index.html/%E3%83%89%E3%82%AB%E3%83%99%E3%83%B3 HTTP/1.1\r\nHost:localhost\r\n\r\n", str);
+}
+
+TEST_F(test_parseRequest, TraceOKContentLength) {
+  appendVec(request.buf_, "TRACE / HTTP/1.1\r\nHost:localhost\r\ncontent-length:10\r\n\r\n0123456789\r\n\r\n");
+  EXPECT_EQ(REQ_FIN_RECV, request.parseRequest(*session));
+  EXPECT_EQ(request.method_, "TRACE");
+  EXPECT_EQ(request.uri_, "/");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+  EXPECT_EQ(request.headers_["content-length"], "10");
+  std::string str(request.body_.begin(), request.body_.end());
+  EXPECT_EQ("TRACE / HTTP/1.1\r\nHost:localhost\r\ncontent-length:10\r\n\r\n0123456789\r\n\r\n", str);
+}
+
+TEST_F(test_parseRequest, TraceChunked) {
+  appendVec(request.buf_, "TRACE / HTTP/1.1\r\nHost:localhost\r\ntransfer-encoding:chunked\r\n\r\n3\r\n012\r\n0\r\n");
+  EXPECT_EQ(REQ_FIN_RECV, request.parseRequest(*session));
+  EXPECT_EQ(request.method_, "TRACE");
+  EXPECT_EQ(request.uri_, "/");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+  EXPECT_EQ(request.headers_["transfer-encoding"], "chunked");
+  std::string str(request.body_.begin(), request.body_.end());
+  EXPECT_EQ("TRACE / HTTP/1.1\r\nHost:localhost\r\ntransfer-encoding:chunked\r\n\r\n3\r\n012\r\n0\r\n", str);
 }
