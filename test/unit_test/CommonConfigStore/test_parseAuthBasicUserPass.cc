@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/30 06:43:45 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/30 15:05:05 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,17 @@ TEST_F(test_parseAuthBasicUserPass, normalOneTwice3times) {
   EXPECT_EQ(*itr, "user:pass");
   EXPECT_EQ(*++itr, "user1:pass1");
   EXPECT_EQ(*++itr, "user2:");
+}
+
+TEST_F(test_parseAuthBasicUserPass, settingInvalidArgNoColon) {
+  try {
+    settings.push_back("user");
+    store.parseAuthBasicUserPass(settings);
+  } catch (const std::runtime_error& e) {
+    EXPECT_STREQ(e.what(), "auth_basic_user_pass: invalid value \"user\"");
+    flg_thrown = true;
+  }
+  EXPECT_TRUE(flg_thrown);
 }
 
 TEST_F(test_parseAuthBasicUserPass, settingInvalidArgDupColon) {

@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/30 06:38:37 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/30 15:07:36 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,7 +184,9 @@ static bool isValidUserPass(const std::string& userpass) {
   size_t pos_first = userpass.find(':');
   size_t pos_last = userpass.find_last_of(':');
 
-  if (pos_first != pos_last) {
+  if (pos_first == std::string::npos) {
+    return false;  // no ':' (ex: `user`)
+  } else if (pos_first != pos_last) {
     return false;  // dup ':' (ex: `user:pass:hoge`)
   } else if (pos_first == 0) {
     return false;  // no user name (ex: `:pass`) (allow no pass)
