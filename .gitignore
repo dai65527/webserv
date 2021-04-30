@@ -38,6 +38,7 @@ test_req.txt
 # hidden files
 .*
 !.gitignore
+!.github
 
 # uploadstore
 html/uploadstore

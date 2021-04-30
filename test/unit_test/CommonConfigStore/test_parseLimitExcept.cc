@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/21 09:16:38 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/28 15:54:24 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ TEST_F(test_parseLimitExcept, defaultVal) {
 TEST_F(test_parseLimitExcept, onlyGET) {
   settings.push_back("GET");
   EXPECT_NO_THROW(store.parseLimitExcept(settings));
-  EXPECT_EQ(store.getLimitExcept(), HTTP_GET | HTTP_HEAD);
+  EXPECT_EQ(store.getLimitExcept(), HTTP_GET);
 }
 
 TEST_F(test_parseLimitExcept, onlyHEAD) {
@@ -85,35 +85,35 @@ TEST_F(test_parseLimitExcept, GET_PUT) {
   settings.push_back("GET");
   settings.push_back("PUT");
   EXPECT_NO_THROW(store.parseLimitExcept(settings));
-  EXPECT_EQ(store.getLimitExcept(), HTTP_GET | HTTP_HEAD | HTTP_PUT);
+  EXPECT_EQ(store.getLimitExcept(), HTTP_GET | HTTP_PUT);
 }
 
 TEST_F(test_parseLimitExcept, GET_POST) {
   settings.push_back("GET");
   settings.push_back("POST");
   EXPECT_NO_THROW(store.parseLimitExcept(settings));
-  EXPECT_EQ(store.getLimitExcept(), HTTP_GET | HTTP_HEAD | HTTP_POST);
+  EXPECT_EQ(store.getLimitExcept(), HTTP_GET | HTTP_POST);
 }
 
 TEST_F(test_parseLimitExcept, GET_DELETE) {
   settings.push_back("GET");
   settings.push_back("DELETE");
   EXPECT_NO_THROW(store.parseLimitExcept(settings));
-  EXPECT_EQ(store.getLimitExcept(), HTTP_GET | HTTP_HEAD | HTTP_DELETE);
+  EXPECT_EQ(store.getLimitExcept(), HTTP_GET | HTTP_DELETE);
 }
 
 TEST_F(test_parseLimitExcept, GET_OPTIONS) {
   settings.push_back("GET");
   settings.push_back("OPTIONS");
   EXPECT_NO_THROW(store.parseLimitExcept(settings));
-  EXPECT_EQ(store.getLimitExcept(), HTTP_GET | HTTP_HEAD | HTTP_OPTIONS);
+  EXPECT_EQ(store.getLimitExcept(), HTTP_GET | HTTP_OPTIONS);
 }
 
 TEST_F(test_parseLimitExcept, GET_TRACE) {
   settings.push_back("GET");
   settings.push_back("TRACE");
   EXPECT_NO_THROW(store.parseLimitExcept(settings));
-  EXPECT_EQ(store.getLimitExcept(), HTTP_GET | HTTP_HEAD | HTTP_TRACE);
+  EXPECT_EQ(store.getLimitExcept(), HTTP_GET | HTTP_TRACE);
 }
 
 TEST_F(test_parseLimitExcept, GET_PUT_POST_DELETE) {
@@ -123,7 +123,7 @@ TEST_F(test_parseLimitExcept, GET_PUT_POST_DELETE) {
   settings.push_back("DELETE");
   EXPECT_NO_THROW(store.parseLimitExcept(settings));
   EXPECT_EQ(store.getLimitExcept(),
-            HTTP_GET | HTTP_HEAD | HTTP_PUT | HTTP_POST | HTTP_DELETE);
+            HTTP_GET | HTTP_PUT | HTTP_POST | HTTP_DELETE);
 }
 
 TEST_F(test_parseLimitExcept, GET_HEAD_PUT_POST_DELETE) {

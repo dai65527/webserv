@@ -6,9 +6,11 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/19 12:01:52 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/28 16:05:35 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#define UNIT_TEST
 
 #include "ServerLocationConfigStore.hpp"
 #include "gtest.h"
