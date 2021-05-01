@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/07 23:25:56 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/01 11:29:35 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/01 14:23:45 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,12 +107,11 @@ int CgiHandler::readFromCgi() {
 
   // read from cgi process
   ret = read(output_fd_, read_buf, BUFFER_SIZE);
-  buf_.insert(buf_.end(), read_buf, read_buf + ret);
-
-  // retry seveal times even if read failed
   if (ret == -1) {
     return -1;
   }
+
+  buf_.insert(buf_.end(), read_buf, read_buf + ret);
   // check if pipe closed
   if (ret == 0) {
     close(output_fd_);  // close pipefd

@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/01 12:06:32 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/01 14:20:54 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -371,7 +371,7 @@ void Session::startCreateResponseToPost() {
   // check path includes cgi extension
   const std::string cgiuri = findCgiPathFromUri();
   if (!cgiuri.empty()) {
-    std::string filepath = findRoot() + cgiuri;
+    std::string filepath = findRoot() + getUriFromLocation(cgiuri);
     if (filepath.empty()) {
       createErrorResponse(HTTP_404);
     } else {
@@ -1425,7 +1425,6 @@ int Session::readFromCgi() {
     }
     response_.appendToBody(&cgi_handler_.getBuf()[0] + end_header + 1,
                            cgi_handler_.getBuf().size() - (end_header + 1));
-    close(cgi_handler_.getOutputFd());  // close pipefd
     status_ = SESSION_FOR_CLIENT_SEND;  // set for send response
   }
   return 0;
