@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/02 07:23:13 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/02 07:59:26 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@ int Session::getFileFd() const { return file_fd_; }
 const SessionStatus& Session::getStatus() const { return status_; }
 in_addr_t Session::getIp() const { return ip_; };
 uint16_t Session::getPort() const { return port_; };
+const std::string& Session::getUserPass() const { return userpass_; }
 
 /*
 ** setFdToSelect
@@ -1748,10 +1749,9 @@ void Session::createAllowHeader() {
 
 // basic auth
 // return true if not authorized
-bool Session::isAuthorized() const {
-  std::list<std::string> authusers;
-
+bool Session::isAuthorized() {
   // find auth files
+  std::list<std::string> authusers;
   findAuthUsers(&authusers);
   if (authusers.empty()) {
     return true;
@@ -1770,12 +1770,14 @@ bool Session::isAuthorized() const {
     return false;
   }
 
-  std::string userpass = Base64::decode(header_itr->second.substr(pos_space + 1));
+  std::string userpass =
+      Base64::decode(header_itr->second.substr(pos_space + 1));
 
   for (std::list<std::string>::const_iterator itr = authusers.begin();
        itr != authusers.end(); ++itr) {
     if (*itr == userpass) {
-      return true;  // Authorized
+      userpass_ = userpass;  // save autorized user pass
+      return true;           // Authorized
     }
   }
   return false;
