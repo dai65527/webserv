@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/04/30 06:54:02 by dnakano          ###   ########.fr        #
+#    Updated: 2021/04/29 15:56:50 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,39 +14,12 @@ CXX			:=	clang++
 CPPFLAGS	:=	-Wall -Wextra -Werror -D UNIT_TEST
 
 ### config ###
-SRCNAME		:=	ConfigParser.cpp \
-				MainConfig.cpp \
-				ServerConfig.cpp \
-				LocationConfig.cpp \
-				CommonConfigStore.cpp \
-				ServerLocationConfigStore.cpp \
-				ServerOnlyConfigStore.cpp \
-				MainOnlyConfigStore.cpp \
-				Webserv.cpp \
-				Session.cpp \
-				Socket.cpp \
-				Request.cpp \
-				Response.cpp \
-				CgiHandler.cpp \
-				webserv_utils.cpp \
-				CgiParams.cpp \
-				Base64.cpp
+SRCNAME		:=	Base64.cpp
 SRCDIR		:=	../../..
 INCLUDEDIR	:=	../../..
 TESTSRCNAME	:=	test_main.cc \
-				test_isLocationMatch.cc \
-				test_findLocation.cc \
-				test_findServer.cc \
-				test_isMethodAllowed.cc \
-				test_findCgiPathFromUri.cc \
-				test_mapMime.cc \
-				test_getFileExtension.cc \
-				test_CgiArgvEnvp.cc \
-				test_CgiResponse.cc \
-				test_isCharsetAccepted.cc \
-				test_getUriFromLocation.cc
+				test_encode_decode.cc
 TESTSRCDIR	:=	.
-
 ### config ###
 
 # no need to edit
@@ -69,7 +42,7 @@ all:		test
 $(NAME):	$(LIBFT) $(OBJS)
 			$(CXX) $(CPPFLAGS) $(OBJS) \
 			-L$(LIBFTDIR) $(patsubst lib%,-l%,$(basename $(LIBFT))) \
-			-o $(NAME)
+		 	-o $(NAME)
 
 .PHONY:		test
 test:		$(NAME)

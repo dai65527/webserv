@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/09 10:22:26 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/28 16:16:10 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/29 22:46:22 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ TEST_F(testThrowError, nomalConfig1) {
   EXPECT_EQ(config.getCgiExtension().back(), "main");
   EXPECT_EQ(config.getCharset(), "utf-8");
   EXPECT_EQ(config.getLanguage().front(), "ja-JP");
-  EXPECT_EQ(config.getBaseAuth(), "needpass");
+  EXPECT_EQ(config.getAuthBasicUserPass().front(), "user:password");
   EXPECT_EQ(config.getClientMaxBodySize(), 42000);
   EXPECT_EQ(config.getLimitExcept(), HTTP_GET | HTTP_HEAD);
   EXPECT_EQ(config.getMaxSessions(), 4242);
@@ -61,7 +61,7 @@ TEST_F(testThrowError, nomalConfig1) {
   EXPECT_EQ(server_config.getCgiExtension().back(), "server");
   EXPECT_EQ(server_config.getCharset(), "shift-jis");
   EXPECT_EQ(server_config.getLanguage().front(), "en-US");
-  EXPECT_EQ(server_config.getBaseAuth(), "needpass");
+  EXPECT_EQ(server_config.getAuthBasicUserPass().front(), "user1:password1");
   EXPECT_EQ(server_config.getClientMaxBodySize(), 42000000);
   EXPECT_EQ(server_config.getLimitExcept(), HTTP_GET | HTTP_HEAD | HTTP_POST);
 
@@ -80,7 +80,7 @@ TEST_F(testThrowError, nomalConfig1) {
   EXPECT_EQ(location_config.getCgiExtension().back(), "location");
   EXPECT_EQ(location_config.getCharset(), "iso-8859-1");
   EXPECT_EQ(location_config.getLanguage().front(), "en-UK");
-  EXPECT_EQ(location_config.getBaseAuth(), "needpass");
+  EXPECT_EQ(location_config.getAuthBasicUserPass().front(), "user2:password2");
   EXPECT_EQ(location_config.getClientMaxBodySize(), 42000000);
   EXPECT_EQ(location_config.getLimitExcept(),
             HTTP_GET | HTTP_HEAD | HTTP_POST | HTTP_PUT);
@@ -100,8 +100,8 @@ TEST_F(testThrowError, nomalConfig2) {
   EXPECT_EQ(config.getCgiExtension().back(), "main");
   EXPECT_EQ(config.getCharset(), "utf-8");
   EXPECT_EQ(config.getLanguage().front(), "ja-JP");
-  EXPECT_EQ(config.getBaseAuth(), "needpass");
   EXPECT_EQ(config.getClientMaxBodySize(), 42000);
+  EXPECT_EQ(config.getAuthBasicUserPass().front(), "user:password");
   EXPECT_EQ(config.getLimitExcept(), HTTP_GET | HTTP_HEAD);
   EXPECT_EQ(config.getMaxSessions(), 4242);
   EXPECT_EQ(config.getRetryAfter(), 42);
@@ -123,7 +123,7 @@ TEST_F(testThrowError, nomalConfig2) {
   EXPECT_EQ(server_config.getCgiExtension().back(), "server");
   EXPECT_EQ(server_config.getCharset(), "shift-jis");
   EXPECT_EQ(server_config.getLanguage().front(), "en-US");
-  EXPECT_EQ(server_config.getBaseAuth(), "needpass");
+  EXPECT_EQ(server_config.getAuthBasicUserPass().front(), "user1:password1");
   EXPECT_EQ(server_config.getClientMaxBodySize(), 42000000);
   EXPECT_EQ(server_config.getLimitExcept(), HTTP_GET | HTTP_HEAD | HTTP_POST);
 
@@ -142,7 +142,7 @@ TEST_F(testThrowError, nomalConfig2) {
   EXPECT_EQ(location_config.getCgiExtension().back(), "location");
   EXPECT_EQ(location_config.getCharset(), "iso-8859-1");
   EXPECT_EQ(location_config.getLanguage().front(), "en-UK");
-  EXPECT_EQ(location_config.getBaseAuth(), "needpass");
+  EXPECT_EQ(location_config.getAuthBasicUserPass().front(), "user2:password2");
   EXPECT_EQ(location_config.getClientMaxBodySize(), 42000000);
   EXPECT_EQ(location_config.getLimitExcept(),
             HTTP_GET | HTTP_HEAD | HTTP_POST | HTTP_PUT);

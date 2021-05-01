@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/01 11:42:36 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/01 12:06:32 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 #include <cstring>
 #include <iostream>
 
+#include "Base64.hpp"
 #include "CgiParams.hpp"
 #include "webserv_settings.hpp"
 #include "webserv_utils.hpp"
@@ -261,6 +262,11 @@ void Session::startCreateResponse() {
     return;
   }
 
+  if (!isAuthorized()) {
+    createErrorResponse(HTTP_401);
+    return;
+  }
+
   // check connection header
   std::map<std::string, std::string>::const_iterator itr;
   itr = request_.getHeaders().find("connection");
@@ -281,13 +287,19 @@ void Session::startCreateResponse() {
     return;
   }
 
+  // case PUT
+  if (request_.getMethod() == "PUT" && isMethodAllowed(HTTP_PUT)) {
+    startCreateResponseToPut();  // write to file or cgi
+    return;
+  }
+
   // case OPTIONS
   if (request_.getMethod() == "OPTIONS" && isMethodAllowed(HTTP_OPTIONS)) {
     startCreateResponseToOptions();
     return;
   }
 
-  // case others (PUT, DELETE and TRACE)
+  // case others (DELETE and TRACE)
   // not inpl them for now
   createErrorResponse(HTTP_405);
 }
@@ -369,8 +381,15 @@ void Session::startCreateResponseToPost() {
   }
 
   // try to write to file if not cgi
-  startWritingToFile();
+  const std::string filepath = getUploadFilePath();
+  if (filepath.empty()) {
+    createErrorResponse(HTTP_405);
+    return;
+  }
+  startWritingToFile(filepath);
 }
+
+void Session::startCreateResponseToPut() { startCreateResponseToPost(); }
 
 // check HTTP Request method are avairable
 bool Session::isMethodAllowed(HTTPMethodFlag method) const {
@@ -400,6 +419,10 @@ void Session::createErrorResponse(HTTPStatusCode http_status) {
   }
   if (http_status == HTTP_405 && isMethodAllowed(HTTP_OPTIONS)) {
     createAllowHeader();
+  }
+  if (http_status == HTTP_401) {
+    response_.addHeader("WWW-Authenticate",
+                        "Basic realm=\"Need Authentication\"");
   }
 
   if (original_error_response_ == HTTP_NOMATCH &&
@@ -1486,20 +1509,30 @@ ssize_t Session::parseReadBuf(const char* read_buf, ssize_t n) {
 ** file writers
 */
 
-void Session::startWritingToFile() {
+std::string Session::getUploadFilePath() {
   // check if request uri upload path
   std::string upload_store =
       findUploadStore(request_.getUri());  // relative path from root
   if (upload_store.empty()) {
-    createErrorResponse(HTTP_405);
-    return;
+    return "";
   }
 
   // create and append filename to upload store
   if (*(upload_store.end() - 1) != '/') {
     upload_store.push_back('/');  // append "/" if missing
   }
-  upload_store.append(createFilename());  // append filename
+
+  // append file name to filepath
+  std::string filename;
+  if (request_.getMethod() == "PUT") {
+    filename = findFileNameFromUri();
+    if (filename.empty()) {
+      createErrorResponse(HTTP_405);
+    }
+  } else {
+    filename = createFilename();
+  }
+  upload_store.append(filename);
 
   // create filepath
   std::string filepath = findRoot();
@@ -1511,10 +1544,13 @@ void Session::startWritingToFile() {
   // create response header
   response_.createStatusLine(HTTP_201);
   response_.addHeader("Location", upload_store);
+  return filepath;
+}
 
+void Session::startWritingToFile(const std::string& filepath) {
   // open file
-  file_fd_ = open(filepath.c_str(), O_RDWR | O_CREAT, 0644);  // toriaezu
-  if (file_fd_ == -1) {
+  unlink(filepath.c_str());
+  if ((file_fd_ = open(filepath.c_str(), O_RDWR | O_CREAT, 0644)) == -1) {
     createErrorResponse(HTTP_500);
     status_ = SESSION_FOR_CLIENT_SEND;
     return;
@@ -1535,12 +1571,39 @@ std::string Session::findUploadStore(const std::string& uri) const {
       isLocationMatch(location_config_->getUploadPass(), uri)) {
     return location_config_->getUploadStore();
   }
-  std::cout << server_config_->getUploadPass() << std::endl;
   if (server_config_ != NULL &&
       isLocationMatch(server_config_->getUploadPass(), uri)) {
     return server_config_->getUploadStore();
   }
   return "";
+}
+
+std::string Session::findUploadPass(const std::string& uri) const {
+  if (location_config_ != NULL &&
+      isLocationMatch(location_config_->getUploadPass(), uri)) {
+    return location_config_->getUploadPass();
+  }
+  if (server_config_ != NULL &&
+      isLocationMatch(server_config_->getUploadPass(), uri)) {
+    return server_config_->getUploadPass();
+  }
+  return "";
+}
+
+std::string Session::findFileNameFromUri() const {
+  const std::string uri = request_.getUri();
+  std::string upload_pass = findUploadPass(uri);
+  if (upload_pass.empty()) {
+    return "";
+  }
+
+  std::string res;
+  if (*upload_pass.rbegin() == '/') {
+    res = uri.substr(upload_pass.length());
+  } else {
+    res = uri.substr(upload_pass.length() + 1);
+  }
+  return res;
 }
 
 std::string Session::createFilename() const {
@@ -1612,9 +1675,6 @@ int Session::writeToFile() {
   // written all data
   if (request_.getBody().empty()) {
     close(file_fd_);
-
-    // create response to notify the client
-    // response_buf_ = "201 created";
     status_ = SESSION_FOR_CLIENT_SEND;  // to send response to client
   }
   // to next read
@@ -1685,6 +1745,59 @@ void Session::createAllowHeader() {
   }
 
   response_.addHeader("Allow", allowed_methods);
+}
+
+// basic auth
+// return true if not authorized
+bool Session::isAuthorized() const {
+  std::list<std::string> authusers;
+
+  // find auth files
+  findAuthUsers(&authusers);
+  if (authusers.empty()) {
+    return true;
+  }
+
+  // find Authenticate request header
+  std::map<std::string, std::string>::const_iterator header_itr =
+      request_.getHeaders().find("authorization");
+  if (header_itr == request_.getHeaders().end()) {
+    return false;
+  }
+
+  size_t pos_space = header_itr->second.find(' ');
+  std::string authtype = header_itr->second.substr(0, pos_space);
+  if (authtype != "Basic" || pos_space == std::string::npos) {
+    return false;
+  }
+
+  std::string userpass = Base64::decode(header_itr->second.substr(pos_space + 1));
+
+  for (std::list<std::string>::const_iterator itr = authusers.begin();
+       itr != authusers.end(); ++itr) {
+    if (*itr == userpass) {
+      return true;  // Authorized
+    }
+  }
+  return false;
+}
+
+void Session::findAuthUsers(std::list<std::string>* authusers) const {
+  if (location_config_ && !location_config_->getAuthBasicUserPass().empty()) {
+    authusers->insert(authusers->begin(),
+                      location_config_->getAuthBasicUserPass().begin(),
+                      location_config_->getAuthBasicUserPass().end());
+  }
+  if (server_config_ && !server_config_->getAuthBasicUserPass().empty()) {
+    authusers->insert(authusers->begin(),
+                      server_config_->getAuthBasicUserPass().begin(),
+                      server_config_->getAuthBasicUserPass().end());
+  }
+  if (!main_config_.getAuthBasicUserPass().empty()) {
+    authusers->insert(authusers->begin(),
+                      main_config_.getAuthBasicUserPass().begin(),
+                      main_config_.getAuthBasicUserPass().end());
+  }
 }
 
 /*

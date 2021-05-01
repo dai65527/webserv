@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 17:40:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/30 21:08:08 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/01 12:06:20 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,9 +41,8 @@ class CommonConfigStore {
   std::string cgi_pass_;                  // cgi_pass directive
   std::string charset_;                   // charset directive
   std::list<std::string> language_;       // launuage directive
-  std::string base_auth_;                 // base_auth directive
   std::list<std::string>
-      auth_basic_user_file_;            // auth_basic_userfile directive
+      auth_basic_user_pass_;            // auth_basic_user_pass directive
   unsigned long client_max_body_size_;  // client_max_body_size directive
   bool flg_client_max_body_size_set_;   // true if CMBS already set
   unsigned long limit_except_;          // allowed functions
@@ -68,8 +67,7 @@ class CommonConfigStore {
   void parseCgiPass(const std::list<std::string>& settings);
   void parseCharset(const std::list<std::string>& settings);
   void parseLanguage(const std::list<std::string>& settings);
-  void parseBaseAuth(const std::list<std::string>& settings);
-  void parseAuthBasicUserFile(const std::list<std::string>& settings);
+  void parseAuthBasicUserPass(const std::list<std::string>& settings);
   void parseClientMaxBodySize(const std::list<std::string>& settings);
   void parseLimitExcept(const std::list<std::string>& settings);
 
@@ -89,8 +87,7 @@ class CommonConfigStore {
   const std::string& getCgiPass() const;
   const std::string& getCharset() const;
   const std::list<std::string>& getLanguage() const;
-  const std::string& getBaseAuth() const;
-  const std::list<std::string>& getAuthBasicUserFile() const;
+  const std::list<std::string>& getAuthBasicUserPass() const;
   const unsigned long& getClientMaxBodySize() const;
   const unsigned long& getLimitExcept() const;
   bool getFlgClientMaxBodySizeSet() const;

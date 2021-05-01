@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/01/05 17:34:06 by dnakano           #+#    #+#              #
-#    Updated: 2021/04/28 17:40:45 by dnakano          ###   ########.fr        #
+#    Updated: 2021/04/30 06:57:25 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,7 +29,8 @@ SRCS		:=	main.cpp \
 				ServerConfig.cpp \
 				ServerLocationConfigStore.cpp \
 				ServerOnlyConfigStore.cpp \
-				CgiParams.cpp
+				CgiParams.cpp \
+				Base64.cpp
 OBJS		:=	$(SRCS:%.cpp=%.o)
 LIBFT		:=	libft.a
 LIBFTDIR	:=	./libft
