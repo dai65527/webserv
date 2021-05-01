@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiParams.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/22 22:31:02 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/25 21:59:00 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/01 12:04:26 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ char** CgiParams::storeMetaVariables(const std::string& cgiuri,
   std::vector<std::string> meta_variables;
   std::string tmp;
   const std::map<std::string, std::string>& headers = request.getHeaders();
+  meta_variables.push_back("PATH_INFO=" + cgiuri);
   tmp = "AUTH_TYPE=";
   tmp += session_.getFromHeaders(headers, "authorization");
   meta_variables.push_back(tmp);
