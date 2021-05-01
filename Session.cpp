@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/01 00:29:26 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/01 23:38:04 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1587,7 +1587,7 @@ std::string Session::findFileNameFromUri() const {
   std::string res;
   if (*upload_pass.rbegin() == '/') {
     res = uri.substr(upload_pass.length());
-  } else {
+  } else if (uri.length() > upload_pass.length()) {
     res = uri.substr(upload_pass.length() + 1);
   }
   return res;
