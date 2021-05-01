@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/01 14:20:54 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/02 07:23:13 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1599,7 +1599,7 @@ std::string Session::findFileNameFromUri() const {
   std::string res;
   if (*upload_pass.rbegin() == '/') {
     res = uri.substr(upload_pass.length());
-  } else {
+  } else if (uri.length() > upload_pass.length()) {
     res = uri.substr(upload_pass.length() + 1);
   }
   return res;
