@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiHandler.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/07 23:25:56 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/22 22:34:31 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/01 11:29:35 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 #include <iostream>
 
 #include "HttpStatusCode.hpp"
-
 
 CgiHandler::CgiHandler() {}
 CgiHandler::~CgiHandler() {}
@@ -122,6 +121,4 @@ int CgiHandler::readFromCgi() {
   return ret;
 }
 
-void CgiHandler::resetAll() {
-  buf_.clear();
-}
+void CgiHandler::resetAll() { buf_.clear(); }
