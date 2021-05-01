@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/30 22:33:47 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/01 11:42:36 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -244,8 +244,7 @@ int Session::checkReceiveReturn(int ret) {
 #ifdef UNIT_TEST
     return 413;
 #endif
-  }
-    else if (ret == REQ_FIN_RECV) {
+  } else if (ret == REQ_FIN_RECV) {
     startCreateResponse();
   }
   return 0;
@@ -778,7 +777,6 @@ bool Session::isLanguageAccepted() const {
     pos_end = std::min(pos_end, itr_header->second.find(' ', pos));
     accept_language = itr_header->second.substr(pos, pos_end - pos);
     for (itr = languages.begin(); itr != languages.end(); ++itr) {
-      // printf("\"%s\" == \"%s\"", itr->c_str(), itr_header->second.c_str());
       if (isLanguageMatch(*itr, accept_language)) {
         return true;
       }
@@ -1394,9 +1392,11 @@ int Session::readFromCgi() {
   // check if pipe closed
   if (n == 0) {
     // append data to response
+    write(1, &(cgi_handler_.getBuf())[0], cgi_handler_.getBuf().size());
     ssize_t end_header =
         parseReadBuf(&(cgi_handler_.getBuf())[0], cgi_handler_.getBuf().size());
     if (end_header == -1) {
+      close(cgi_handler_.getOutputFd());  // close pipefd
       createErrorResponse(HTTP_502);  // Bad Gateway but does not close session
       return 0;
     }
@@ -1448,33 +1448,38 @@ ssize_t Session::parseReadBuf(const char* read_buf, ssize_t n) {
       }
       break;  // go outside of while loop to  check content of header
     }
-    ++i;
+    if (read_buf[i] == '\r') {
+      i++;
+    }
+    if (read_buf[i] == '\n') {
+      i++;
+    }
   }
+
   /* header must include at least one of Content-type, Location or Status*/
   std::map<std::string, std::string>::iterator status_itr =
       header.find("Status");
-  if (header.find("Content-Type") != header.end() ||
-      header.find("Location") != header.end() || status_itr != header.end()) {
-    /* case status code created in cgi script */
-    if (status_itr != header.end()) {
-      response_.createStatusLine(status_itr->second);
-    } else {
-      response_.createStatusLine(HTTP_200);
-    }
-    for (std::map<std::string, std::string>::iterator itr = header.begin();
-         itr != header.end(); ++itr) {
-      /* skip key of status */
-      if (itr == status_itr) {
-        continue;
-      }
-      /* add header */
-      response_.addHeader(itr->first, itr->second);
-    }
-    /* Parse OK then return the pos of end of header */
-    return i + ret;
+  if (header.find("Content-Type") == header.end() &&
+      header.find("Location") == header.end() && status_itr == header.end()) {
+    return -1;
   }
-  /* case no valid header */
-  return -1;
+  /* case status code created in cgi script */
+  if (status_itr != header.end()) {
+    response_.createStatusLine(status_itr->second);
+  } else {
+    response_.createStatusLine(HTTP_200);
+  }
+  for (std::map<std::string, std::string>::iterator itr = header.begin();
+       itr != header.end(); ++itr) {
+    /* skip key of status */
+    if (itr == status_itr) {
+      continue;
+    }
+    /* add header */
+    response_.addHeader(itr->first, itr->second);
+  }
+  /* Parse OK then return the pos of end of header */
+  return i + ret;
 }
 
 /*
@@ -1679,7 +1684,6 @@ void Session::createAllowHeader() {
     allowed_methods.append(allowed_methods.empty() ? "TRACE" : ", TRACE");
   }
 
-  printf("allowed: %s\n", allowed_methods.c_str());
   response_.addHeader("Allow", allowed_methods);
 }
 
