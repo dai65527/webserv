@@ -277,6 +277,7 @@ testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/plain; charset=utf-8"
+testcase.expectedResponseHeader["Optional-Header"] = "This is optional header"
 testcase.expectedResponseHeaderExistance.push "Date"
 testcase.add
 
@@ -290,6 +291,7 @@ testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/plain; charset=utf-8"
+testcase.expectedResponseHeader["Optional-Header"] = "This is optional header"
 testcase.expectedResponseHeaderExistance.push "Date"
 testcase.add
 
@@ -303,6 +305,7 @@ testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/plain; charset=utf-8"
+testcase.expectedResponseHeader["Optional-Header"] = "This is optional header"
 testcase.expectedResponseHeaderExistance.push "Date"
 testcase.add
 
@@ -317,6 +320,7 @@ testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/plain; charset=utf-8"
+testcase.expectedResponseHeader["Optional-Header"] = "This is optional header"
 testcase.expectedResponseHeaderExistance.push "Date"
 testcase.add
 
@@ -331,6 +335,7 @@ testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/plain; charset=utf-8"
+testcase.expectedResponseHeader["Optional-Header"] = "This is optional header"
 testcase.expectedResponseHeaderExistance.push "Date"
 testcase.add
 
@@ -345,6 +350,7 @@ testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/plain; charset=utf-8"
+testcase.expectedResponseHeader["Optional-Header"] = "This is optional header"
 testcase.expectedResponseHeaderExistance.push "Date"
 testcase.add
 
@@ -359,6 +365,7 @@ testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/plain; charset=utf-8"
+testcase.expectedResponseHeader["Optional-Header"] = "This is optional header"
 testcase.expectedResponseHeaderExistance.push "Date"
 testcase.add
 
