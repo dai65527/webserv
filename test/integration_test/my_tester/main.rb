@@ -277,4 +277,48 @@ testcase.add
 
 #####
 
+#####
+
+casename = "trace /index.html"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/index.html", "TRACE"
+testcase.expectedCode = "200"
+testcase.expectedBody = "TRACE /index.html HTTP/1.1\r\nAccept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3\r\nAccept: */*\r\nUser-Agent: Ruby\r\nHost: 127.0.0.1:8000\r\n\r\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "message/http"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.add
+
+#####
+
+#####
+
+casename = "trace /index.html"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/index.html", "TRACE"
+testcase.expectedCode = "200"
+testcase.expectedBody = "TRACE /index.html HTTP/1.1\r\nAccept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3\r\nAccept: */*\r\nUser-Agent: Ruby\r\nHost: 127.0.0.1:8000\r\n\r\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "message/http"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.add
+
+#####
+
+casename = "get /ファイル名.html in percent encoding"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%90%8D.html", "GET"
+testcase.expectedCode = "200"
+testcase.expectedBody = "<h1>日本語でおk</h1>\n".force_encoding("ASCII-8BIT")  # need to change encoding to compare results
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Last-Modified"
+testcase.add
+
+#####
+
 WebservTestCase::execAll
