@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/30 22:55:07 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/01 11:42:42 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ CommonConfigStore& CommonConfigStore::operator=(const CommonConfigStore& rhs) {
     autoindex_ = rhs.autoindex_;
     flg_autoindex_set_ = rhs.flg_autoindex_set_;
     cgi_extension_ = rhs.cgi_extension_;
+    cgi_pass_ = rhs.cgi_pass_;
     charset_ = rhs.charset_;
     language_ = rhs.language_;
     base_auth_ = rhs.base_auth_;
