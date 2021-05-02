@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/30 15:07:36 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/01 12:06:07 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ CommonConfigStore& CommonConfigStore::operator=(const CommonConfigStore& rhs) {
     autoindex_ = rhs.autoindex_;
     flg_autoindex_set_ = rhs.flg_autoindex_set_;
     cgi_extension_ = rhs.cgi_extension_;
+    cgi_pass_ = rhs.cgi_pass_;
     charset_ = rhs.charset_;
     language_ = rhs.language_;
     auth_basic_user_pass_ = rhs.auth_basic_user_pass_;
@@ -67,6 +68,10 @@ bool CommonConfigStore::getAutoIndex() const { return autoindex_; }
 
 const std::list<std::string>& CommonConfigStore::getCgiExtension() const {
   return cgi_extension_;
+}
+
+const std::string& CommonConfigStore::getCgiPass() const {
+  return cgi_pass_;
 }
 
 const std::string& CommonConfigStore::getCharset() const { return charset_; }
@@ -155,6 +160,15 @@ void CommonConfigStore::parseCgiExtension(
     throw std::runtime_error("cgi_extension: invalid number of setting");
   }
   cgi_extension_.insert(cgi_extension_.end(), settings.begin(), settings.end());
+}
+
+void CommonConfigStore::parseCgiPass(const std::list<std::string>& settings) {
+  if (!cgi_pass_.empty()) {
+    throw std::runtime_error("cgi_pass: directive duplicated");
+  } else if (settings.size() != 1) {
+    throw std::runtime_error("cgi_pass: invalid number of setting");
+  }
+  cgi_pass_ = settings.front();
 }
 
 void CommonConfigStore::parseCharset(const std::list<std::string>& settings) {
@@ -300,6 +314,8 @@ bool CommonConfigStore::parseDirective(const std::string& name,
     parseAutoIndex(settings);
   } else if (name == "cgi_extension") {
     parseCgiExtension(settings);
+  } else if (name == "cgi_pass") {
+    parseCgiPass(settings);
   } else if (name == "charset") {
     parseCharset(settings);
   } else if (name == "language") {
