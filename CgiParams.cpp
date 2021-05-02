@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiParams.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/22 22:31:02 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/25 21:59:00 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/02 08:09:42 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,11 @@ char** CgiParams::storeMetaVariables(const std::string& cgiuri,
   std::string tmp;
   const std::map<std::string, std::string>& headers = request.getHeaders();
   tmp = "AUTH_TYPE=";
-  tmp += session_.getFromHeaders(headers, "authorization");
+  // tmp += session_.getFromHeaders(headers, "authorization");
+  std::string authorization = session_.getFromHeaders(headers, "authorization");
+  if (!authorization.empty()) {
+    tmp += authorization.substr(0, authorization.find(' '));
+  }
   meta_variables.push_back(tmp);
   tmp = "CONTENT_LENGTH=";
   tmp += session_.getFromHeaders(headers, "content-length");
@@ -72,9 +76,7 @@ char** CgiParams::storeMetaVariables(const std::string& cgiuri,
   meta_variables.push_back(tmp);
   tmp = "GATEWAY_INTERFACE=CGI/1.1";
   meta_variables.push_back(tmp);
-  tmp = "PATH_INFO=";  // testerで求める挙動は違うようだ（discord #webserv)
-  tmp += session_.getPathInfo(cgiuri);
-  meta_variables.push_back(tmp);
+  meta_variables.push_back("PATH_INFO=" + cgiuri);
   tmp = "PATH_TRANSLATED=";  // Document root + PATH_INFO if there is PATH_INFO
   if (session_.getPathInfo(cgiuri) != "") {
     tmp += session_.findRoot();
@@ -88,10 +90,12 @@ char** CgiParams::storeMetaVariables(const std::string& cgiuri,
   tmp += getIpAddress(session_.getIp());
   meta_variables.push_back(tmp);
   tmp = "REMOTE_IDENT=";
-  tmp += session_.getFromHeaders(headers, "authorization"); //tbc
+  // tmp += session_.getFromHeaders(headers, "authorization"); //tbc
+  tmp += session_.getUserPass().substr(0, session_.getUserPass().find(':'));
   meta_variables.push_back(tmp);
   tmp = "REMOTE_USER=";
-  tmp += session_.getFromHeaders(headers, "authorization"); //tbc
+  // tmp += session_.getFromHeaders(headers, "authorization"); //tbc
+  tmp += session_.getUserPass().substr(0, session_.getUserPass().find(':'));
   meta_variables.push_back(tmp);
   tmp = "REQUEST_METHOD=";
   tmp += request.getMethod();

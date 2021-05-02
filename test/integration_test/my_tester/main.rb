@@ -1,4 +1,10 @@
-require './WebservTest'
+require "./WebservTest"
+
+begin
+  File.delete("html/default_server/uploadstore/upload.html")
+rescue
+  # nop
+end
 
 # テストケース例
 casename = "get /"
@@ -260,48 +266,104 @@ testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/html"
 testcase.expectedResponseHeaderExistance.push "Date"
 testcase.expectedResponseHeaderExistance.push "Last-Modified"
-testcase.add
 
 #####
 
-casename = "trace /index.html"
-testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/index.html", "TRACE"
+casename = "get /directory/youpi.bla (42 cgi tester)"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/directory/youpi.bla", "GET"
+testcase.expectedBody = ""
 testcase.expectedCode = "200"
-testcase.expectedBody = "TRACE /index.html HTTP/1.1\r\nAccept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3\r\nAccept: */*\r\nUser-Agent: Ruby\r\nHost: 127.0.0.1:8000\r\n\r\n"
 testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
-testcase.expectedResponseHeader["Content-Type"] = "message/http"
+testcase.expectedResponseHeader["Content-Type"] = "text/html; charset=utf-8"
 testcase.expectedResponseHeaderExistance.push "Date"
 testcase.add
 
 #####
 
-#####
-
-casename = "trace /index.html"
-testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/index.html", "TRACE"
-testcase.expectedCode = "200"
-testcase.expectedBody = "TRACE /index.html HTTP/1.1\r\nAccept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3\r\nAccept: */*\r\nUser-Agent: Ruby\r\nHost: 127.0.0.1:8000\r\n\r\n"
+casename = "get /cgi_script/sample.cgi (cgi script written in perl)"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/cgi_script/sample.cgi", "GET"
+testcase.expectedCode = "777"
+testcase.expectedBody = "CGI test\nSTDINPUT=\nQUERYSTRING=\n"
 testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
-testcase.expectedResponseHeader["Content-Type"] = "message/http"
+testcase.expectedResponseHeader["Content-Type"] = "text/plain; charset=utf-8"
+testcase.expectedResponseHeader["Optional-Header"] = "This is optional header"
 testcase.expectedResponseHeaderExistance.push "Date"
 testcase.add
 
 #####
 
-#####
-
-casename = "trace /index.html"
-testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/index.html", "TRACE"
-testcase.expectedCode = "200"
-testcase.expectedBody = "TRACE /index.html HTTP/1.1\r\nAccept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3\r\nAccept: */*\r\nUser-Agent: Ruby\r\nHost: 127.0.0.1:8000\r\n\r\n"
+casename = "get /cgi_script/sample.cgi/arg0/arg1/arg2/arg3 (cgi script written in perl with arguments)"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/cgi_script/sample.cgi/arg0/arg1/arg2/arg3", "GET"
+testcase.expectedCode = "777"
+testcase.expectedBody = "CGI test\nARGV[0] = arg0\nARGV[1] = arg1\nARGV[2] = arg2\nARGV[3] = arg3\nSTDINPUT=\nQUERYSTRING=\n"
 testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
-testcase.expectedResponseHeader["Content-Type"] = "message/http"
+testcase.expectedResponseHeader["Content-Type"] = "text/plain; charset=utf-8"
+testcase.expectedResponseHeader["Optional-Header"] = "This is optional header"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.add
+
+#####
+
+casename = "get /cgi_script/sample.cgi?arg0+arg1+arg2+arg3 (cgi script written in perl with arguments)"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/cgi_script/sample.cgi?arg0+arg1+arg2+arg3", "GET"
+testcase.expectedCode = "777"
+testcase.expectedBody = "CGI test\nARGV[0] = arg0\nARGV[1] = arg1\nARGV[2] = arg2\nARGV[3] = arg3\nSTDINPUT=\nQUERYSTRING=arg0+arg1+arg2+arg3\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/plain; charset=utf-8"
+testcase.expectedResponseHeader["Optional-Header"] = "This is optional header"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.add
+
+#####
+
+casename = "post /cgi_script/sample.cgi (cgi script written in perl)"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/cgi_script/sample.cgi", "POST"
+testcase.request.body = "this is test body"
+testcase.expectedCode = "777"
+testcase.expectedBody = "CGI test\nSTDINPUT=#{testcase.request.body}\nQUERYSTRING=\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/plain; charset=utf-8"
+testcase.expectedResponseHeader["Optional-Header"] = "This is optional header"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.add
+
+#####
+
+casename = "post /cgi_script/sample.cgi/arg0/arg1/arg2/arg3 (cgi script written in perl)"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/cgi_script/sample.cgi/arg0/arg1/arg2/arg3", "POST"
+testcase.request.body = "this is test body"
+testcase.expectedCode = "777"
+testcase.expectedBody = "CGI test\nARGV[0] = arg0\nARGV[1] = arg1\nARGV[2] = arg2\nARGV[3] = arg3\nSTDINPUT=#{testcase.request.body}\nQUERYSTRING=\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/plain; charset=utf-8"
+testcase.expectedResponseHeader["Optional-Header"] = "This is optional header"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.add
+
+#####
+
+casename = "post /cgi_script/sample.cgi?arg0+arg1+arg2+arg3 (cgi script written in perl)"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/cgi_script/sample.cgi?arg0+arg1+arg2+arg3", "POST"
+testcase.request.body = "this is test body"
+testcase.expectedCode = "777"
+testcase.expectedBody = "CGI test\nARGV[0] = arg0\nARGV[1] = arg1\nARGV[2] = arg2\nARGV[3] = arg3\nSTDINPUT=#{testcase.request.body}\nQUERYSTRING=arg0+arg1+arg2+arg3\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/plain; charset=utf-8"
+testcase.expectedResponseHeader["Optional-Header"] = "This is optional header"
 testcase.expectedResponseHeaderExistance.push "Date"
 testcase.add
 
@@ -317,7 +379,32 @@ testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/html"
 testcase.expectedResponseHeaderExistance.push "Date"
 testcase.expectedResponseHeaderExistance.push "Last-Modified"
+
+#####
+
+casename = "put /cgi_script/sample.cgi (cgi script written in perl)"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/cgi_script/sample.cgi", "PUT"
+testcase.request.body = "this is test body"
+testcase.expectedCode = "777"
+testcase.expectedBody = "CGI test\nSTDINPUT=#{testcase.request.body}\nQUERYSTRING=\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/plain; charset=utf-8"
+testcase.expectedResponseHeader["Optional-Header"] = "This is optional header"
+testcase.expectedResponseHeaderExistance.push "Date"
 testcase.add
+
+#####
+
+casename = "trace /index.html"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/index.html", "TRACE"
+testcase.expectedCode = "200"
+testcase.expectedBody = "TRACE /index.html HTTP/1.1\r\nAccept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3\r\nAccept: */*\r\nUser-Agent: Ruby\r\nHost: 127.0.0.1:8000\r\n\r\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "message/http"
 
 #####
 

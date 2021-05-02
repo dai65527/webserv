@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 17:40:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/29 22:15:44 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/01 12:06:20 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ class CommonConfigStore {
   bool autoindex_;                                    // autoindex directive
   bool flg_autoindex_set_;                // true if autoindex already set
   std::list<std::string> cgi_extension_;  // cgi_extension directive
+  std::string cgi_pass_;                  // cgi_pass directive
   std::string charset_;                   // charset directive
   std::list<std::string> language_;       // launuage directive
   std::list<std::string>
@@ -63,6 +64,7 @@ class CommonConfigStore {
   void parseErrorPage(const std::list<std::string>& settings);
   void parseAutoIndex(const std::list<std::string>& settings);
   void parseCgiExtension(const std::list<std::string>& settings);
+  void parseCgiPass(const std::list<std::string>& settings);
   void parseCharset(const std::list<std::string>& settings);
   void parseLanguage(const std::list<std::string>& settings);
   void parseAuthBasicUserPass(const std::list<std::string>& settings);
@@ -82,6 +84,7 @@ class CommonConfigStore {
   const std::map<HTTPStatusCode, std::string>& getErrorPage() const;
   bool getAutoIndex() const;
   const std::list<std::string>& getCgiExtension() const;
+  const std::string& getCgiPass() const;
   const std::string& getCharset() const;
   const std::list<std::string>& getLanguage() const;
   const std::list<std::string>& getAuthBasicUserPass() const;

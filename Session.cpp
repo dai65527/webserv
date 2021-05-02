@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/01 23:38:04 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/02 21:18:15 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@ int Session::getFileFd() const { return file_fd_; }
 const SessionStatus& Session::getStatus() const { return status_; }
 in_addr_t Session::getIp() const { return ip_; };
 uint16_t Session::getPort() const { return port_; };
+const std::string& Session::getUserPass() const { return userpass_; }
 
 /*
 ** setFdToSelect
@@ -376,7 +377,7 @@ void Session::startCreateResponseToPost() {
   // check path includes cgi extension
   const std::string cgiuri = findCgiPathFromUri();
   if (!cgiuri.empty()) {
-    std::string filepath = findRoot() + cgiuri;
+    std::string filepath = findRoot() + getUriFromLocation(cgiuri);
     if (filepath.empty()) {
       createErrorResponse(HTTP_404);
     } else {
@@ -1309,16 +1310,18 @@ void Session::createCgiProcess(const std::string& filepath,
   char** argv = cgi_params.storeArgv(filepath, cgiuri, request_);
   char** meta_variables = cgi_params.storeMetaVariables(cgiuri, request_);
 
-  HTTPStatusCode http_status =
-      cgi_handler_.createCgiProcess(filepath, argv, meta_variables);
+  HTTPStatusCode http_status;
+  std::string cgi_pass = findCgiPass();
+  if (cgi_pass.empty()) {
+    http_status = cgi_handler_.createCgiProcess(filepath, argv, meta_variables);
+  } else {
+    http_status = cgi_handler_.createCgiProcess(cgi_pass, argv, meta_variables);
+  }
 
   if (http_status != HTTP_200) {
     std::cout << "[error] failed to create cgi process" << std::endl;
     createErrorResponse(http_status);
   }
-
-  // response_.createStatusLine(HTTP_200); cgi scripts can produce status by
-  // themselves
 
   if (request_.getMethod() == "POST" || request_.getMethod() == "PUT") {
     status_ = SESSION_FOR_CGI_WRITE;
@@ -1326,6 +1329,16 @@ void Session::createCgiProcess(const std::string& filepath,
   }
   close(cgi_handler_.getInputFd());
   status_ = SESSION_FOR_CGI_READ;
+}
+
+const std::string& Session::findCgiPass() const {
+  if (location_config_ && !location_config_->getCgiPass().empty()) {
+    return location_config_->getCgiPass();
+  }
+  if (server_config_ && !server_config_->getCgiPass().empty()) {
+    return server_config_->getCgiPass();
+  }
+  return main_config_.getCgiPass();
 }
 
 // write to cgi process (TODO!!)
@@ -1409,15 +1422,16 @@ int Session::readFromCgi() {
   // check if pipe closed
   if (n == 0) {
     // append data to response
+    write(1, &(cgi_handler_.getBuf())[0], cgi_handler_.getBuf().size());
     ssize_t end_header =
         parseReadBuf(&(cgi_handler_.getBuf())[0], cgi_handler_.getBuf().size());
     if (end_header == -1) {
+      close(cgi_handler_.getOutputFd());  // close pipefd
       createErrorResponse(HTTP_502);  // Bad Gateway but does not close session
       return 0;
     }
     response_.appendToBody(&cgi_handler_.getBuf()[0] + end_header + 1,
                            cgi_handler_.getBuf().size() - (end_header + 1));
-    close(cgi_handler_.getOutputFd());  // close pipefd
     status_ = SESSION_FOR_CLIENT_SEND;  // set for send response
   }
   return 0;
@@ -1463,33 +1477,38 @@ ssize_t Session::parseReadBuf(const char* read_buf, ssize_t n) {
       }
       break;  // go outside of while loop to  check content of header
     }
-    ++i;
+    if (read_buf[i] == '\r') {
+      i++;
+    }
+    if (read_buf[i] == '\n') {
+      i++;
+    }
   }
+
   /* header must include at least one of Content-type, Location or Status*/
   std::map<std::string, std::string>::iterator status_itr =
       header.find("Status");
-  if (header.find("Content-Type") != header.end() ||
-      header.find("Location") != header.end() || status_itr != header.end()) {
-    /* case status code created in cgi script */
-    if (status_itr != header.end()) {
-      response_.createStatusLine(status_itr->second);
-    } else {
-      response_.createStatusLine(HTTP_200);
-    }
-    for (std::map<std::string, std::string>::iterator itr = header.begin();
-         itr != header.end(); ++itr) {
-      /* skip key of status */
-      if (itr == status_itr) {
-        continue;
-      }
-      /* add header */
-      response_.addHeader(itr->first, itr->second);
-    }
-    /* Parse OK then return the pos of end of header */
-    return i + ret;
+  if (header.find("Content-Type") == header.end() &&
+      header.find("Location") == header.end() && status_itr == header.end()) {
+    return -1;
   }
-  /* case no valid header */
-  return -1;
+  /* case status code created in cgi script */
+  if (status_itr != header.end()) {
+    response_.createStatusLine(status_itr->second);
+  } else {
+    response_.createStatusLine(HTTP_200);
+  }
+  for (std::map<std::string, std::string>::iterator itr = header.begin();
+       itr != header.end(); ++itr) {
+    /* skip key of status */
+    if (itr == status_itr) {
+      continue;
+    }
+    /* add header */
+    response_.addHeader(itr->first, itr->second);
+  }
+  /* Parse OK then return the pos of end of header */
+  return i + ret;
 }
 
 /*
@@ -1742,10 +1761,9 @@ void Session::createAllowHeader() {
 
 // basic auth
 // return true if not authorized
-bool Session::isAuthorized() const {
-  std::list<std::string> authusers;
-
+bool Session::isAuthorized() {
   // find auth files
+  std::list<std::string> authusers;
   findAuthUsers(&authusers);
   if (authusers.empty()) {
     return true;
@@ -1764,12 +1782,14 @@ bool Session::isAuthorized() const {
     return false;
   }
 
-  std::string userpass = Base64::decode(header_itr->second.substr(pos_space + 1));
+  std::string userpass =
+      Base64::decode(header_itr->second.substr(pos_space + 1));
 
   for (std::list<std::string>::const_iterator itr = authusers.begin();
        itr != authusers.end(); ++itr) {
     if (*itr == userpass) {
-      return true;  // Authorized
+      userpass_ = userpass;  // save autorized user pass
+      return true;           // Authorized
     }
   }
   return false;

@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/01 00:29:24 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/02 21:18:25 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ class Session {
   const MainConfig& main_config_;
   const ServerConfig* server_config_;
   const LocationConfig* location_config_;
+  std::string userpass_;
   Request request_;
   Response response_;
   CgiHandler cgi_handler_;
@@ -120,6 +121,7 @@ class Session {
   bool isCgiFile(const std::string& filepath) const;
   int writeToCgi();
   int readFromCgi();
+  const std::string& findCgiPass() const;
   ssize_t parseReadBuf(const char* read_buf, ssize_t n);
 
   // write to file
@@ -137,7 +139,7 @@ class Session {
   void createAllowHeader();
 
   // basic auth
-  bool isAuthorized() const;
+  bool isAuthorized();
   void findAuthUsers(std::list<std::string>* authfiles) const;
 
   std::string getUriFromLocation(std::string uri = "") const;
@@ -153,6 +155,7 @@ class Session {
   in_addr_t getIp() const;
   uint16_t getPort() const;
   const SessionStatus& getStatus() const;
+  const std::string& getUserPass() const;
   std::string getFromHeaders(const std::map<std::string, std::string>& headers,
                              const std::string key) const;
   std::string getPathInfo(const std::string& cgiuri) const;

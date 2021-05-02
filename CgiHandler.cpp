@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiHandler.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/07 23:25:56 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/22 22:34:31 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/01 14:23:45 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 #include <iostream>
 
 #include "HttpStatusCode.hpp"
-
 
 CgiHandler::CgiHandler() {}
 CgiHandler::~CgiHandler() {}
@@ -108,12 +107,11 @@ int CgiHandler::readFromCgi() {
 
   // read from cgi process
   ret = read(output_fd_, read_buf, BUFFER_SIZE);
-  buf_.insert(buf_.end(), read_buf, read_buf + ret);
-
-  // retry seveal times even if read failed
   if (ret == -1) {
     return -1;
   }
+
+  buf_.insert(buf_.end(), read_buf, read_buf + ret);
   // check if pipe closed
   if (ret == 0) {
     close(output_fd_);  // close pipefd
@@ -122,6 +120,4 @@ int CgiHandler::readFromCgi() {
   return ret;
 }
 
-void CgiHandler::resetAll() {
-  buf_.clear();
-}
+void CgiHandler::resetAll() { buf_.clear(); }
