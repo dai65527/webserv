@@ -379,6 +379,7 @@ testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/html"
 testcase.expectedResponseHeaderExistance.push "Date"
 testcase.expectedResponseHeaderExistance.push "Last-Modified"
+testcase.add
 
 #####
 
