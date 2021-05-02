@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/30 12:07:41 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/02 10:09:54 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -379,7 +379,7 @@ ssize_t Request::parseChunkedBody(size_t pos) {
     while (pos < buf_.size() && buf_[pos] != '\r') {
       ++pos;
     }
-    if (pos == buf_.size()) {
+    if (pos == buf_.size() || pos + 1 == buf_.size()) {
       break;
     }
     if (buf_[pos + 1] == '\n') {
@@ -397,6 +397,7 @@ ssize_t Request::parseChunkedBody(size_t pos) {
         parse_progress_ =
             REQ_GOT_CHUNK_SIZE;  // Then next should be getting chunked data in
                                  // else part of this function
+      } else {
         if (chunk_size_ == 0) {  // finish chunked data transfer
           if (method_ != "TRACE") {
             std::vector<char>().swap(
@@ -404,16 +405,13 @@ ssize_t Request::parseChunkedBody(size_t pos) {
           }
           return REQ_FIN_RECV;
         }
-        /* get chunked data body*/
-      } else {
         if (pos - begin > chunk_size_) {
           return REQ_ERR_BAD_REQUEST;
-        } else {
-          if (method_ != "TRACE") {
-            body_.insert(body_.end(), buf_.begin() + begin, buf_.begin() + pos);
-          }
-          parse_progress_ = REQ_FIN_HEADER_FIELD;
         }
+        if (method_ != "TRACE") {
+          body_.insert(body_.end(), buf_.begin() + begin, buf_.begin() + pos);
+        }
+        parse_progress_ = REQ_FIN_HEADER_FIELD;
       }
       pos += 2;
       begin = pos;
