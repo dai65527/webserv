@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/02 07:59:26 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/02 21:18:15 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -299,6 +299,11 @@ void Session::startCreateResponse() {
     startCreateResponseToOptions();
     return;
   }
+  // case OPTIONS
+  if (request_.getMethod() == "TRACE" && isMethodAllowed(HTTP_TRACE)) {
+    startCreateResponseToTrace();
+    return;
+  }
 
   // case others (DELETE and TRACE)
   // not inpl them for now
@@ -492,7 +497,8 @@ std::string Session::findErrorPage(HTTPStatusCode http_status) const {
 int Session::sendResponse() {
   ssize_t n;
 
-  n = response_.sendData(sock_fd_, request_.getMethod() == "HEAD");
+  n = response_.sendData(sock_fd_, request_.getMethod() == "HEAD",
+                         request_.getMethod() == "TRACE");
   if (n == -1) {
     std::cout << "[error] failed to send response" << std::endl;
     if (retry_count_ == RETRY_TIME_MAX) {
@@ -1705,6 +1711,12 @@ void Session::startCreateResponseToOptions() {
   response_.createStatusLine(HTTP_200);
   createAllowHeader();
 
+  status_ = SESSION_FOR_CLIENT_SEND;
+}
+
+void Session::startCreateResponseToTrace() {
+  response_.createStatusLine(HTTP_200);
+  response_.appendToBody(&request_.getBody()[0], request_.getBody().size());
   status_ = SESSION_FOR_CLIENT_SEND;
 }
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 20:22:22 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/24 23:32:08 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/04/30 12:04:51 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ class Response {
   size_t bytes_already_sent_;
   bool connection_to_close_;
 
-  int createCompleteHeader();
+  int createCompleteHeader(bool is_trace = false);
 
   Response(Response const& other);
   Response& operator=(Response const& other);
@@ -54,7 +54,7 @@ class Response {
   int createDefaultErrorResponse(HTTPStatusCode http_status_);
   int appendToBody(const std::string& data);
   int appendToBody(const char* data, size_t len);
-  ssize_t sendData(int sock_fd, bool header_only = false);
+  ssize_t sendData(int sock_fd, bool header_only = false, bool is_trace = false);
   const std::string& getRawReponse() const;
 };
 

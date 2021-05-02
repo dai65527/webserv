@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/02 07:57:14 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/02 21:18:25 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ class Session {
   uint16_t port_;
 
   // this is set in createErrorResponse function
-  // to save 
+  // to save
   HTTPStatusCode original_error_response_;
 
   Session();
@@ -77,6 +77,7 @@ class Session {
   void startCreateResponseToGet();
   void startCreateResponseToPost();
   void startCreateResponseToPut();
+  void startCreateResponseToTrace();
   void createErrorResponse(HTTPStatusCode http_status);
   int createErrorResponseFromFile(HTTPStatusCode http_status);
   std::string findErrorPage(HTTPStatusCode http_status) const;

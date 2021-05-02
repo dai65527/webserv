@@ -256,6 +256,19 @@ testcase.add
 
 #####
 
+casename = "get /uploadstore/upload.html (file updated in last case)"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/uploadstore/upload.html", "GET"
+testcase.expectedCode = "200"
+testcase.expectedBody = "<h1>2nd upload</h1>\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Last-Modified"
+
+#####
+
 casename = "get /directory/youpi.bla (42 cgi tester)"
 testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/directory/youpi.bla", "GET"
 testcase.expectedBody = ""
@@ -356,6 +369,20 @@ testcase.add
 
 #####
 
+casename = "get /ファイル名.html in percent encoding"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%90%8D.html", "GET"
+testcase.expectedCode = "200"
+testcase.expectedBody = "<h1>日本語でおk</h1>\n".force_encoding("ASCII-8BIT")  # need to change encoding to compare results
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Last-Modified"
+testcase.add
+
+#####
+
 casename = "put /cgi_script/sample.cgi (cgi script written in perl)"
 testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/cgi_script/sample.cgi", "PUT"
 testcase.request.body = "this is test body"
@@ -368,6 +395,17 @@ testcase.expectedResponseHeader["Content-Type"] = "text/plain; charset=utf-8"
 testcase.expectedResponseHeader["Optional-Header"] = "This is optional header"
 testcase.expectedResponseHeaderExistance.push "Date"
 testcase.add
+
+#####
+
+casename = "trace /index.html"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/index.html", "TRACE"
+testcase.expectedCode = "200"
+testcase.expectedBody = "TRACE /index.html HTTP/1.1\r\nAccept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3\r\nAccept: */*\r\nUser-Agent: Ruby\r\nHost: 127.0.0.1:8000\r\n\r\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "message/http"
 
 #####
 

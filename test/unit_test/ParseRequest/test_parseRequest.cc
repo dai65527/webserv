@@ -739,9 +739,9 @@ TEST_F(test_parseRequest, RequestTesterPost1) {
   EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
   appendVec(request.buf_, "\r\n");
   EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
-  EXPECT_EQ(request.chunk_size_, 0);
   appendVec(request.buf_, "\r\n");
   EXPECT_EQ(REQ_FIN_RECV, request.parseRequest(*session));
+  EXPECT_EQ(request.chunk_size_, 0);
 }
 
 TEST_F(test_parseRequest, RequestTesterPost2) {
@@ -760,7 +760,7 @@ TEST_F(test_parseRequest, RequestTesterPost2) {
   EXPECT_EQ(request.chunk_size_, 0);
 }
 
-TEST_F(test_parseRequest, RequestTesterPostNG1) {
+TEST_F(test_parseRequest, RequestTesterPost3) {
   const_cast<MainConfig &>(session->main_config_).client_max_body_size_ = 100;
   appendVec(request.buf_,
             "POST / HTTP/1.1\r\nHost: localhost:8888\r\nUser-Agent: "
@@ -771,27 +771,121 @@ TEST_F(test_parseRequest, RequestTesterPostNG1) {
   EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
   appendVec(request.buf_, "0");
   EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
-  appendVec(request.buf_, "\r\nAAA\r\n");
-  EXPECT_EQ(REQ_ERR_BAD_REQUEST, request.parseRequest(*session));
+  appendVec(request.buf_, "\r\n\r");
+  EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
+  appendVec(request.buf_, "\n");
+  EXPECT_EQ(REQ_FIN_RECV, request.parseRequest(*session));
   EXPECT_EQ(request.chunk_size_, 0);
 }
 
-TEST_F(test_parseRequest, RequestTesterPostNG2) {
-  const_cast<MainConfig &>(session->main_config_).client_max_body_size_ = 100;
+/* chunked with 0 with error check*/
+// TEST_F(test_parseRequest, RequestTesterPostNG1) {
+//   const_cast<MainConfig &>(session->main_config_).client_max_body_size_ =
+//   100; appendVec(request.buf_,
+//             "POST / HTTP/1.1\r\nHost: localhost:8888\r\nUser-Agent: "
+//             "Go-http-client/1.1\r\nTransfer-Encoding: chunked\r\n"
+//             "Content-Type: test/file\r\nAccept-Encoding: gzip\r\n");
+//   EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
+//   appendVec(request.buf_, "\r\n");
+//   EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
+//   appendVec(request.buf_, "0");
+//   EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
+//   appendVec(request.buf_, "\r\nAAA\r\n");
+//   EXPECT_EQ(REQ_ERR_BAD_REQUEST, request.parseRequest(*session));
+//   EXPECT_EQ(request.chunk_size_, 0);
+// }
+
+// TEST_F(test_parseRequest, RequestTesterPostNG2) {
+//   const_cast<MainConfig &>(session->main_config_).client_max_body_size_ =
+//   100; appendVec(request.buf_,
+//             "POST / HTTP/1.1\r\nHost: localhost:8888\r\nUser-Agent: "
+//             "Go-http-client/1.1\r\nTransfer-Encoding: chunked\r\n"
+//             "Content-Type: test/file\r\nAccept-Encoding: gzip\r\n");
+//   EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
+//   appendVec(request.buf_, "\r\n");
+//   EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
+//   appendVec(request.buf_, "0");
+//   EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
+//   appendVec(request.buf_, "\r\n");
+//   EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
+//   appendVec(request.buf_, "AAA");
+//   EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
+//   appendVec(request.buf_, "\r\n");
+//   EXPECT_EQ(REQ_ERR_BAD_REQUEST, request.parseRequest(*session));
+//   EXPECT_EQ(request.chunk_size_, 0);
+// }
+
+TEST_F(test_parseRequest, DecodeOK1) {
   appendVec(request.buf_,
-            "POST / HTTP/1.1\r\nHost: localhost:8888\r\nUser-Agent: "
-            "Go-http-client/1.1\r\nTransfer-Encoding: chunked\r\n"
-            "Content-Type: test/file\r\nAccept-Encoding: gzip\r\n");
-  EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
-  appendVec(request.buf_, "\r\n");
-  EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
-  appendVec(request.buf_, "0");
-  EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
-  appendVec(request.buf_, "\r\n");
-  EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
-  appendVec(request.buf_, "AAA");
-  EXPECT_EQ(REQ_CONTINUE_RECV, request.parseRequest(*session));
-  appendVec(request.buf_, "\r\n");
-  EXPECT_EQ(REQ_ERR_BAD_REQUEST, request.parseRequest(*session));
-  EXPECT_EQ(request.chunk_size_, 0);
+            "HEAD /index.html?MAIL=dnakano%40student.42tokyo.jp "
+            "HTTP/1.1\r\nHost:localhost\r\n\r\n");
+  EXPECT_EQ(REQ_FIN_RECV, request.parseRequest(*session));
+  EXPECT_EQ(request.method_, "HEAD");
+  EXPECT_EQ(request.uri_, "/index.html");
+  EXPECT_EQ(request.query_, "MAIL=dnakano@student.42tokyo.jp");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+}
+
+TEST_F(test_parseRequest, DecodeOK2) {
+  appendVec(request.buf_,
+            "HEAD /index.html/%E3%83%89%E3%82%AB%E3%83%99%E3%83%B3 "
+            "HTTP/1.1\r\nHost:localhost\r\n\r\n");
+  EXPECT_EQ(REQ_FIN_RECV, request.parseRequest(*session));
+  EXPECT_EQ(request.method_, "HEAD");
+  EXPECT_EQ(request.uri_, "/index.html/ドカベン");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+}
+
+TEST_F(test_parseRequest, TraceOKnormal) {
+  appendVec(request.buf_,
+            "TRACE /index.html/%E3%83%89%E3%82%AB%E3%83%99%E3%83%B3 "
+            "HTTP/1.1\r\nHost:localhost\r\n\r\n");
+  EXPECT_EQ(REQ_FIN_RECV, request.parseRequest(*session));
+  EXPECT_EQ(request.method_, "TRACE");
+  EXPECT_EQ(request.uri_, "/index.html/ドカベン");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+  std::string str(request.body_.begin(), request.body_.end());
+  EXPECT_EQ(
+      "TRACE /index.html/%E3%83%89%E3%82%AB%E3%83%99%E3%83%B3 "
+      "HTTP/1.1\r\nHost:localhost\r\n\r\n",
+      str);
+}
+
+TEST_F(test_parseRequest, TraceOKContentLength) {
+  appendVec(
+      request.buf_,
+      "TRACE / "
+      "HTTP/"
+      "1.1\r\nHost:localhost\r\ncontent-length:10\r\n\r\n0123456789\r\n\r\n");
+  EXPECT_EQ(REQ_FIN_RECV, request.parseRequest(*session));
+  EXPECT_EQ(request.method_, "TRACE");
+  EXPECT_EQ(request.uri_, "/");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+  EXPECT_EQ(request.headers_["content-length"], "10");
+  std::string str(request.body_.begin(), request.body_.end());
+  EXPECT_EQ(
+      "TRACE / "
+      "HTTP/"
+      "1.1\r\nHost:localhost\r\ncontent-length:10\r\n\r\n0123456789\r\n\r\n",
+      str);
+}
+
+TEST_F(test_parseRequest, TraceChunked) {
+  appendVec(request.buf_,
+            "TRACE / "
+            "HTTP/"
+            "1.1\r\nHost:localhost\r\ntransfer-encoding:"
+            "chunked\r\n\r\n3\r\n012\r\n0\r\n\r\n");
+  EXPECT_EQ(REQ_FIN_RECV, request.parseRequest(*session));
+  EXPECT_EQ(request.method_, "TRACE");
+  EXPECT_EQ(request.uri_, "/");
+  EXPECT_EQ(request.headers_["host"], "localhost");
+  EXPECT_EQ(request.headers_["transfer-encoding"], "chunked");
+  std::string str(request.body_.begin(), request.body_.end());
+  EXPECT_EQ(
+      "TRACE / "
+      "HTTP/"
+      "1.1\r\nHost:localhost\r\ntransfer-encoding:"
+      "chunked\r\n\r\n3\r\n012\r\n0\r\n\r\n",
+      str);
 }

@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/28 13:29:57 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/02 10:09:54 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include <iostream>
 
 #include "Session.hpp"
+#include "UrlEncoder.hpp"
 
 Request::Request()
     : parse_progress_(REQ_BEFORE_PARSE),
@@ -121,7 +122,9 @@ int Request::receive(int sock_fd, Session& session) {
 ** REQ_ERR_HTTP_VERSION -2 //HTTP505
 ** REQ_ERR_LEN_REQUIRED -3 //HTTP411
 ** REQ_ERR_BAD_REQUEST -4 //HTTP400
+** REQ_ERR_TOO_LARGE -6 //HTTP_413
 */
+
 int Request::parseRequest(Session& session) {
   ssize_t pos_buf;
   int ret;
@@ -211,11 +214,13 @@ ssize_t Request::findHeaderFieldEnd(size_t pos) {
 ssize_t Request::findBodyEndAndStore() {
   ssize_t excess = buf_.size() - (pos_begin_body_ + content_length_);
   if (excess >= 0) {
-    buf_.erase(buf_.end() - excess, buf_.end());
-    buf_.erase(buf_.begin(), buf_.begin() + pos_begin_body_);
-    body_ = buf_;
-    std::vector<char>().swap(
-        buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
+    if (method_ != "TRACE") {
+      buf_.erase(buf_.end() - excess, buf_.end());
+      buf_.erase(buf_.begin(), buf_.begin() + pos_begin_body_);
+      body_ = buf_;
+      std::vector<char>().swap(
+          buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
+    }
     return REQ_FIN_RECV;
   }
   return REQ_CONTINUE_RECV;
@@ -249,13 +254,13 @@ size_t Request::parseUri(size_t pos) {
          buf_[pos] != '?') {
     ++pos;
   }
-  uri_ = bufToString(copy_begin, pos);
+  uri_ = UrlEncoder::decode(bufToString(copy_begin, pos));
   if (buf_[pos] == '?') { /* parse query */
     copy_begin = ++pos;
     while (pos != buf_.size() && buf_[pos] != ' ' && buf_[pos] != '\r') {
       ++pos;
     }
-    query_ = bufToString(copy_begin, pos);
+    query_ = UrlEncoder::decode(bufToString(copy_begin, pos));
   }
   return pos;
 }
@@ -362,6 +367,9 @@ int Request::checkHeaderField() {
     }
     content_length_ = ft_atoul(itr_content_length->second.c_str());
   }
+  if (method_ == "TRACE") {
+    body_ = buf_;
+  }
   return 0;
 }
 
@@ -371,7 +379,7 @@ ssize_t Request::parseChunkedBody(size_t pos) {
     while (pos < buf_.size() && buf_[pos] != '\r') {
       ++pos;
     }
-    if (pos == buf_.size()) {
+    if (pos == buf_.size() || pos + 1 == buf_.size()) {
       break;
     }
     if (buf_[pos + 1] == '\n') {
@@ -389,19 +397,21 @@ ssize_t Request::parseChunkedBody(size_t pos) {
         parse_progress_ =
             REQ_GOT_CHUNK_SIZE;  // Then next should be getting chunked data in
                                  // else part of this function
-        /* get chunked data body*/
       } else {
+        if (chunk_size_ == 0) {  // finish chunked data transfer
+          if (method_ != "TRACE") {
+            std::vector<char>().swap(
+                buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
+          }
+          return REQ_FIN_RECV;
+        }
         if (pos - begin > chunk_size_) {
           return REQ_ERR_BAD_REQUEST;
         }
-        if (chunk_size_ == 0) {  // finish chunked data transfer
-          std::vector<char>().swap(
-              buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
-          return REQ_FIN_RECV;
-        } else {
+        if (method_ != "TRACE") {
           body_.insert(body_.end(), buf_.begin() + begin, buf_.begin() + pos);
-          parse_progress_ = REQ_FIN_HEADER_FIELD;
         }
+        parse_progress_ = REQ_FIN_HEADER_FIELD;
       }
       pos += 2;
       begin = pos;
