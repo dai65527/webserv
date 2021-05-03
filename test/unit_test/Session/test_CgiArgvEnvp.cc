@@ -107,6 +107,9 @@ TEST_F(test_CgiArgvEnvp, MetaEnvOK1) {
             "GET /sample.cgi?argv1+argv2=argv3+argv4 HTTP/1.1\r\nHost: "
             "localhost\r\nAuthorization: Basic abcd:1234\r\n\r\n");
   session->userpass_ = "abcd:1234";
+  session->request_.headers_["x-http-header"] = "httpheader";
+  session->request_.headers_["Y-Http-Header"] = "http-header";
+  session->request_.headers_["Z-HTTP-HEADER"] = "http header";
   EXPECT_EQ(session->receiveRequest(), 0);
   char** envp =
       cgi_params->storeMetaVariables("/sample.cgi", session->request_);
@@ -128,6 +131,11 @@ TEST_F(test_CgiArgvEnvp, MetaEnvOK1) {
   EXPECT_EQ("SERVER_PROTOCOL=HTTP/1.1", std::string(*envp++));
   EXPECT_EQ(std::string("SERVER_SOFTWARE=") + std::string(SOFTWARE_NAME),
             std::string(*envp++));
+  EXPECT_EQ("HTTP_Y_HTTP_HEADER=http-header", std::string(*envp++));
+  EXPECT_EQ("HTTP_Z_HTTP_HEADER=http header", std::string(*envp++));
+  EXPECT_EQ("HTTP_AUTHORIZATION=Basic abcd:1234", std::string(*envp++));
+  EXPECT_EQ("HTTP_HOST=localhost", std::string(*envp++));
+  EXPECT_EQ("HTTP_X_HTTP_HEADER=httpheader", std::string(*envp++));
   EXPECT_EQ(NULL, *envp);
 }
 
@@ -137,6 +145,9 @@ TEST_F(test_CgiArgvEnvp, MetaEnvOK2) {
             "localhost\r\nAuthorization: Basic "
             "user:pass\r\ncontent-length:10\r\n\r\n0123456789\r\n\r\n");
   session->userpass_ = "user:pass";
+  session->request_.headers_["x-http-header"] = "httpheader";
+  session->request_.headers_["Y-Http-Header"] = "http-header";
+  session->request_.headers_["Z-HTTP-HEADER"] = "http header";
   EXPECT_EQ(session->receiveRequest(), 0);
   char** envp =
       cgi_params->storeMetaVariables("/sample.cgi", session->request_);
@@ -158,5 +169,11 @@ TEST_F(test_CgiArgvEnvp, MetaEnvOK2) {
   EXPECT_EQ("SERVER_PROTOCOL=HTTP/1.1", std::string(*envp++));
   EXPECT_EQ(std::string("SERVER_SOFTWARE=") + std::string(SOFTWARE_NAME),
             std::string(*envp++));
+  EXPECT_EQ("HTTP_Y_HTTP_HEADER=http-header", std::string(*envp++));
+  EXPECT_EQ("HTTP_Z_HTTP_HEADER=http header", std::string(*envp++));
+  EXPECT_EQ("HTTP_AUTHORIZATION=Basic user:pass", std::string(*envp++));
+  EXPECT_EQ("HTTP_CONTENT_LENGTH=10", std::string(*envp++));
+  EXPECT_EQ("HTTP_HOST=localhost", std::string(*envp++));
+  EXPECT_EQ("HTTP_X_HTTP_HEADER=httpheader", std::string(*envp++));
   EXPECT_EQ(NULL, *envp);
 }
