@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:07:24 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/03 08:52:17 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/03 22:13:30 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,6 @@ enum SessionStatus {
   SESSION_FOR_FILE_WRITE = 0b00010000,
   SESSION_FOR_CGI_READ = 0b00100000,
   SESSION_FOR_CGI_WRITE = 0b01000000,
-  SESSION_FOR_CGI_READ_WRITE = 0b01100000
 };
 
 #endif /* SESSIONSTATUS_HPP */
