@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/03 11:13:26 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/04 01:09:00 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,12 +160,10 @@ ssize_t Response::sendData(int sock_fd, bool header_only, bool is_trace) {
       }
 
       // sent all header
-      status_header_.clear();  // clear for next request
       bytes_already_sent_ = 0;
 
       // no body to send
       if (body_.empty() || header_only) {
-        send_progress_ = 0;  // init for next request
         return 0;            // end
       }
 
@@ -187,10 +185,6 @@ ssize_t Response::sendData(int sock_fd, bool header_only, bool is_trace) {
         return 1;  // continue to send
       }
 
-      // sent all header
-      body_.clear();       // clear for next request
-      send_progress_ = 0;  // init for next request
-      bytes_already_sent_ = 0;
       break;
 
     default:
@@ -286,3 +280,12 @@ void Response::initResponseCodeMessage() {
         "Network Authentication Required";  // RFC6585
   }
 }
+
+  const std::string& Response::getStatusHeader() const {
+    return status_header_;
+  }
+
+  size_t Response::getBytesAlreadySent() const {
+    return bytes_already_sent_;
+  }
+  

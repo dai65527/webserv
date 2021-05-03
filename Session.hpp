@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/03 08:53:58 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/04 00:07:50 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,13 @@
 #include "Response.hpp"
 #include "SessionStatus.hpp"
 #include "webserv_utils.hpp"
+#include "LogFeeder.hpp"
 
 #define SOFTWARE_NAME "nginDX"
 
 class Request;
+
+class LogFeeder;
 
 class Session {
  private:

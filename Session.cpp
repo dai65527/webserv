@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/03 16:36:02 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/04 00:37:05 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -522,6 +522,8 @@ int Session::sendResponse() {
       return 1;  // return 1 if all data sent and is not keep alive (this
                  // session will be closed)
     }
+    LogFeeder logfeeder(*this, request_, response_);
+    logfeeder.feedLog();
     resetAll();                         // reset session
     status_ = SESSION_FOR_CLIENT_RECV;  // wait for next request
   }
