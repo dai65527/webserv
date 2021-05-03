@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/02 10:09:54 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/03 11:13:47 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,7 +106,6 @@ int Request::receive(int sock_fd, Session& session) {
   } else if (ret == 0) {  // if ret == 0, the socket_is closed
     return REQ_CLOSE_CON;
   }
-  write(1, read_buf, ret);
   buf_.insert(buf_.end(), read_buf, read_buf + ret);
 #else
   (void)sock_fd;
