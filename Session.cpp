@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/03 11:47:22 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/03 16:36:02 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -153,6 +153,7 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
     if (sendResponse() != 0) {
       return (-1);
     } else {
+      std::cout << "[webserv] send data" << std::endl;
       updateConnectionTime();
       return (1);
     }
@@ -305,13 +306,14 @@ void Session::startCreateResponse() {
     startCreateResponseToOptions();
     return;
   }
-  // case OPTIONS
+
+  // case TRACE
   if (request_.getMethod() == "TRACE" && isMethodAllowed(HTTP_TRACE)) {
     startCreateResponseToTrace();
     return;
   }
 
-  // case others (DELETE and TRACE)
+  // case others (DELETE)
   // not inpl them for now
   createErrorResponse(HTTP_405);
 }
@@ -964,10 +966,12 @@ std::string Session::findFileFromDir(const std::string& dirpath) const {
     }
     fullpath.append(dent->d_name);
     if (stat(fullpath.c_str(), &filestat) == -1) {
+      closedir(dir);
       return "";
     }
     // case found
     if (S_ISREG(filestat.st_mode) && isIndex(dent->d_name)) {
+      closedir(dir);
       return dent->d_name;
     }
   }
