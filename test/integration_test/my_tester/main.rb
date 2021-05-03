@@ -73,7 +73,7 @@ testcase.add
 
 casename = "get /dir_no_index (no index)"
 testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/dir_no_index", "GET"
-testcase.expectedCode = "403"
+testcase.expectedCode = "404"
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/html"
 testcase.expectedResponseHeaderExistance.push "Date"

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/23 23:58:22 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/03 12:21:58 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ extern "C" {
 #include "libft.h"
 }
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 8096
 #define RETRY_TIME_MAX 10
 
 /* return value of parseRequest*/
@@ -101,7 +101,7 @@ class Request {
   int parseHeaderField(size_t pos);
   int checkHeaderField();
   ssize_t findBodyEndAndStore();
-  ssize_t parseChunkedBody(size_t pos);
+  ssize_t parseChunkedBody(size_t pos, const Session& session);
 
   std::string bufToString(size_t begin, size_t end);
   int compareBuf(size_t begin, const char* str);

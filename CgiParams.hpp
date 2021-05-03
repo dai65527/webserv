@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiParams.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/22 22:28:46 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/22 23:28:18 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/03 10:59:33 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,9 @@ class CgiParams {
 
  private:
   char** vecToChar(std::vector<std::string>& meta_variables);
+  void addHttpHeader(std::vector<std::string>* meta_variables);
+  void addHttpHeader(std::vector<std::string>* meta_variables,
+                     const std::map<std::string, std::string>& req_headers);
 };
 
 #endif /* CGIPARAMS_HPP */

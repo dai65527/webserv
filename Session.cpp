@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/02 21:18:15 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/03 16:36:02 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ Session::~Session() { close(sock_fd_); };
 
 int Session::getSockFd() const { return sock_fd_; }
 int Session::getFileFd() const { return file_fd_; }
-const SessionStatus& Session::getStatus() const { return status_; }
+const int& Session::getStatus() const { return status_; }
 in_addr_t Session::getIp() const { return ip_; };
 uint16_t Session::getPort() const { return port_; };
 const std::string& Session::getUserPass() const { return userpass_; }
@@ -70,28 +70,33 @@ const std::string& Session::getUserPass() const { return userpass_; }
 */
 
 int Session::setFdToSelect(fd_set* rfds, fd_set* wfds) {
-  switch (status_) {
-    case SESSION_FOR_CLIENT_RECV:
-      FD_SET(sock_fd_, rfds);
-      return sock_fd_;
-    case SESSION_FOR_FILE_READ:
-      FD_SET(file_fd_, rfds);
-      return file_fd_;
-    case SESSION_FOR_FILE_WRITE:
-      FD_SET(file_fd_, wfds);
-      return file_fd_;
-    case SESSION_FOR_CGI_WRITE:
-      FD_SET(cgi_handler_.getInputFd(), wfds);
-      return cgi_handler_.getInputFd();
-    case SESSION_FOR_CGI_READ:
-      FD_SET(cgi_handler_.getOutputFd(), rfds);
-      return cgi_handler_.getOutputFd();
-    case SESSION_FOR_CLIENT_SEND:
-      FD_SET(sock_fd_, wfds);
-      return sock_fd_;
-    default:
-      return 0; /* return 0 means that max_fd always becomes initial value*/
+  int max_fd = 0;
+
+  if (status_ & SESSION_FOR_CLIENT_RECV) {
+    FD_SET(sock_fd_, rfds);
+    max_fd = std::max(max_fd, sock_fd_);
   }
+  if (status_ & SESSION_FOR_FILE_READ) {
+    FD_SET(file_fd_, rfds);
+    max_fd = std::max(max_fd, file_fd_);
+  }
+  if (status_ & SESSION_FOR_FILE_WRITE) {
+    FD_SET(file_fd_, wfds);
+    max_fd = std::max(max_fd, file_fd_);
+  }
+  if (status_ & SESSION_FOR_CGI_WRITE) {
+    FD_SET(cgi_handler_.getInputFd(), wfds);
+    max_fd = std::max(max_fd, cgi_handler_.getInputFd());
+  }
+  if (status_ & SESSION_FOR_CGI_READ) {
+    FD_SET(cgi_handler_.getOutputFd(), rfds);
+    max_fd = std::max(max_fd, cgi_handler_.getOutputFd());
+  }
+  if (status_ & SESSION_FOR_CLIENT_SEND) {
+    FD_SET(sock_fd_, wfds);
+    max_fd = std::max(max_fd, sock_fd_);
+  }
+  return max_fd;
 }
 
 /*
@@ -106,7 +111,7 @@ int Session::setFdToSelect(fd_set* rfds, fd_set* wfds) {
 */
 
 int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
-  if (status_ == SESSION_FOR_CLIENT_RECV && FD_ISSET(sock_fd_, rfds)) {
+  if (status_ & SESSION_FOR_CLIENT_RECV && FD_ISSET(sock_fd_, rfds)) {
     if (receiveRequest() == -1) {
       return (-1);
     } else {
@@ -114,21 +119,21 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
       updateConnectionTime();
       return (1);
     }
-  } else if (status_ == SESSION_FOR_FILE_READ && FD_ISSET(file_fd_, rfds)) {
+  } else if (status_ & SESSION_FOR_FILE_READ && FD_ISSET(file_fd_, rfds)) {
     if (readFromFile() == -1) {
       return (-1);
     } else {
       std::cout << "[webserv] read data from file" << std::endl;
       return (1);
     }
-  } else if (status_ == SESSION_FOR_FILE_WRITE && FD_ISSET(file_fd_, wfds)) {
+  } else if (status_ & SESSION_FOR_FILE_WRITE && FD_ISSET(file_fd_, wfds)) {
     if (writeToFile() == -1) {
       return (-1);
     } else {
       std::cout << "[webserv] write data to file" << std::endl;
       return (1);
     }
-  } else if (status_ == SESSION_FOR_CGI_WRITE &&
+  } else if (status_ & SESSION_FOR_CGI_WRITE &&
              FD_ISSET(cgi_handler_.getInputFd(), wfds)) {
     if (writeToCgi() == -1) {
       return (-1);
@@ -136,7 +141,7 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
       std::cout << "[webserv] wrote data to cgi" << std::endl;
       return (1);
     }
-  } else if (status_ == SESSION_FOR_CGI_READ &&
+  } else if (status_ & SESSION_FOR_CGI_READ &&
              FD_ISSET(cgi_handler_.getOutputFd(), rfds)) {
     if (readFromCgi() == -1) {
       return (-1);
@@ -144,18 +149,20 @@ int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
       std::cout << "[webserv] read data from cgi" << std::endl;
       return (1);
     }
-  } else if (status_ == SESSION_FOR_CLIENT_SEND && FD_ISSET(sock_fd_, wfds)) {
+  } else if (status_ & SESSION_FOR_CLIENT_SEND && FD_ISSET(sock_fd_, wfds)) {
     if (sendResponse() != 0) {
       return (-1);
     } else {
+      std::cout << "[webserv] send data" << std::endl;
       updateConnectionTime();
       return (1);
     }
   }
+  // printf("not selected\n");
 
   // check connection time out
-  if ((status_ == SESSION_FOR_CLIENT_RECV ||
-       status_ == SESSION_FOR_CLIENT_SEND) &&
+  if ((status_ & SESSION_FOR_CLIENT_RECV ||
+       status_ & SESSION_FOR_CLIENT_SEND) &&
       checkConnectionTimeOut()) {
     return (-2);
   }
@@ -299,13 +306,14 @@ void Session::startCreateResponse() {
     startCreateResponseToOptions();
     return;
   }
-  // case OPTIONS
+
+  // case TRACE
   if (request_.getMethod() == "TRACE" && isMethodAllowed(HTTP_TRACE)) {
     startCreateResponseToTrace();
     return;
   }
 
-  // case others (DELETE and TRACE)
+  // case others (DELETE)
   // not inpl them for now
   createErrorResponse(HTTP_405);
 }
@@ -958,10 +966,12 @@ std::string Session::findFileFromDir(const std::string& dirpath) const {
     }
     fullpath.append(dent->d_name);
     if (stat(fullpath.c_str(), &filestat) == -1) {
+      closedir(dir);
       return "";
     }
     // case found
     if (S_ISREG(filestat.st_mode) && isIndex(dent->d_name)) {
+      closedir(dir);
       return dent->d_name;
     }
   }
@@ -1195,7 +1205,7 @@ void Session::startDirectoryListing(const std::string& dirpath) {
 
   // check autoindex is on
   if (!isAutoIndexOn()) {
-    createErrorResponse(HTTP_403);
+    createErrorResponse(HTTP_404);
     return;
   }
 
@@ -1324,7 +1334,7 @@ void Session::createCgiProcess(const std::string& filepath,
   }
 
   if (request_.getMethod() == "POST" || request_.getMethod() == "PUT") {
-    status_ = SESSION_FOR_CGI_WRITE;
+    status_ = SESSION_FOR_CGI_WRITE | SESSION_FOR_CGI_READ;
     return;
   }
   close(cgi_handler_.getInputFd());
@@ -1422,7 +1432,6 @@ int Session::readFromCgi() {
   // check if pipe closed
   if (n == 0) {
     // append data to response
-    write(1, &(cgi_handler_.getBuf())[0], cgi_handler_.getBuf().size());
     ssize_t end_header =
         parseReadBuf(&(cgi_handler_.getBuf())[0], cgi_handler_.getBuf().size());
     if (end_header == -1) {

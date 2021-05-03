@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiHandler.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 22:01:23 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/22 23:23:50 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/02 22:56:35 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 
 #include "HttpStatusCode.hpp"
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 8096
 
 class CgiHandler {
  private:

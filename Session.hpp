@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/02 21:18:25 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/03 08:53:58 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ class Session {
   long time_last_connect_;
   int retry_count_;
   bool flg_exceed_max_session_;
-  SessionStatus status_;
+  int status_;
   const MainConfig& main_config_;
   const ServerConfig* server_config_;
   const LocationConfig* location_config_;
@@ -154,7 +154,7 @@ class Session {
   int getFileFd() const;
   in_addr_t getIp() const;
   uint16_t getPort() const;
-  const SessionStatus& getStatus() const;
+  const int& getStatus() const;
   const std::string& getUserPass() const;
   std::string getFromHeaders(const std::map<std::string, std::string>& headers,
                              const std::string key) const;
