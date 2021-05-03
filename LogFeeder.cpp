@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/03 23:23:14 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/04 00:42:38 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/04 01:52:16 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,8 @@ LogFeeder::~LogFeeder() {}
 ** $remote_user    : クライアントのユーザ名
 ** $time_local     : アクセス日時
 ** $request        : httpの要求URI
-** $status         : httpのステータス
-** $body_bytes_sent: 送信バイト数
+** $status         : http responseのステータス
+** $body_bytes_sent: 送信バイト数 to client
 ** $http_referer   : リファラーURL（遷移元URL）
 ** $http_user_agent: ユーザエージェント情報（ブラウザ名・バージョン等）
 ** https://www.mk-mode.com/blog/2013/01/16/nginx-access-log/
