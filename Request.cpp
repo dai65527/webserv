@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/03 11:13:47 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/03 12:45:07 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,7 +166,7 @@ int Request::parseRequest(Session& session) {
   /* parse chunked body (Chunked has the priority over Content-length*/
   if (flg_chunked_) {
     pos_buf = pos_prev_;
-    return parseChunkedBody(pos_buf);
+    return parseChunkedBody(pos_buf, session);
   }
   /* store body based on content-length value*/
   else if (content_length_ > 0) {
@@ -372,7 +372,7 @@ int Request::checkHeaderField() {
   return 0;
 }
 
-ssize_t Request::parseChunkedBody(size_t pos) {
+ssize_t Request::parseChunkedBody(size_t pos, const Session& session) {
   size_t begin = pos;
   while (pos < buf_.size()) {
     while (pos < buf_.size() && buf_[pos] != '\r') {
@@ -402,6 +402,9 @@ ssize_t Request::parseChunkedBody(size_t pos) {
             std::vector<char>().swap(
                 buf_);  // free memory of buf_ (c11 can use fit_to_shurink);
           }
+          if (body_.size() > session.getClientMaxBodySize()) {
+            return REQ_ERR_TOO_LARGE;
+          }
           return REQ_FIN_RECV;
         }
         if (pos - begin > chunk_size_) {
@@ -417,6 +420,9 @@ ssize_t Request::parseChunkedBody(size_t pos) {
     }
   }
   pos_prev_ = begin;
+  if (body_.size() > session.getClientMaxBodySize()) {
+    return REQ_ERR_TOO_LARGE;
+  }
   return REQ_CONTINUE_RECV;
 }
 

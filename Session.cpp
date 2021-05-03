@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/03 11:12:54 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/03 11:47:22 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,7 +111,6 @@ int Session::setFdToSelect(fd_set* rfds, fd_set* wfds) {
 */
 
 int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
-  printf("status = %d\n", status_);
   if (status_ & SESSION_FOR_CLIENT_RECV && FD_ISSET(sock_fd_, rfds)) {
     if (receiveRequest() == -1) {
       return (-1);
