@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/04 23:58:02 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/05 06:50:33 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,7 +132,6 @@ int Request::parseRequest(Session& session) {
       return REQ_CONTINUE_RECV;
     }
     ret = parseRequestLine();
-    session.feedLog(false);
     if (ret < 0) {
       return ret;
     }
@@ -158,6 +157,7 @@ int Request::parseRequest(Session& session) {
     pos_prev_ = pos_begin_body_;
 #ifndef UNIT_TEST
     session.setupServerAndLocationConfig();
+    session.feedLog(false);
 #endif
     ret = checkBodySize(session);
     if (ret < 0) {
