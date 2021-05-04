@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/03 23:17:57 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/04 21:57:05 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/04 22:45:16 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ class LogFeeder {
  public:
   ~LogFeeder();
   LogFeeder(const Session& session);
-  void feedLog() const;
+  void feedLog(bool is_sent = false) const;
   std::string getRemoteUser() const;
   std::string getResponseStatusCode() const;
   std::string getValueFromRequestHeader(const std::string& key) const;

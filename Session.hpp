@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/04 21:57:49 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/04 22:46:40 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,6 +179,9 @@ class Session {
   const std::string& findRoot() const;
   void setupServerAndLocationConfig();
   unsigned long getClientMaxBodySize() const;
+
+  //log feeding
+  void  feedLog(bool is_sent = false) const;
 };
 
 #endif /* SESSION_HPP */

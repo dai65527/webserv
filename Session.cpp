@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/04 22:12:16 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/04 22:55:43 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -534,7 +534,7 @@ int Session::sendResponse() {
     return 0;
   }
   if (n == 0) {
-    log_feeder_->feedLog();
+    feedLog(true);
     if (response_.isConnectionToClose()) {
       return 1;  // return 1 if all data sent and is not keep alive (this
                  // session will be closed)
@@ -1976,4 +1976,8 @@ void Session::initMapMineExt() {
   }
   map_mime_ext_["audio/3gpp"] = "3gp";
   map_mime_ext_["audio/3gpp2"] = "3g2";
+}
+
+void Session::feedLog(bool is_sent) const {
+  log_feeder_->feedLog(is_sent);
 }

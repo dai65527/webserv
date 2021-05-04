@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/03 23:23:14 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/04 21:56:09 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/04 23:54:33 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,20 +29,32 @@ LogFeeder::~LogFeeder() {}
 ** $http_user_agent: ユーザエージェント情報（ブラウザ名・バージョン等）
 ** https://www.mk-mode.com/blog/2013/01/16/nginx-access-log/
 */
-void LogFeeder::feedLog() const {
+void LogFeeder::feedLog(bool is_sent) const {
   char time[128];
   // format: Sat, 17 Apr 2021 13:45:20 GMT
   getTimeStamp(time, 128, "%a, %d %b %Y %H:%M:%S %Z");
 
+  if (!is_sent) {
+    std::cout << "[Webserv Recv] ";
+  } else {
+    std::cout << "[Webserv Sent] ";
+  }
+
+  //common part for both recv and sent
   std::cout << getIpAddress(session_.getIp()) << " - " << getRemoteUser()
             << " [" << time << "]"
             << " \"" << session_.getMethod() << " " << session_.getUri() << " "
-            << "HTTP/1.1" << session_.getQuery() << "\""
-            << " " << getResponseStatusCode() << " "
-            << session_.getBytesAlreadySent() << " "
-            << "\"" << getValueFromRequestHeader("referer") << "\" "
-            << "\"" << getValueFromRequestHeader("user-agent") << "\""
-            << std::endl;
+            << "HTTP/1.1" << session_.getQuery() << "\"";
+            
+  if (!is_sent) {
+    std::cout << std::endl;
+  } else {
+    std::cout << " " << getResponseStatusCode() << " "
+              << session_.getBytesAlreadySent() << " "
+              << "\"" << getValueFromRequestHeader("referer") << "\" "
+              << "\"" << getValueFromRequestHeader("user-agent") << "\""
+              << std::endl;
+  }
 }
 
 std::string LogFeeder::getRemoteUser() const {
