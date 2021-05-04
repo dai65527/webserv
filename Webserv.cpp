@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 21:48:48 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/18 10:43:49 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/04 18:28:12 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,18 +20,11 @@
 #include "Webserv.hpp"
 #define DEFAULT_PORT 5050
 
-Webserv::Webserv() {}
+Webserv::Webserv() : retry_count_(0) {}
 
 Webserv::~Webserv() {
-  for (std::list<Session*>::iterator itr = sessions_.begin();
-       itr != sessions_.end(); ++itr) {
-    delete *itr;
-  }
-
-  for (std::list<Socket*>::iterator itr = sockets_.begin();
-       itr != sockets_.end(); ++itr) {
-    delete *itr;
-  }
+  closeSessions();
+  closeSockets();
 }
 
 /*
@@ -89,8 +82,26 @@ void Webserv::initSockets() {
 }
 
 void Webserv::run() {
-  setToSelect();
-  selectAndExecute();
+  try {
+    if (retry_count_ > 424242) {
+      std::cout << "webserv: too many error: restarting webserv..."
+                << std::endl;
+      resetWebserv();
+    } else if (retry_count_ > 42 && retry_count_ < 424242) {
+      std::cout << "webserv: too many error: restarting all session..."
+                << std::endl;
+      resetSessions();
+    }
+    setToSelect();
+    selectAndExecute();
+    retry_count_ = 0;
+  } catch (const std::exception& e) {
+    std::cout << "webserv: run: caught error: " << e.what() << std::endl;
+    retry_count_++;
+    if (retry_count_ == INT_MAX) {
+      throw std::runtime_error("webserv: give up...");
+    }
+  }
 }
 
 int Webserv::setToSelect() {
@@ -126,20 +137,23 @@ int Webserv::selectAndExecute() {
   int ret;
   for (std::list<Session*>::iterator itr = sessions_.begin();
        itr != sessions_.end();) {
-    ret = (*itr)->checkSelectedAndExecute(&rfds_, &wfds_);
+    try {
+      ret = (*itr)->checkSelectedAndExecute(&rfds_, &wfds_);
+    } catch (const std::exception& e) {
+      std::cout << "Webserv: caught exception: " << e.what() << std::endl;
+      std::cout << "closing session" << e.what() << std::endl;
+      retry_count_++;
+    }
 
-    if (ret == 0) {  // case not selected
-      ++itr;
-      continue;
-    } else if (ret == -1 || ret == -2) {  // case to close connection
+    if (ret == -1 || ret == -2) {  // case to close connection
       delete *itr;
       itr = sessions_.erase(itr);
       if (ret == -1) {
         n_fd_--;
       }
-    } else {  // case selected
+    } else {
       ++itr;
-      n_fd_--;
+      n_fd_ -= ret;
     }
   }
 
@@ -160,3 +174,26 @@ int Webserv::selectAndExecute() {
   }
   return 0;
 }
+
+void Webserv::closeSessions() {
+  for (std::list<Session*>::iterator itr = sessions_.begin();
+       itr != sessions_.end(); ++itr) {
+    delete *itr;
+  }
+}
+
+void Webserv::closeSockets() {
+  for (std::list<Socket*>::iterator itr = sockets_.begin();
+       itr != sockets_.end(); ++itr) {
+    delete *itr;
+  }
+}
+
+void Webserv::resetWebserv() {
+  closeSessions();
+  closeSockets();
+  usleep(100000);  // wait for 0.1 seconds
+  initSockets();
+}
+
+void Webserv::resetSessions() { closeSessions(); }

@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/03 16:36:02 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/04 19:24:08 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,62 +111,52 @@ int Session::setFdToSelect(fd_set* rfds, fd_set* wfds) {
 */
 
 int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
+  int num_selected = 0;
   if (status_ & SESSION_FOR_CLIENT_RECV && FD_ISSET(sock_fd_, rfds)) {
     if (receiveRequest() == -1) {
       return (-1);
-    } else {
-      std::cout << "[webserv] received request data" << std::endl;
-      updateConnectionTime();
-      return (1);
     }
-  } else if (status_ & SESSION_FOR_FILE_READ && FD_ISSET(file_fd_, rfds)) {
+    num_selected++;
+  }
+  if (status_ & SESSION_FOR_FILE_READ && FD_ISSET(file_fd_, rfds)) {
     if (readFromFile() == -1) {
       return (-1);
-    } else {
-      std::cout << "[webserv] read data from file" << std::endl;
-      return (1);
     }
-  } else if (status_ & SESSION_FOR_FILE_WRITE && FD_ISSET(file_fd_, wfds)) {
+    num_selected++;
+  }
+  if (status_ & SESSION_FOR_FILE_WRITE && FD_ISSET(file_fd_, wfds)) {
     if (writeToFile() == -1) {
       return (-1);
-    } else {
-      std::cout << "[webserv] write data to file" << std::endl;
-      return (1);
     }
-  } else if (status_ & SESSION_FOR_CGI_WRITE &&
+  }
+  if (status_ & SESSION_FOR_CGI_WRITE &&
              FD_ISSET(cgi_handler_.getInputFd(), wfds)) {
     if (writeToCgi() == -1) {
       return (-1);
-    } else {
-      std::cout << "[webserv] wrote data to cgi" << std::endl;
-      return (1);
     }
-  } else if (status_ & SESSION_FOR_CGI_READ &&
+    num_selected++;
+  }
+  if (status_ & SESSION_FOR_CGI_READ &&
              FD_ISSET(cgi_handler_.getOutputFd(), rfds)) {
     if (readFromCgi() == -1) {
       return (-1);
-    } else {
-      std::cout << "[webserv] read data from cgi" << std::endl;
-      return (1);
     }
-  } else if (status_ & SESSION_FOR_CLIENT_SEND && FD_ISSET(sock_fd_, wfds)) {
+    num_selected++;
+  }
+  if (status_ & SESSION_FOR_CLIENT_SEND && FD_ISSET(sock_fd_, wfds)) {
     if (sendResponse() != 0) {
       return (-1);
-    } else {
-      std::cout << "[webserv] send data" << std::endl;
-      updateConnectionTime();
-      return (1);
     }
+    num_selected++;
   }
-  // printf("not selected\n");
 
-  // check connection time out
-  if ((status_ & SESSION_FOR_CLIENT_RECV ||
-       status_ & SESSION_FOR_CLIENT_SEND) &&
-      checkConnectionTimeOut()) {
+  // manage connection time
+  if (num_selected > 0) {
+    updateConnectionTime();
+  } else if (checkConnectionTimeOut()) {
     return (-2);
   }
-  return (0);
+  return (num_selected);
 }
 
 /*
