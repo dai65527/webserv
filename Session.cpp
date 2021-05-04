@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/03 16:36:02 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/04 16:39:12 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,18 @@ Session::Session(int sock_fd, const MainConfig& main_config,
   updateConnectionTime();
 }
 
-Session::~Session() { close(sock_fd_); };
+Session::~Session() {
+  close(sock_fd_);
+  if (status_ & SESSION_FOR_CGI_WRITE) {
+    close(cgi_handler_.getInputFd());
+    close(cgi_handler_.getOutputFd());
+    kill(cgi_handler_.getPid(), SIGKILL);
+  } else if (status_ & SESSION_FOR_CGI_READ) {
+    close(cgi_handler_.getOutputFd());
+  } else if (status_ & (SESSION_FOR_FILE_READ | SESSION_FOR_FILE_WRITE)) {
+    close(file_fd_);
+  }
+};
 
 /*
 ** getters
