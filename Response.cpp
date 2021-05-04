@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/03 11:13:26 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/04 21:06:24 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 
 #include <sys/socket.h>
 
-#include "webserv_utils.hpp"
 #include "webserv_settings.hpp"
+#include "webserv_utils.hpp"
 
 std::map<HTTPStatusCode, std::string> Response::response_code_message_;
 
@@ -52,9 +52,9 @@ int Response::createStatusLine(HTTPStatusCode http_status_) {
   char buf[128];
   // format: Sat, 17 Apr 2021 13:45:20 GMT
   getTimeStamp(buf, 128, "%a, %d %b %Y %H:%M:%S %Z");
-  #ifndef UNIT_TEST
+#ifndef UNIT_TEST
   addHeader("Date", buf);
-  #endif
+#endif
 
   return 0;
 }
@@ -68,14 +68,14 @@ int Response::createStatusLine(const std::string& value) {
 
   // common header
   addHeader("Server", WEBSERV_NAME);
-  
+
   // time header
   char buf[128];
   // format: Sat, 17 Apr 2021 13:45:20 GMT
   getTimeStamp(buf, 128, "%a, %d %b %Y %H:%M:%S %Z");
-  #ifndef UNIT_TEST
+#ifndef UNIT_TEST
   addHeader("Date", buf);
-  #endif
+#endif
 
   return 0;
 }
@@ -160,13 +160,11 @@ ssize_t Response::sendData(int sock_fd, bool header_only, bool is_trace) {
       }
 
       // sent all header
-      status_header_.clear();  // clear for next request
       bytes_already_sent_ = 0;
 
       // no body to send
       if (body_.empty() || header_only) {
-        send_progress_ = 0;  // init for next request
-        return 0;            // end
+        return 0;  // end
       }
 
       // to next process (send body)
@@ -187,10 +185,6 @@ ssize_t Response::sendData(int sock_fd, bool header_only, bool is_trace) {
         return 1;  // continue to send
       }
 
-      // sent all header
-      body_.clear();       // clear for next request
-      send_progress_ = 0;  // init for next request
-      bytes_already_sent_ = 0;
       break;
 
     default:
@@ -286,3 +280,7 @@ void Response::initResponseCodeMessage() {
         "Network Authentication Required";  // RFC6585
   }
 }
+
+const std::string& Response::getStatusHeader() const { return status_header_; }
+
+size_t Response::getBytesAlreadySent() const { return bytes_already_sent_; }

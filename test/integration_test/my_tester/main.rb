@@ -406,7 +406,15 @@ testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "message/http"
+testcase.add
 
 #####
+
+casename = "head /index.html"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/index.html", "HEAD"
+testcase.expectedCode = "200"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.add
 
 WebservTestCase::execAll
