@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 21:48:48 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/04 18:28:12 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/05 07:04:52 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,7 @@ void Webserv::run() {
       std::cout << "webserv: too many error: restarting webserv..."
                 << std::endl;
       resetWebserv();
-    } else if (retry_count_ > 42 && retry_count_ < 424242) {
+    } else if (retry_count_ > 42) {
       std::cout << "webserv: too many error: restarting all session..."
                 << std::endl;
       resetSessions();
@@ -98,7 +98,7 @@ void Webserv::run() {
   } catch (const std::exception& e) {
     std::cout << "webserv: run: caught error: " << e.what() << std::endl;
     retry_count_++;
-    if (retry_count_ == INT_MAX) {
+    if (retry_count_ == INT_MAX / 2) {
       throw std::runtime_error("webserv: give up...");
     }
   }
