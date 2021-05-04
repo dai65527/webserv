@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/03 23:23:14 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/04 01:52:16 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/04 21:56:09 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,7 @@
 
 #include <iostream>
 
-LogFeeder::LogFeeder(const Session& session, const Request& request,
-                     const Response& response)
-    : session_(session), request_(request), response_(response) {}
+LogFeeder::LogFeeder(const Session& session) : session_(session) {}
 
 LogFeeder::~LogFeeder() {}
 
@@ -38,10 +36,10 @@ void LogFeeder::feedLog() const {
 
   std::cout << getIpAddress(session_.getIp()) << " - " << getRemoteUser()
             << " [" << time << "]"
-            << " \"" << request_.getMethod() << " " << request_.getUri() << " "
-            << "HTTP/1.1" << request_.getQuery() << "\""
+            << " \"" << session_.getMethod() << " " << session_.getUri() << " "
+            << "HTTP/1.1" << session_.getQuery() << "\""
             << " " << getResponseStatusCode() << " "
-            << response_.getBytesAlreadySent() << " "
+            << session_.getBytesAlreadySent() << " "
             << "\"" << getValueFromRequestHeader("referer") << "\" "
             << "\"" << getValueFromRequestHeader("user-agent") << "\""
             << std::endl;
@@ -58,15 +56,15 @@ std::string LogFeeder::getRemoteUser() const {
 }
 
 std::string LogFeeder::getResponseStatusCode() const {
-  const std::string status_header = response_.getStatusHeader();
+  const std::string status_header = session_.getStatusHeader();
   size_t pos = status_header.find_first_of(" ");
   return status_header.substr(pos + 1, 3);  // shold get 3 digit after HTTP/1.1
 }
 
 std::string LogFeeder::getValueFromRequestHeader(const std::string& key) const {
   std::map<std::string, std::string>::const_iterator itr =
-      request_.getHeaders().find(key);
-  if (itr != request_.getHeaders().end()) {
+      session_.getHeaders().find(key);
+  if (itr != session_.getHeaders().end()) {
     return (*itr).second;
   } else {
     return "-";

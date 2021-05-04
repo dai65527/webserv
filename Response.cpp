@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/04 01:09:00 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/04 21:06:24 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 
 #include <sys/socket.h>
 
-#include "webserv_utils.hpp"
 #include "webserv_settings.hpp"
+#include "webserv_utils.hpp"
 
 std::map<HTTPStatusCode, std::string> Response::response_code_message_;
 
@@ -52,9 +52,9 @@ int Response::createStatusLine(HTTPStatusCode http_status_) {
   char buf[128];
   // format: Sat, 17 Apr 2021 13:45:20 GMT
   getTimeStamp(buf, 128, "%a, %d %b %Y %H:%M:%S %Z");
-  #ifndef UNIT_TEST
+#ifndef UNIT_TEST
   addHeader("Date", buf);
-  #endif
+#endif
 
   return 0;
 }
@@ -68,14 +68,14 @@ int Response::createStatusLine(const std::string& value) {
 
   // common header
   addHeader("Server", WEBSERV_NAME);
-  
+
   // time header
   char buf[128];
   // format: Sat, 17 Apr 2021 13:45:20 GMT
   getTimeStamp(buf, 128, "%a, %d %b %Y %H:%M:%S %Z");
-  #ifndef UNIT_TEST
+#ifndef UNIT_TEST
   addHeader("Date", buf);
-  #endif
+#endif
 
   return 0;
 }
@@ -164,7 +164,7 @@ ssize_t Response::sendData(int sock_fd, bool header_only, bool is_trace) {
 
       // no body to send
       if (body_.empty() || header_only) {
-        return 0;            // end
+        return 0;  // end
       }
 
       // to next process (send body)
@@ -281,11 +281,6 @@ void Response::initResponseCodeMessage() {
   }
 }
 
-  const std::string& Response::getStatusHeader() const {
-    return status_header_;
-  }
+const std::string& Response::getStatusHeader() const { return status_header_; }
 
-  size_t Response::getBytesAlreadySent() const {
-    return bytes_already_sent_;
-  }
-  
+size_t Response::getBytesAlreadySent() const { return bytes_already_sent_; }

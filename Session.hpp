@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/02 01:32:00 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/04 00:07:50 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/04 21:57:49 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,7 @@ class Session {
   Request request_;
   Response response_;
   CgiHandler cgi_handler_;
+  LogFeeder* log_feeder_;
   in_addr_t ip_;
   uint16_t port_;
 
@@ -162,6 +163,12 @@ class Session {
   std::string getFromHeaders(const std::map<std::string, std::string>& headers,
                              const std::string key) const;
   std::string getPathInfo(const std::string& cgiuri) const;
+  const std::string& getMethod() const;
+  const std::string& getUri() const;
+  const std::string& getQuery() const;
+  const std::map<std::string, std::string>& getHeaders() const;
+  const std::string& getStatusHeader() const;
+  size_t getBytesAlreadySent() const;
 
   // functions called from Webserv
   int setFdToSelect(fd_set* rfds, fd_set* wfds);
