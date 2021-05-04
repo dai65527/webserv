@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 00:11:38 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/04 16:40:48 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/04 17:06:54 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,11 +32,9 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  if (signal(SIGCHLD, SIG_IGN) || signal(SIGINT, handleSigInt)) {
-    errno = 1;
-    std::cout << "webserv: signal: " << strerror(errno) << std::endl;
-    return 1;
-  }
+  // init signal handlers
+  signal(SIGCHLD, SIG_IGN);      // detatch cgi process
+  signal(SIGINT, handleSigInt);  // register SIGINT handler
 
   try {
     nginDX.init(argv[1]);
