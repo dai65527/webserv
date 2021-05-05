@@ -6,13 +6,18 @@
 #    By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/01/05 17:34:06 by dnakano           #+#    #+#              #
-#    Updated: 2021/05/04 00:09:07 by dhasegaw         ###   ########.fr        #
+#    Updated: 2021/05/06 00:51:45 by dhasegaw         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CXX			:=	clang++
 CPPFLAGS	:=	-Wall -Wextra -Werror
-
+.PHONY: leak
+leak: CPPFLAGS += -g -fsanitize=leak
+leak: re
+.PHONY: address
+address: CPPFLAGS += -g -fsanitize=address
+address: re
 SRCS		:=	main.cpp \
 				webserv_utils.cpp \
 				Webserv.cpp \
