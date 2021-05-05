@@ -6,7 +6,7 @@
 #    By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/01/05 17:34:06 by dnakano           #+#    #+#              #
-#    Updated: 2021/05/01 00:27:30 by dhasegaw         ###   ########.fr        #
+#    Updated: 2021/05/04 00:09:07 by dhasegaw         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,7 +31,8 @@ SRCS		:=	main.cpp \
 				ServerOnlyConfigStore.cpp \
 				CgiParams.cpp \
 				UrlEncoder.cpp \
-				Base64.cpp
+				Base64.cpp \
+				LogFeeder.cpp
 OBJS		:=	$(SRCS:%.cpp=%.o)
 LIBFT		:=	libft.a
 LIBFTDIR	:=	./libft

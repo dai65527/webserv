@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 20:22:22 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/30 12:04:51 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/03 23:36:07 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,10 @@ class Response {
   int appendToBody(const std::string& data);
   int appendToBody(const char* data, size_t len);
   ssize_t sendData(int sock_fd, bool header_only = false, bool is_trace = false);
-  const std::string& getRawReponse() const;
+
+  //getters
+  const std::string& getStatusHeader() const;
+  size_t getBytesAlreadySent() const;
 };
 
 #endif /* RESPONSE_HPP */

@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 21:48:48 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/05 07:04:52 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/05 19:30:29 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,10 +39,7 @@ void Webserv::init(const std::string& configfilepath) {
   tv_timeout_.tv_sec = SELECT_TIMEOUT_MS / 1000;
   tv_timeout_.tv_usec = (SELECT_TIMEOUT_MS * 1000) % 1000000;
 
-  /* ignore sigchld signal */
-  signal(SIGCHLD, SIG_IGN);
-
-  /* prepare sockets according to config */
+  // prepare sockets according to config
   initSockets();
 }
 
@@ -130,7 +127,7 @@ int Webserv::selectAndExecute() {
   // select
   n_fd_ = select(max_fd_ + 1, &rfds_, &wfds_, NULL, &tv_timeout_);
   if (n_fd_ == -1) {
-    std::cout << "[error]: select" << std::endl;
+    return 1;
   }
 
   // check each session if it is ready to recv/send
