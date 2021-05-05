@@ -6,7 +6,7 @@
 /*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/05 23:29:31 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/05 23:53:29 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,9 +49,22 @@ Session::Session(int sock_fd, const MainConfig& main_config,
       original_error_response_(HTTP_NOMATCH) {
   initMapMineExt();
   updateConnectionTime();
+  log_feeder_ = new LogFeeder(*this);
 }
 
-Session::~Session() { close(sock_fd_); };
+Session::~Session() {
+  close(sock_fd_);
+  if (status_ & SESSION_FOR_CGI_WRITE) {
+    close(cgi_handler_.getInputFd());
+    close(cgi_handler_.getOutputFd());
+    kill(cgi_handler_.getPid(), SIGKILL);
+  } else if (status_ & SESSION_FOR_CGI_READ) {
+    close(cgi_handler_.getOutputFd());
+  } else if (status_ & (SESSION_FOR_FILE_READ | SESSION_FOR_FILE_WRITE)) {
+    close(file_fd_);
+  }
+  delete (log_feeder_);
+};
 
 /*
 ** getters
@@ -63,6 +76,18 @@ const int& Session::getStatus() const { return status_; }
 in_addr_t Session::getIp() const { return ip_; };
 uint16_t Session::getPort() const { return port_; };
 const std::string& Session::getUserPass() const { return userpass_; }
+const std::string& Session::getMethod() const { return request_.getMethod(); }
+const std::string& Session::getUri() const { return request_.getUri(); }
+const std::string& Session::getQuery() const { return request_.getQuery(); }
+const std::map<std::string, std::string>& Session::getHeaders() const {
+  return request_.getHeaders();
+}
+const std::string& Session::getStatusHeader() const {
+  return response_.getStatusHeader();
+}
+size_t Session::getBytesAlreadySent() const {
+  return response_.getBytesAlreadySent();
+}
 
 /*
 ** setFdToSelect
@@ -111,62 +136,53 @@ int Session::setFdToSelect(fd_set* rfds, fd_set* wfds) {
 */
 
 int Session::checkSelectedAndExecute(fd_set* rfds, fd_set* wfds) {
+  int num_selected = 0;
   if (status_ & SESSION_FOR_CLIENT_RECV && FD_ISSET(sock_fd_, rfds)) {
     if (receiveRequest() == -1) {
       return (-1);
-    } else {
-      std::cout << "[webserv] received request data" << std::endl;
-      updateConnectionTime();
-      return (1);
     }
-  } else if (status_ & SESSION_FOR_FILE_READ && FD_ISSET(file_fd_, rfds)) {
+    num_selected++;
+  }
+  if (status_ & SESSION_FOR_FILE_READ && FD_ISSET(file_fd_, rfds)) {
     if (readFromFile() == -1) {
       return (-1);
-    } else {
-      std::cout << "[webserv] read data from file" << std::endl;
-      return (1);
     }
-  } else if (status_ & SESSION_FOR_FILE_WRITE && FD_ISSET(file_fd_, wfds)) {
+    num_selected++;
+  }
+  if (status_ & SESSION_FOR_FILE_WRITE && FD_ISSET(file_fd_, wfds)) {
     if (writeToFile() == -1) {
       return (-1);
-    } else {
-      std::cout << "[webserv] write data to file" << std::endl;
-      return (1);
     }
-  } else if (status_ & SESSION_FOR_CGI_WRITE &&
+    num_selected++;
+  }
+  if (status_ & SESSION_FOR_CGI_WRITE &&
              FD_ISSET(cgi_handler_.getInputFd(), wfds)) {
     if (writeToCgi() == -1) {
       return (-1);
-    } else {
-      std::cout << "[webserv] wrote data to cgi" << std::endl;
-      return (1);
     }
-  } else if (status_ & SESSION_FOR_CGI_READ &&
+    num_selected++;
+  }
+  if (status_ & SESSION_FOR_CGI_READ &&
              FD_ISSET(cgi_handler_.getOutputFd(), rfds)) {
     if (readFromCgi() == -1) {
       return (-1);
-    } else {
-      std::cout << "[webserv] read data from cgi" << std::endl;
-      return (1);
     }
-  } else if (status_ & SESSION_FOR_CLIENT_SEND && FD_ISSET(sock_fd_, wfds)) {
+    num_selected++;
+  }
+  if (status_ & SESSION_FOR_CLIENT_SEND && FD_ISSET(sock_fd_, wfds)) {
     if (sendResponse() != 0) {
       return (-1);
-    } else {
-      std::cout << "[webserv] send data" << std::endl;
-      updateConnectionTime();
-      return (1);
     }
+    num_selected++;
   }
-  // printf("not selected\n");
 
-  // check connection time out
-  if ((status_ & SESSION_FOR_CLIENT_RECV ||
-       status_ & SESSION_FOR_CLIENT_SEND) &&
-      checkConnectionTimeOut()) {
+  // manage connection time
+  if (num_selected > 0) {
+    updateConnectionTime();
+  } else if (checkConnectionTimeOut()) {
     return (-2);
   }
-  return (0);
+  return (num_selected);
 }
 
 /*
@@ -518,6 +534,7 @@ int Session::sendResponse() {
     return 0;
   }
   if (n == 0) {
+    feedLog(true);
     if (response_.isConnectionToClose()) {
       return 1;  // return 1 if all data sent and is not keep alive (this
                  // session will be closed)
@@ -1960,4 +1977,8 @@ void Session::initMapMineExt() {
   }
   map_mime_ext_["audio/3gpp"] = "3gp";
   map_mime_ext_["audio/3gpp2"] = "3g2";
+}
+
+void Session::feedLog(bool is_sent) const {
+  log_feeder_->feedLog(is_sent);
 }

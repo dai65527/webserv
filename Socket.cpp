@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 23:34:23 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/03/23 20:29:56 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/04 22:30:03 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,6 +120,6 @@ int Socket::acceptRequest() {
     throw std::runtime_error("webserv: Socket: cannot initialize socket");
   }
 
-  std::cout << "[webserv] accept connection" << std::endl;
+  // std::cout << "[webserv] accept connection" << std::endl;
   return accepted_fd;
 }
