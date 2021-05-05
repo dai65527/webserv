@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Session.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/04 22:55:43 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/05 19:21:13 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,15 @@ Session::Session(int sock_fd, const MainConfig& main_config,
 
 Session::~Session() {
   close(sock_fd_);
+  if (status_ & SESSION_FOR_CGI_WRITE) {
+    close(cgi_handler_.getInputFd());
+    close(cgi_handler_.getOutputFd());
+    kill(cgi_handler_.getPid(), SIGKILL);
+  } else if (status_ & SESSION_FOR_CGI_READ) {
+    close(cgi_handler_.getOutputFd());
+  } else if (status_ & (SESSION_FOR_FILE_READ | SESSION_FOR_FILE_WRITE)) {
+    close(file_fd_);
+  }
   delete (log_feeder_);
 };
 
