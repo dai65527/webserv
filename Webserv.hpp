@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/01 22:44:35 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/04/15 09:22:35 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/04 17:47:53 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ class Webserv {
   MainConfig config_;
   int n_fd_;
   int max_fd_;
+  int retry_count_;
   fd_set rfds_;
   fd_set wfds_;
   struct timeval tv_timeout_;
@@ -38,6 +39,10 @@ class Webserv {
   /*** functions used in init function ***/
   void loadConfig(const std::string& filename);
   void initSockets();
+  void closeSessions();
+  void closeSockets();
+  void resetWebserv();
+  void resetSessions();
 
   int setToSelect();
   int selectAndExecute();
