@@ -434,9 +434,51 @@ testcase.add
 
 #####
 
-casename = "get /charset_utf8 with \"Accept-Charset: iso-8859-5\" (has charset setting)"
+casename = "get /charset_utf8 with \"Accept-Charset: iso-8859-5\" (has charset setting, should return 406)"
 testcase = WebservTestCase.new casename, "localhost", 8000, "/charset_utf8", "GET"
 testcase.request["Accept-Charset"] = "iso-8859-5"
+testcase.expectedCode = "406"
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.add
+
+#####
+
+casename = "get /language_en_US with \"Accept-Language: en-US\" (has charset setting)"
+testcase = WebservTestCase.new casename, "localhost", 8000, "/language_en_US", "GET"
+testcase.request["Accept-Language"] = "en-US"
+testcase.expectedCode = "200"
+testcase.expectedBody = "<h1>/index.html</h1>\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.expectedResponseHeader["Content-Language"] = "en-US"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Last-Modified"
+testcase.add
+
+#####
+
+casename = "get /language_en_US with \"Accept-Language: en\" (has charset setting)"
+testcase = WebservTestCase.new casename, "localhost", 8000, "/language_en_US", "GET"
+testcase.request["Accept-Language"] = "en"
+testcase.expectedCode = "200"
+testcase.expectedBody = "<h1>/index.html</h1>\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.expectedResponseHeader["Content-Language"] = "en-US"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Last-Modified"
+testcase.add
+
+#####
+
+casename = "get /language_en_US with \"Accept-Language: ja-JP\" (has charset setting) should return 406"
+testcase = WebservTestCase.new casename, "localhost", 8000, "/language_en_US", "GET"
+testcase.request["Accept-Language"] = "ja-JP"
 testcase.expectedCode = "406"
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/html"
