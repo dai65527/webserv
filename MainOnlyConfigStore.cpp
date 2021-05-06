@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/20 15:05:16 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/21 10:15:43 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/06 11:17:34 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ int MainOnlyConfigStore::getRetryAfter() const { return retry_after_; }
 /*** parsers helper ***/
 static bool str_isdigit(const char* str) {
   while (*str != '\0') {
-    if (!ft_isdigit(*str)) {
+    if (!isdigit(*str)) {
       return false;
     }
     str++;
@@ -75,7 +75,7 @@ void MainOnlyConfigStore::parseMaxSessions(
                              settings.front() + "\"");
   }
 
-  max_sessions_ = ft_atoi(settings.front().c_str());
+  max_sessions_ = atoi(settings.front().c_str());
   if (max_sessions_ < 1) {
     throw std::runtime_error("max_sessions: invalid value \"" +
                              settings.front() + "\"");
@@ -101,7 +101,7 @@ void MainOnlyConfigStore::parseRetryAfter(
                              settings.front() + "\"");
   }
 
-  retry_after_ = ft_atoi(settings.front().c_str());
+  retry_after_ = atoi(settings.front().c_str());
   if (retry_after_ < 1) {
     throw std::runtime_error("retry_after: invalid value \"" +
                              settings.front() + "\"");

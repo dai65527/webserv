@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/15 10:34:35 by dnakano           #+#    #+#             */
-/*   Updated: 2021/05/06 10:35:00 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/06 11:15:53 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -304,11 +304,11 @@ void ConfigParser::storeFileContent(int fd) {
 
 bool ConfigParser::isSpecialChar(char c) const {
   return (c == '\0' || c == '{' || c == '}' || c == ';' || c == '#' ||
-          ft_isspace(c));
+          isspace(c));
 }
 
 void ConfigParser::skipSpace() {
-  while (ft_isspace(filecontent_[char_count_])) {
+  while (isspace(filecontent_[char_count_])) {
     if (filecontent_[char_count_] == '\n') {
       line_count_++;
     }

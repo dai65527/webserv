@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/06 10:38:06 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/06 11:19:35 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1103,7 +1103,7 @@ static bool compFiles(const struct FileInfo& a, const struct FileInfo& b) {
   }
 
   // file name
-  if (ft_strncmp(a.dent.d_name, b.dent.d_name, a.dent.d_namlen) < 0) {
+  if (strncmp(a.dent.d_name, b.dent.d_name, a.dent.d_namlen) < 0) {
     return true;
   }
   return false;
@@ -1476,7 +1476,7 @@ ssize_t Session::parseReadBuf(const char* read_buf, ssize_t n) {
   while (i < n) {
     begin = i;
     while (isprint(read_buf[i]) &&
-           ft_strchr("()<>@,;:\\\"/[]?={} \t", read_buf[i]) == NULL) {
+           strchr("()<>@,;:\\\"/[]?={} \t", read_buf[i]) == NULL) {
       ++i;
     }
     if (read_buf[i] != ':') {  // no space permitted between header key and :
@@ -1492,9 +1492,9 @@ ssize_t Session::parseReadBuf(const char* read_buf, ssize_t n) {
       ++i;
     }
     header[key] = std::string(&read_buf[begin], &read_buf[i]);
-    if (!ft_strncmp(read_buf + i, "\n\n", 2)) {
+    if (!strncmp(read_buf + i, "\n\n", 2)) {
       ret = 1;
-    } else if (!ft_strncmp(read_buf + i, "\r\n\r\n", 4)) {
+    } else if (!strncmp(read_buf + i, "\r\n\r\n", 4)) {
       ret = 3;
     }
     if (ret > 0) {

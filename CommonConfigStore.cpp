@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/17 18:58:46 by dnakano           #+#    #+#             */
-/*   Updated: 2021/05/01 12:06:07 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/06 11:15:36 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,7 +126,7 @@ void CommonConfigStore::parseErrorPage(const std::list<std::string>& settings) {
   std::list<std::string>::const_iterator itr_end = --settings.end();
   for (itr = settings.begin(); itr != itr_end; ++itr) {
     // check code is valid (must be between 300 and 599 because it's an "error")
-    code = isHttpStatusCode(ft_atoi(itr->c_str()));
+    code = isHttpStatusCode(atoi(itr->c_str()));
     if (code == HTTP_NOMATCH) {
       throw std::runtime_error("error_page: invalid value \"" + *itr + "\"");
     } else if (code < 300) {
@@ -237,7 +237,7 @@ void CommonConfigStore::parseClientMaxBodySize(
   // check value of setting
   for (const char* value_str = settings.front().c_str(); *value_str != '\0';
        value_str++) {
-    if (!ft_isdigit(*value_str)) {
+    if (!isdigit(*value_str)) {
       if ((*value_str == 'k' || *value_str == 'K') &&
           *(value_str + 1) == '\0' && settings.front().length() != 1) {
         client_max_body_size_ = 1000;
