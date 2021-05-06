@@ -419,6 +419,31 @@ testcase.add
 
 #####
 
+casename = "get /charset_utf8 with \"Accept-Charset: utf-8\" (has charset setting)"
+testcase = WebservTestCase.new casename, "localhost", 8000, "/charset_utf8", "GET"
+testcase.request["Accept-Charset"] = "utf-8"
+testcase.expectedCode = "200"
+testcase.expectedBody = "<h1>/index.html</h1>\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html; charset=utf-8"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Last-Modified"
+testcase.add
+
+#####
+
+casename = "get /charset_utf8 with \"Accept-Charset: iso-8859-5\" (has charset setting)"
+testcase = WebservTestCase.new casename, "localhost", 8000, "/charset_utf8", "GET"
+testcase.request["Accept-Charset"] = "iso-8859-5"
+testcase.expectedCode = "406"
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.add
+
+#####
+
 casename = "get 127.0.0.1:8000/ (non default server)"
 testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/", "GET"
 testcase.expectedCode = "200"
@@ -430,5 +455,7 @@ testcase.expectedResponseHeader["Content-Type"] = "text/html"
 testcase.expectedResponseHeaderExistance.push "Date"
 testcase.expectedResponseHeaderExistance.push "Last-Modified"
 testcase.add
+
+#####
 
 WebservTestCase::execAll
