@@ -1,7 +1,7 @@
 #!/bin/bash
 rm -f ./html/default_server/uploadstore/*.html
 make re -C ../../../
-../../../nginDX configfiles/test.conf&
+../../../webserv configfiles/test.conf&
 
 sleep 1
 
