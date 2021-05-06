@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/06 11:55:11 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/06 17:40:25 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1511,6 +1511,7 @@ std::string Session::getUploadFilePath() {
   // create response header
   response_.createStatusLine(HTTP_201);
   response_.addHeader("Location", upload_store);
+  response_.addHeader("Content-Location", upload_store);
   return filepath;
 }
 

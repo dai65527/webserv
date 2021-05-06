@@ -222,8 +222,8 @@ testcase.expectedBody = ""
 testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Location"] = "/uploadstore/upload.html"
+testcase.expectedResponseHeader["Content-Location"] = "/uploadstore/upload.html"
 testcase.expectedResponseHeaderExistance.push "Date"
-testcase.expectedResponseHeaderExistance.push "Location"
 testcase.add
 
 #####
@@ -250,6 +250,7 @@ testcase.expectedBody = ""
 testcase.expectedResponseHeader["Server"] = "nginDX"
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Location"] = "/uploadstore/upload.html"
+testcase.expectedResponseHeader["Content-Location"] = "/uploadstore/upload.html"
 testcase.expectedResponseHeaderExistance.push "Date"
 testcase.expectedResponseHeaderExistance.push "Location"
 testcase.add
