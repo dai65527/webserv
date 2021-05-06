@@ -487,8 +487,52 @@ testcase.add
 
 #####
 
-casename = "get 127.0.0.1:8000/ (non default server)"
+casename = "get anotherhost:8000/ (non default server should handle)"
 testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/", "GET"
+testcase.request["Host"] = "anotherhost"
+testcase.expectedCode = "200"
+testcase.expectedBody = "<h1>/non_default_server/index.html</h1>\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Last-Modified"
+testcase.add
+
+#####
+
+casename = "get unknownhost:8000/ (default server should handle)"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/", "GET"
+testcase.request["Host"] = "unknownhost"
+testcase.expectedCode = "200"
+testcase.expectedBody = "<h1>/index.html</h1>\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Last-Modified"
+testcase.add
+
+#####
+
+casename = "get 127.0.0.1:8000/ (non default server should handle)"
+testcase = WebservTestCase.new casename, "127.0.0.1", 8000, "/", "GET"
+testcase.expectedCode = "200"
+testcase.expectedBody = "<h1>/non_default_server/index.html</h1>\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Last-Modified"
+testcase.add
+
+#####
+
+casename = "get localhost:8001/ (another port)"
+testcase = WebservTestCase.new casename, "localhost", 8001, "/", "GET"
 testcase.expectedCode = "200"
 testcase.expectedBody = "<h1>/non_default_server/index.html</h1>\n"
 testcase.expectedResponseHeader["Server"] = "nginDX"
