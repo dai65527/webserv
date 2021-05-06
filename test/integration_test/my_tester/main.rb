@@ -252,7 +252,6 @@ testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Location"] = "/uploadstore/upload.html"
 testcase.expectedResponseHeader["Content-Location"] = "/uploadstore/upload.html"
 testcase.expectedResponseHeaderExistance.push "Date"
-testcase.expectedResponseHeaderExistance.push "Location"
 testcase.add
 
 #####
@@ -267,6 +266,30 @@ testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/html"
 testcase.expectedResponseHeaderExistance.push "Date"
 testcase.expectedResponseHeaderExistance.push "Last-Modified"
+
+#####
+
+casename = "post /upload/upload.html with body size 30 (client_max_body_size: 30)"
+testcase = WebservTestCase.new casename, "localhost", 8000, "/upload", "POST"
+testcase.request.body = "012345678901234567890123456789" # just 30 letters
+testcase.expectedCode = "201"
+testcase.expectedBody = ""
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeaderExistance.push "Date"
+testcase.expectedResponseHeaderExistance.push "Location"
+testcase.expectedResponseHeaderExistance.push "Content-Location"
+testcase.add
+
+#####
+
+casename = "post /upload/upload.html with body size 31 (client_max_body_size: 30)"
+testcase = WebservTestCase.new casename, "localhost", 8000, "/upload", "POST"
+testcase.request.body = "0123456789012345678901234567891" # just 31 letters
+testcase.expectedCode = "413"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Connection"] = "close"
+testcase.add
 
 #####
 
