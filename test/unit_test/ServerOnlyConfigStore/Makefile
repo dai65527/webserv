@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/03/09 10:22:35 by dnakano           #+#    #+#              #
-#    Updated: 2021/03/21 08:39:57 by dnakano          ###   ########.fr        #
+#    Updated: 2021/05/06 11:10:06 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,8 @@ CXX			:=	clang++
 CPPFLAGS	:=	-Wall -Wextra -Werror -D UNIT_TEST
 
 ### config ###
-SRCNAME		:=	ServerOnlyConfigStore.cpp
+SRCNAME		:=	ServerOnlyConfigStore.cpp \
+				webserv_utils.cpp
 SRCDIR		:=	../../..
 INCLUDEDIR	:=	../../..
 TESTSRCNAME	:=	test_main.cc \

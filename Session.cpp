@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/05 19:30:06 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/06 10:38:06 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -445,7 +445,7 @@ void Session::createErrorResponse(HTTPStatusCode http_status) {
   response_.createErrorStatusLine(http_status);
   if (flg_exceed_max_session_) {
     response_.addHeader("Retry-After",
-                        std::to_string(main_config_.getRetryAfter()));
+                        to_string(main_config_.getRetryAfter()));
   }
   if (http_status == HTTP_405 && isMethodAllowed(HTTP_OPTIONS)) {
     createAllowHeader();
@@ -1158,7 +1158,7 @@ void Session::createDirectoryList(const std::list<struct FileInfo>& files) {
     if (S_ISDIR(itr->st.st_mode)) {
       response_.appendToBody("-\n");
     } else {
-      response_.appendToBody(std::to_string(itr->st.st_size));
+      response_.appendToBody(to_string((int)itr->st.st_size));
       response_.appendToBody("\n");
     }
   }
@@ -1643,7 +1643,7 @@ std::string Session::createFilename() const {
   char buf[512];
 
   getTimeStamp(buf, 512, "%y%m%d%H%M%S");
-  return std::string("file") + buf + "_" + std::to_string(rand()) +
+  return std::string("file") + buf + "_" + to_string(rand()) +
          getFileExtension();
 }
 

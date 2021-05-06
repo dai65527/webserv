@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/19 12:09:53 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/21 08:40:37 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/06 10:37:45 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 #include <unistd.h>
 
 #include <cstdlib>
+
+#include "webserv_utils.hpp"
 
 extern "C" {
 #include "libft.h"
@@ -250,7 +252,7 @@ void ServerOnlyConfigStore::parseListen(
                                "\"");
     } else if (port < 0 || port > std::numeric_limits<uint16_t>::max()) {
       throw std::runtime_error("listen: invalid port number " +
-                               std::to_string(port));
+                               to_string(port));
     }
     addToListen(addr, ft_htons(port));
   } else if (cnt == 1 && strIsDigit(ip_port[0])) {
@@ -258,7 +260,7 @@ void ServerOnlyConfigStore::parseListen(
     freeStrs(ip_port);
     if (port < 0 || port > std::numeric_limits<uint16_t>::max()) {
       throw std::runtime_error("listen: invalid port number " +
-                               std::to_string(port));
+                               to_string(port));
     }
     addToListen(INADDR_ANY, ft_htons(port));
   } else {

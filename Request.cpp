@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/05 06:50:33 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/06 10:59:47 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -429,22 +429,6 @@ ssize_t Request::parseChunkedBody(size_t pos, const Session& session) {
 
 void Request::eraseBody(ssize_t n) {
   body_.erase(body_.begin(), body_.begin() + n);
-}
-
-// check
-int Request::checkResponseType() const {
-  std::string str;
-  for (int i = 0; i < 4; ++i) {
-    str.push_back(buf_[i]);
-  }
-  if (!str.compare(0, 4, "read", 0, 4)) {
-    return 0;
-  } else if (!str.compare(0, 4, "write", 0, 4)) {
-    return 1;
-  } else if (!str.compare(0, 3, "cgi", 0, 3)) {
-    return 2;
-  }
-  return 42;
 }
 
 int Request::checkBodySize(Session& session) {
