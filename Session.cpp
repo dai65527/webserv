@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/06 11:19:35 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/06 11:55:11 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,6 @@ std::map<std::string, std::string> Session::map_ext_mime_;
 Session::Session(int sock_fd, const MainConfig& main_config,
                  bool flg_exceed_max_session)
     : sock_fd_(sock_fd),
-      retry_count_(0),
       flg_exceed_max_session_(flg_exceed_max_session),
       status_(SESSION_FOR_CLIENT_RECV),
       main_config_(main_config),
@@ -216,7 +215,6 @@ bool Session::checkConnectionTimeOut() const {
 
 // connect to list
 void Session::resetAll() {
-  retry_count_ = 0;
   original_error_response_ = HTTP_NOMATCH;
   request_.resetAll();
   response_.resetAll();
@@ -231,17 +229,11 @@ void Session::resetAll() {
 int Session::receiveRequest() {
   int ret = request_.receive(sock_fd_, *this);
   if (ret == REQ_ERR_RECV) {
-    if (retry_count_ == RETRY_TIME_MAX) {
-      // then try to send return internal server error
-      createErrorResponse(HTTP_500);
-    } else {
-      retry_count_++;
-    }
-    return 0;
-  } else if (ret == REQ_CLOSE_CON) {
+    std::cout << "Webserv: Session: failed to receive response" << std::endl;
+  }
+  if (ret == REQ_ERR_RECV || ret == REQ_CLOSE_CON) {
     return -1;
   }
-  retry_count_ = 0;
   return checkReceiveReturn(ret);
 }
 
@@ -524,14 +516,8 @@ int Session::sendResponse() {
   n = response_.sendData(sock_fd_, request_.getMethod() == "HEAD",
                          request_.getMethod() == "TRACE");
   if (n == -1) {
-    std::cout << "[error] failed to send response" << std::endl;
-    if (retry_count_ == RETRY_TIME_MAX) {
-      std::cout << "[error] close connection" << std::endl;
-      close(sock_fd_);
-      return -1;  // return -1 if error (this session will be closed)
-    }
-    retry_count_++;
-    return 0;
+    std::cout << "Webserv: Session: failed to send response" << std::endl;
+    return -1;
   }
   if (n == 0) {
     feedLog(true);
@@ -542,7 +528,6 @@ int Session::sendResponse() {
     resetAll();                         // reset session
     status_ = SESSION_FOR_CLIENT_RECV;  // wait for next request
   }
-  retry_count_ = 0;  // reset retry_count if success
   return 0;
 }
 
@@ -1047,21 +1032,9 @@ int Session::readFromFile() {
 
   // retry seveal times even if read failed
   if (n == -1) {
-    if (retry_count_ == RETRY_TIME_MAX) {
-      retry_count_ = 0;
-
-      // close file and make error responce
-      close(file_fd_);
-      createErrorResponse(HTTP_503);
-      status_ = SESSION_FOR_CLIENT_SEND;
-      return 0;
-    }
-    retry_count_++;
-    return 0;
+    std::cout << "Webserv: Session: failed to read from file" << std::endl;
+    return -1;
   }
-
-  // reset retry conunt on success
-  retry_count_ = 0;
 
   // if read all data, close file and create response header
   if (n == 0) {
@@ -1378,27 +1351,9 @@ int Session::writeToCgi() {
 
   // retry several times even if write failed
   if (n == -1) {
-    std::cout << "[error] failed to write to CGI process" << std::endl;
-
-    // give up if reached retry count to maximum
-    if (retry_count_ == RETRY_TIME_MAX) {
-      retry_count_ = 0;
-
-      // close connection
-      std::cout << "[error] close connection from CGI process" << std::endl;
-      close(cgi_handler_.getInputFd());
-
-      // expect response from cgi process
-      status_ = SESSION_FOR_CGI_READ;  // to read from cgi process
-      return 0;
-    }
-
-    retry_count_++;
-    return 0;
+    std::cout << "Webserv: Session: failed to write to cgi" << std::endl;
+    return -1;
   }
-
-  // reset retry conunt on success
-  retry_count_ = 0;
 
   // erase written data
   request_.eraseBody(n);
@@ -1422,29 +1377,9 @@ int Session::readFromCgi() {
   n = cgi_handler_.readFromCgi();
   // retry seveal times even if read failed
   if (n == -1) {
-    std::cout << "[error] failed to read from cgi process" << std::endl;
-    if (retry_count_ == RETRY_TIME_MAX) {
-      retry_count_ = 0;
-
-      // close connection and make error responce
-      std::cout << "[error] close connection to CGI process" << std::endl;
-      close(cgi_handler_.getOutputFd());
-
-      // kill the process on error (if failed kill, we can do nothing...)
-      if (kill(cgi_handler_.getPid(), SIGKILL) == -1) {
-        std::cout << "[error] failed kill cgi process" << std::endl;
-      }
-
-      // to send error response to client
-      createErrorResponse(HTTP_500);
-      return 0;
-    }
-    retry_count_++;
-    return 0;
+    std::cout << "Webserv: Session: failed to read from cgi" << std::endl;
+    return -1;
   }
-
-  // reset retry conunt on success
-  retry_count_ = 0;
 
   // check if pipe closed
   if (n == 0) {
@@ -1680,26 +1615,9 @@ int Session::writeToFile() {
   n = write(file_fd_, &(request_.getBody()[0]), request_.getBody().size());
   // retry several times even if write failed
   if (n == -1) {
-    std::cout << "[error] failed to write to file" << std::endl;
-
-    // give up if reached retry count to maximum
-    if (retry_count_ == RETRY_TIME_MAX) {
-      close(file_fd_);
-      retry_count_ = 0;
-
-      // close connection
-      std::cout << "[error] close file" << std::endl;
-      createErrorResponse(HTTP_500);
-      status_ = SESSION_FOR_CLIENT_SEND;  // to send response to client
-      return 0;
-    }
-
-    retry_count_++;
-    return 0;
+    std::cout << "Webserv: Session: failed to write to file" << std::endl;
+    return -1;
   }
-
-  // reset retry conunt on success
-  retry_count_ = 0;
 
   // erase written data
   request_.eraseBody(n);
