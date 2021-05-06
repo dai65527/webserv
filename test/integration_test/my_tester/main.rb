@@ -46,13 +46,26 @@ testcase.add
 
 #####
 
-casename = "get /nonexitstfile"
-testcase = WebservTestCase.new casename, "localhost", 8000, "/nonexitsfile", "GET"
+casename = "get /nonexistfile"
+testcase = WebservTestCase.new casename, "localhost", 8000, "/nonexistfile", "GET"
 testcase.expectedCode = "404"
 testcase.expectedResponseHeader["Connection"] = "keep-alive"
 testcase.expectedResponseHeader["Content-Type"] = "text/html"
 testcase.expectedResponseHeaderExistance.push "Date"
 testcase.expectedResponseHeaderExistance.push "Content-Length"
+testcase.add
+
+#####
+
+casename = "get /has_original404/nonexistfile (has error_page directive)"
+testcase = WebservTestCase.new casename, "localhost", 8000, "/has_original404/nonexistfile", "GET"
+testcase.expectedCode = "404"
+testcase.expectedBody = "<h1>404 Not Found</h1>\n"
+testcase.expectedResponseHeader["Server"] = "nginDX"
+testcase.expectedResponseHeader["Content-Length"] = testcase.expectedBody.length.to_s
+testcase.expectedResponseHeader["Connection"] = "keep-alive"
+testcase.expectedResponseHeader["Content-Type"] = "text/html"
+testcase.expectedResponseHeaderExistance.push "Date"
 testcase.add
 
 #####
