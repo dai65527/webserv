@@ -6,18 +6,12 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/01/05 17:34:06 by dnakano           #+#    #+#              #
-#    Updated: 2021/05/07 15:14:50 by dnakano          ###   ########.fr        #
+#    Updated: 2021/05/07 15:25:58 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CXX			:=	clang++
 CPPFLAGS	:=	-Wall -Wextra -Werror
-.PHONY: leak
-leak: CPPFLAGS += -g -fsanitize=leak
-leak: re
-.PHONY: address
-address: CPPFLAGS += -g -fsanitize=address
-address: re
 SRCS		:=	main.cpp \
 				webserv_utils.cpp \
 				Webserv.cpp \
@@ -66,6 +60,14 @@ test:
 clean:
 			rm -f $(OBJS)
 			make fclean -C $(LIBFTDIR)
+
+.PHONY: leak
+leak: CPPFLAGS += -g -fsanitize=leak
+leak: re
+
+.PHONY: address
+address: CPPFLAGS += -g -fsanitize=address
+address: re
 
 .PHONY:		fclean
 fclean:		clean
