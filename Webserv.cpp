@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 21:48:48 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/05 19:30:29 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/06 10:56:37 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 
 #include "ConfigParser.hpp"
 #include "Webserv.hpp"
-#define DEFAULT_PORT 5050
 
 Webserv::Webserv() : retry_count_(0) {}
 

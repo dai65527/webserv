@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/04/22 22:31:02 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/03 11:09:29 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/06 11:20:45 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,11 +89,9 @@ char** CgiParams::storeMetaVariables(const std::string& cgiuri,
   tmp += getIpAddress(session_.getIp());
   meta_variables.push_back(tmp);
   tmp = "REMOTE_IDENT=";
-  // tmp += session_.getFromHeaders(headers, "authorization"); //tbc
   tmp += session_.getUserPass().substr(0, session_.getUserPass().find(':'));
   meta_variables.push_back(tmp);
   tmp = "REMOTE_USER=";
-  // tmp += session_.getFromHeaders(headers, "authorization"); //tbc
   tmp += session_.getUserPass().substr(0, session_.getUserPass().find(':'));
   meta_variables.push_back(tmp);
   tmp = "REQUEST_METHOD=";
@@ -133,7 +131,7 @@ char** CgiParams::vecToChar(std::vector<std::string>& meta_variables) {
     throw std::bad_alloc();
   }
   for (size_t i = 0; i < meta_variables.size(); ++i) {
-    envp_[i] = ft_strdup(meta_variables[i].c_str());
+    envp_[i] = strdup(meta_variables[i].c_str());
     if (!envp_[i]) {
       throw std::bad_alloc();
     }

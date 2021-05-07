@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/19 12:09:53 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/21 08:40:37 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/06 11:19:06 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 #include <unistd.h>
 
 #include <cstdlib>
+
+#include "webserv_utils.hpp"
 
 extern "C" {
 #include "libft.h"
@@ -75,13 +77,13 @@ static char* getNextToken(char* str) {
   }
 
   // find start
-  while (ft_isspace(*pos)) {
+  while (isspace(*pos)) {
     pos++;
   }
   start = pos;
 
   // find end
-  while (*pos != '\0' && *pos != '#' && !ft_isspace(*pos)) {
+  while (*pos != '\0' && *pos != '#' && !isspace(*pos)) {
     pos++;
   }
 
@@ -127,7 +129,7 @@ void ServerOnlyConfigStore::storeEtcHostsToHostIpMap() {
       break;
     }
 
-    if (ret == 0 && ft_strlen(line) == 0) {
+    if (ret == 0 && strlen(line) == 0) {
       break;
     }
 
@@ -173,7 +175,7 @@ in_addr_t ServerOnlyConfigStore::getIpFromHostIpMap(const char* str) {
 in_addr_t ServerOnlyConfigStore::parseIp(const char* str) {
   in_addr_t res;
 
-  if (!ft_strncmp(str, "*", 2)) {
+  if (!strncmp(str, "*", 2)) {
     return INADDR_ANY;
   } else if ((res = inet_addr(str)) != INADDR_NONE) {
     return res;
@@ -187,7 +189,7 @@ static bool strIsDigit(const char* str) {
     return false;
   }
   while (*str != '\0') {
-    if (!ft_isdigit(*str)) {
+    if (!isdigit(*str)) {
       return false;
     }
     str++;
@@ -243,22 +245,22 @@ void ServerOnlyConfigStore::parseListen(
                              "\"");
   } else if (cnt == 2) {
     const in_addr_t addr = parseIp(ip_port[0]);
-    const int port = ft_atoi(ip_port[1]);
+    const int port = atoi(ip_port[1]);
     freeStrs(ip_port);
     if (addr == INADDR_NONE) {
       throw std::runtime_error("listen: invalid value \"" + settings.front() +
                                "\"");
     } else if (port < 0 || port > std::numeric_limits<uint16_t>::max()) {
       throw std::runtime_error("listen: invalid port number " +
-                               std::to_string(port));
+                               to_string(port));
     }
     addToListen(addr, ft_htons(port));
   } else if (cnt == 1 && strIsDigit(ip_port[0])) {
-    const int port = ft_atoi(ip_port[0]);
+    const int port = atoi(ip_port[0]);
     freeStrs(ip_port);
     if (port < 0 || port > std::numeric_limits<uint16_t>::max()) {
       throw std::runtime_error("listen: invalid port number " +
-                               std::to_string(port));
+                               to_string(port));
     }
     addToListen(INADDR_ANY, ft_htons(port));
   } else {

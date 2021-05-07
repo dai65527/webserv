@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/15 10:34:35 by dnakano           #+#    #+#             */
-/*   Updated: 2021/03/21 22:14:07 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/06 11:15:53 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 #include <unistd.h>
 
 #include <iostream>
+
+#include "webserv_utils.hpp"
 
 extern "C" {
 #include "libft.h"
@@ -257,7 +259,7 @@ void ConfigParser::throwError(const std::string& err) {
   msg.reserve(128);
   msg = "webserv: error: ConfigParser: ";
   if (line_count_ != 0) {
-    msg += "line " + std::to_string(line_count_) + ": ";
+    msg += "line " + to_string((int)line_count_) + ": ";
   }
   msg += err;
   throw std::runtime_error(msg);
@@ -302,11 +304,11 @@ void ConfigParser::storeFileContent(int fd) {
 
 bool ConfigParser::isSpecialChar(char c) const {
   return (c == '\0' || c == '{' || c == '}' || c == ';' || c == '#' ||
-          ft_isspace(c));
+          isspace(c));
 }
 
 void ConfigParser::skipSpace() {
-  while (ft_isspace(filecontent_[char_count_])) {
+  while (isspace(filecontent_[char_count_])) {
     if (filecontent_[char_count_] == '\n') {
       line_count_++;
     }

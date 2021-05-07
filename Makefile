@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/01/05 17:34:06 by dnakano           #+#    #+#              #
-#    Updated: 2021/05/07 15:23:27 by dnakano          ###   ########.fr        #
+#    Updated: 2021/05/07 15:25:58 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -35,7 +35,7 @@ SRCS		:=	main.cpp \
 OBJS		:=	$(SRCS:%.cpp=%.o)
 LIBFT		:=	libft.a
 LIBFTDIR	:=	./libft
-NAME		:=	nginDX
+NAME		:=	webserv
 OUTDIR		:=	.
 
 .PHONY:		all

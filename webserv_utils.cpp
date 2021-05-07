@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv_utils.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/18 08:14:01 by dnakano           #+#    #+#             */
-/*   Updated: 2021/04/21 23:13:18 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/06 10:57:45 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -293,4 +293,17 @@ std::string getIpAddress(uint32_t ip) {
     }
   }
   return ret;
+}
+
+std::string to_string(int n) {
+  char* str;
+  std::string res;
+
+  str = ft_itoa(n);
+  if (str == NULL) {
+    throw new std::bad_alloc();
+  }
+  res = str;
+  free(str);
+  return res;
 }

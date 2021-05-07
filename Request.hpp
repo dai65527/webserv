@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/03 10:51:41 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/03 12:21:58 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/06 11:00:07 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,6 @@ class Request {
   size_t parseMethod();
   size_t parseUri(size_t pos);
   int checkRequestLine(size_t pos);
-  int checkResponseType() const;
   ssize_t findHeaderFieldEnd(size_t pos);
   int parseHeaderField(size_t pos);
   int checkHeaderField();

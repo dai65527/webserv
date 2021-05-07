@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/04 21:06:24 by dhasegaw         ###   ########.fr       */
+/*   Updated: 2021/05/06 10:39:53 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ void Response::setConnectionToClose() { connection_to_close_ = true; }
 int Response::createStatusLine(HTTPStatusCode http_status_) {
   // status line
   status_header_ = "HTTP/1.1 ";
-  status_header_.append(std::to_string(http_status_));
+  status_header_.append(to_string(http_status_));
   status_header_.append(" ");
   status_header_.append(response_code_message_[http_status_]);
   status_header_.append("\r\n");
@@ -115,7 +115,7 @@ int Response::createDefaultErrorResponse(HTTPStatusCode http_status) {
 
   // create body
   std::string status_msg =
-      std::to_string(http_status) + " " + response_code_message_[http_status];
+      to_string(http_status) + " " + response_code_message_[http_status];
   body_.clear();
   appendToBody("<html>\r\n");
   appendToBody("<head><title>" + status_msg + "</title></ head>\r\n");
@@ -195,7 +195,7 @@ ssize_t Response::sendData(int sock_fd, bool header_only, bool is_trace) {
 
 // create headers which cannot be defined before create body
 int Response::createCompleteHeader(bool is_trace) {
-  addHeader("Content-Length", std::to_string(body_.size()));
+  addHeader("Content-Length", to_string((int)body_.size()));
   if (connection_to_close_) {
     addHeader("Connection", "close");
   } else {

@@ -1,4 +1,4 @@
-name: NginDX integration and unit test
+name: webserv integration and unit test
 on: [pull_request]
 jobs:
   Explore-Github-Actions:

@@ -1,6 +1,6 @@
 #!/bin/bash
 make re -C ../../../
-../../../nginDX ./test.conf&
+../../../webserv ./test.conf&
 
 sleep 1
 
