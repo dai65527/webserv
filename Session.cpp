@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/06 17:40:25 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/07 15:14:59 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -973,8 +973,9 @@ std::string Session::findFileFromDir(const std::string& dirpath) const {
     }
     // case found
     if (S_ISREG(filestat.st_mode) && isIndex(dent->d_name)) {
+      std::string ret(dent->d_name);
       closedir(dir);
-      return dent->d_name;
+      return ret;
     }
   }
   closedir(dir);
