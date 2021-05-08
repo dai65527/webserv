@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/16 23:50:27 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/06 10:39:53 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/08 18:10:13 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,7 +149,7 @@ ssize_t Response::sendData(int sock_fd, bool header_only, bool is_trace) {
     case 1:  // sending headers
       n = send(sock_fd, status_header_.c_str() + bytes_already_sent_,
                status_header_.length() - bytes_already_sent_, 0);
-      if (n < 0) {
+      if (n == -1 || (n == 0 && status_header_.length() != 0)) {
         return -1;
       }
 
@@ -175,7 +175,7 @@ ssize_t Response::sendData(int sock_fd, bool header_only, bool is_trace) {
       n = send(sock_fd, &body_[bytes_already_sent_],
                body_.size() - bytes_already_sent_, 0);
 
-      if (n < 0) {
+      if (n == -1 || (n == 0 && (body_.size() == bytes_already_sent_))) {
         return -1;
       }
 

@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/06 23:21:37 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/07 15:14:59 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/08 18:07:46 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1351,7 +1351,7 @@ int Session::writeToCgi() {
                               request_.getBody().size());
 
   // retry several times even if write failed
-  if (n == -1) {
+  if (n == -1 || (n == 0 && request_.getBody().size() != 0)) {
     std::cout << "Webserv: Session: failed to write to cgi" << std::endl;
     return -1;
   }
@@ -1616,7 +1616,7 @@ int Session::writeToFile() {
   // write to file
   n = write(file_fd_, &(request_.getBody()[0]), request_.getBody().size());
   // retry several times even if write failed
-  if (n == -1) {
+  if (n == -1 || (n == 0 && request_.getBody().size() != 0)) {
     std::cout << "Webserv: Session: failed to write to file" << std::endl;
     return -1;
   }

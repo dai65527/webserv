@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 00:11:38 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/06 11:36:48 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/08 18:15:39 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,9 @@ int main(int argc, char** argv) {
   }
 
   // init signal handlers
-  signal(SIGCHLD, SIG_IGN);      // detatch cgi process
+  signal(SIGCHLD, SIG_IGN);  // detatch cgi process
+  signal(SIGPIPE, SIG_IGN);  // server will stop without this when connection
+                             // was closed by the client
   signal(SIGINT, handleSigInt);  // register SIGINT handler
 
   try {
