@@ -6,7 +6,7 @@
 #    By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/01/05 17:34:06 by dnakano           #+#    #+#              #
-#    Updated: 2021/05/07 15:25:58 by dnakano          ###   ########.fr        #
+#    Updated: 2021/05/08 21:08:00 by dnakano          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,8 +33,9 @@ SRCS		:=	main.cpp \
 				Base64.cpp \
 				LogFeeder.cpp
 OBJS		:=	$(SRCS:%.cpp=%.o)
-LIBFT		:=	libft.a
+LIBFTNAME	:=	libft.a
 LIBFTDIR	:=	./libft
+LIBFT		:=	$(LIBFTDIR)/$(LIBFTNAME)
 NAME		:=	webserv
 OUTDIR		:=	.
 
@@ -42,7 +43,7 @@ OUTDIR		:=	.
 all:		$(NAME)
 
 $(NAME):	$(OBJS) $(LIBFT)
-			$(CXX) $(CPPFLAGS) -L$(LIBFTDIR) $(patsubst lib%,-l%,$(basename $(LIBFT))) \
+			$(CXX) $(CPPFLAGS) -L$(LIBFTDIR) $(patsubst lib%,-l%,$(basename $(LIBFTNAME))) \
 			 -I$(LIBFTDIR) $(OBJS) -o $(NAME)
 
 $(LIBFT):
