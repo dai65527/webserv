@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: dhasegaw <dhasegaw@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/10 23:36:10 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/06 11:17:50 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/09 22:57:01 by dhasegaw         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -349,7 +349,9 @@ int Request::checkHeaderField() {
          itr != itr_transfer_encoding->second.end(); ++itr) {
       *itr = std::tolower(*itr);
     }
-    flg_chunked_ = 1;
+    if (itr_transfer_encoding->second.compare("chunked")) {
+      flg_chunked_ = 1;
+    }
   }
   /* POST requires content-length or transfer-encoding of chunked*/
   if (method_ == "POST" && itr_content_length == headers_.end() &&
