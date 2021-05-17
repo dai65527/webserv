@@ -6,7 +6,7 @@
 /*   By: dnakano <dnakano@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/03/05 21:48:48 by dhasegaw          #+#    #+#             */
-/*   Updated: 2021/05/06 10:56:37 by dnakano          ###   ########.fr       */
+/*   Updated: 2021/05/17 09:50:18 by dnakano          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,8 @@ void Webserv::initSockets() {
              itr->second == sockets_.back()->getPort()) {
         ++itr;
       }
+    } else {
+      ++itr;
     }
   }
 }
